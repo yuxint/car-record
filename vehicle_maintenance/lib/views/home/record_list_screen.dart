@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/maintenance_record.dart';
+import '../../models/vehicle.dart';
 import '../../providers/vehicle_provider.dart';
 import '../../providers/maintenance_provider.dart';
 import '../../config/theme.dart';
