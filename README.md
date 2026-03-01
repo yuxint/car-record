@@ -1,183 +1,128 @@
-# 车辆保养记录App - 项目初始化指南
+# 车辆保养记录App
 
-## 📋 项目概述
+一个使用Flutter开发的车辆保养记录管理应用，支持多车辆管理、保养记录追踪、保养间隔计算等功能。
 
-一款基于 Flutter + sqflite 的车辆保养记录应用，数据完全存储在本地。
+## 功能特性
 
-## 📄 文档索引
+- 🚗 **多车辆管理**：支持添加、编辑、删除多辆车辆
+- 📝 **保养记录**：记录每次保养的日期、里程、项目、价格等信息
+- 📊 **统计分析**：查看保养费用统计和保养间隔
+- 🔄 **自动计算**：自动计算与上次保养的时间和里程间隔
+- 📱 **跨平台**：支持iOS、Android、Web等平台
 
-- [产品需求文档 (PRD)](./docs/PRD.md)
-- [技术方案文档](./docs/TECHNICAL.md)
+## 技术栈
 
-## 🚀 快速开始
+- **框架**：Flutter 3.x
+- **语言**：Dart 3.x
+- **本地数据库**：sqflite + path_provider + path
+- **状态管理**：Provider
+- **路由管理**：Navigator
+- **日期时间处理**：intl
+- **ID生成**：uuid
 
-### 1. 环境准备
+## 项目结构
 
-#### 安装 Flutter SDK
-
-**Windows:**
-```powershell
-# 方式一：使用官方安装包
-# 访问 https://flutter.dev/docs/get-started/install/windows 下载
-
-# 方式二：使用 git 克隆
-git clone https://github.com/flutter/flutter.git -b stable
-# 然后将 flutter\bin 添加到系统环境变量 PATH 中
+```
+lib/
+├── main.dart                          # 应用入口
+├── config/                            # 配置文件
+│   ├── constants.dart                 # 常量定义
+│   └── theme.dart                     # 主题配置
+├── models/                            # 数据模型
+│   ├── vehicle.dart                   # 车辆模型
+│   ├── maintenance_record.dart        # 保养记录模型
+│   └── maintenance_item.dart          # 保养项目模型
+├── database/                          # 数据库相关
+│   └── database_helper.dart           # 数据库操作类
+├── providers/                         # 状态管理
+│   ├── vehicle_provider.dart          # 车辆状态管理
+│   └── maintenance_provider.dart      # 保养记录状态管理
+├── repositories/                      # 数据仓库层
+│   ├── vehicle_repository.dart        # 车辆数据仓库
+│   └── maintenance_repository.dart    # 保养记录数据仓库
+├── views/                             # 页面视图
+│   └── home/                          # 首页
+│       └── record_list_screen.dart
+└── utils/                             # 工具类
+    └── date_utils.dart                # 日期工具
 ```
 
-**macOS:**
-```bash
-# 使用 Homebrew 安装
-brew install --cask flutter
+## 快速开始
 
-# 或者使用 git 克隆
-git clone https://github.com/flutter/flutter.git -b stable
-export PATH="$PATH:`pwd`/flutter/bin"
-```
+### 环境要求
 
-**Linux:**
-```bash
-# 使用 snap 安装 (Ubuntu)
-sudo snap install flutter --classic
+- Flutter 3.11.0 或更高版本
+- Dart 3.1.0 或更高版本
+- iOS 13.0 或更高版本（iOS平台）
+- Android API 21 或更高版本（Android平台）
 
-# 或者使用 git 克隆
-git clone https://github.com/flutter/flutter.git -b stable
-export PATH="$PATH:`pwd`/flutter/bin"
-```
+### 安装与运行
 
-#### 验证安装
+1. **克隆项目**
 
-```bash
-# 检查 Flutter 版本
-flutter --version
+   ```bash
+   git clone <项目地址>
+   cd vehicle_maintenance
+   ```
 
-# 运行 Flutter Doctor 检查环境
-flutter doctor
-```
+2. **安装依赖**
 
-### 2. 初始化项目
+   ```bash
+   flutter pub get
+   ```
 
-#### 方案一：使用 flutter create 命令（推荐）
+3. **运行项目**
 
-```bash
-# 在当前目录创建项目
-flutter create --org com.maintenance --platforms android,ios vehicle_maintenance
+   - **iOS模拟器**
+     ```bash
+     flutter run -d ios
+     ```
 
-# 进入项目目录
-cd vehicle_maintenance
-```
+   - **Android模拟器**
+     ```bash
+     flutter run -d android
+     ```
 
-#### 方案二：手动创建项目结构
+   - **Web**
+     ```bash
+     flutter run -d web
+     ```
 
-如果你想手动创建，请参考 [技术方案文档](./docs/TECHNICAL.md) 中的目录结构。
+## 数据库设计
 
-### 3. 配置依赖
+### 数据表
 
-在 `pubspec.yaml` 中添加以下依赖：
+1. **车辆表 (vehicles)**：存储车辆基本信息
+2. **保养记录表 (maintenance_records)**：存储保养记录
+3. **保养项目表 (maintenance_items)**：存储默认保养项目
 
-```yaml
-dependencies:
-  flutter:
-    sdk: flutter
-  
-  # 状态管理
-  provider: ^6.1.1
-  
-  # 数据库
-  sqflite: ^2.3.0
-  path_provider: ^2.1.1
-  path: ^1.8.3
-  
-  # 路由
-  go_router: ^13.0.0
-  
-  # 日期时间
-  intl: ^0.19.0
-  
-  # 数据导出
-  csv: ^5.1.1
-  share_plus: ^7.2.1
-  
-  # 其他工具
-  uuid: ^4.3.3
+### 核心功能
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^3.0.0
-```
+- **保养记录自动计算**：添加保养记录时，自动计算与上次保养的时间和里程间隔
+- **数据持久化**：使用SQLite本地数据库存储数据
+- **默认保养项目**：内置常用保养项目列表
 
-然后运行：
+## 开发规范
 
-```bash
-flutter pub get
-```
+- **文件命名**：snake_case (如: maintenance_record.dart)
+- **类命名**：PascalCase (如: MaintenanceRecord)
+- **变量/方法**：camelCase (如: calculateDifference)
+- **常量**：SCREAMING_SNAKE_CASE (如: MAX_MILEAGE)
 
-### 4. 开始开发
+## 未来计划
 
-按照以下顺序开始开发：
+- [ ] 添加车辆管理页面
+- [ ] 添加保养记录添加/编辑页面
+- [ ] 添加统计分析页面
+- [ ] 添加设置页面
+- [ ] 实现数据导出功能
+- [ ] 添加通知提醒功能
+- [ ] 优化UI/UX设计
 
-1. **创建数据模型** (`lib/models/`)
-2. **配置数据库** (`lib/database/`)
-3. **创建数据仓库** (`lib/repositories/`)
-4. **实现状态管理** (`lib/providers/`)
-5. **实现视图模型** (`lib/viewmodels/`)
-6. **开发UI页面** (`lib/views/`)
-7. **创建通用组件** (`lib/widgets/`)
+## 贡献
 
-## 📱 功能开发优先级
+欢迎提交Issue和Pull Request！
 
-### MVP 版本 (v1.0)
-- [ ] 车辆信息管理（添加、编辑、删除车辆）
-- [ ] 保养记录管理（增删改查）
-- [ ] 保养记录列表展示
-- [ ] 自动计算与上次保养的时间差、里程差
-- [ ] 基础统计功能
-- [ ] 数据导出CSV
+## 许可证
 
-### v1.1 版本
-- [ ] 保养提醒功能
-- [ ] 数据可视化图表
-- [ ] 保养费用趋势分析
-
-### v1.2 版本
-- [ ] 保养照片上传
-- [ ] 票据管理
-- [ ] 保养小贴士
-
-## 🛠️ 开发工具推荐
-
-### IDE
-- **Android Studio / IntelliJ IDEA**（推荐，有完整Flutter支持）
-- **VS Code**（轻量，配合Flutter插件）
-
-### 调试工具
-- **Flutter DevTools** - 性能分析、Widget检查
-- **Android Studio Profiler** - Android性能分析
-- **Xcode Instruments** - iOS性能分析
-
-## 📚 学习资源
-
-### Flutter 官方资源
-- [Flutter 官网](https://flutter.dev)
-- [Flutter 中文文档](https://flutter.cn/docs)
-- [Flutter 教程](https://flutter.dev/docs/get-started/codelab)
-
-### sqflite 使用
-- [sqflite GitHub](https://github.com/tekartik/sqflite)
-- [sqflite 文档](https://pub.dev/packages/sqflite)
-
-### Provider 状态管理
-- [Provider 文档](https://pub.dev/packages/provider)
-- [Provider 教程](https://flutter.dev/docs/development/data-and-backend/state-mgmt/simple)
-
-## 📞 需要帮助？
-
-如果你在开发过程中遇到问题，可以：
-1. 查看 [技术方案文档](./docs/TECHNICAL.md)
-2. 参考 Flutter 官方文档
-3. 在 GitHub 上搜索相关问题
-
-## 📄 许可证
-
-MIT License
+本项目采用 MIT 许可证 - 详情请查看 [LICENSE](LICENSE) 文件

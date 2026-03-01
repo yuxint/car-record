@@ -5,11 +5,11 @@
 ### 1.1 技术栈选择
 - **框架**: Flutter 3.x
 - **语言**: Dart 3.x
-- **本地数据库**: sqflite + path_provider
+- **本地数据库**: sqflite + path_provider + path
 - **状态管理**: Provider (轻量级，适合中小型项目)
-- **路由管理**: GoRouter (或 Navigator 2.0)
+- **路由管理**: Navigator (标准路由)
 - **日期时间处理**: intl
-- **数据导出**: csv + share_plus
+- **ID生成**: uuid
 
 ### 1.2 架构模式
 采用 **MVVM (Model-View-ViewModel)** 架构模式，结合 Provider 进行状态管理。
@@ -24,56 +24,24 @@ lib/
 ├── main.dart                          # 应用入口
 ├── config/                            # 配置文件
 │   ├── constants.dart                 # 常量定义
-│   ├── routes.dart                    # 路由配置
 │   └── theme.dart                     # 主题配置
 ├── models/                            # 数据模型
 │   ├── vehicle.dart                   # 车辆模型
 │   ├── maintenance_record.dart        # 保养记录模型
 │   └── maintenance_item.dart          # 保养项目模型
 ├── database/                          # 数据库相关
-│   ├── database_helper.dart           # 数据库操作类
-│   └── tables/                        # 数据表定义
-│       ├── vehicle_table.dart
-│       ├── maintenance_record_table.dart
-│       └── maintenance_item_table.dart
+│   └── database_helper.dart           # 数据库操作类
 ├── providers/                         # 状态管理
 │   ├── vehicle_provider.dart          # 车辆状态管理
-│   ├── maintenance_provider.dart      # 保养记录状态管理
-│   └── settings_provider.dart         # 设置状态管理
+│   └── maintenance_provider.dart      # 保养记录状态管理
 ├── repositories/                      # 数据仓库层
 │   ├── vehicle_repository.dart        # 车辆数据仓库
 │   └── maintenance_repository.dart    # 保养记录数据仓库
-├── viewmodels/                        # 视图模型层
-│   ├── record_list_viewmodel.dart     # 记录列表VM
-│   ├── record_form_viewmodel.dart     # 记录表单VM
-│   └── statistics_viewmodel.dart      # 统计VM
 ├── views/                             # 页面视图
-│   ├── home/                          # 首页
-│   │   └── record_list_screen.dart
-│   ├── record/                        # 记录相关
-│   │   ├── record_form_screen.dart
-│   │   └── record_detail_screen.dart
-│   ├── statistics/                    # 统计
-│   │   └── statistics_screen.dart
-│   ├── vehicle/                       # 车辆管理
-│   │   ├── vehicle_list_screen.dart
-│   │   └── vehicle_form_screen.dart
-│   └── settings/                      # 设置
-│       ├── settings_screen.dart
-│       └── data_export_screen.dart
-├── widgets/                           # 通用组件
-│   ├── buttons/
-│   ├── inputs/
-│   ├── cards/
-│   └── dialogs/
-├── utils/                             # 工具类
-│   ├── date_utils.dart                # 日期工具
-│   ├── string_utils.dart              # 字符串工具
-│   ├── number_utils.dart              # 数字工具
-│   └── csv_exporter.dart              # CSV导出工具
-└── services/                          # 服务层
-    ├── notification_service.dart      # 通知服务
-    └── share_service.dart             # 分享服务
+│   └── home/                          # 首页
+│       └── record_list_screen.dart
+└── utils/                             # 工具类
+    └── date_utils.dart                # 日期工具
 ```
 
 ---
@@ -133,32 +101,124 @@ CREATE TABLE maintenance_items (
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
-  
+
   DatabaseHelper._init();
-  
+
+  /// 获取数据库实例
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('maintenance.db');
+    _database = await _initDB(AppConstants.databaseName);
     return _database!;
   }
-  
+
+  /// 初始化数据库
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
+    final Directory appDocDir = await getApplicationDocumentsDirectory();
+    final String path = join(appDocDir.path, filePath);
     return await openDatabase(
       path,
-      version: 1,
+      version: AppConstants.databaseVersion,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
   }
-  
-  Future _createDB(Database db, int version) async {
-    // 创建表
+
+  /// 创建数据库表
+  Future<void> _createDB(Database db, int version) async {
+    // 车辆表
+    await db.execute('''
+      CREATE TABLE vehicles (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        brand TEXT,
+        model TEXT,
+        license_plate TEXT,
+        purchase_date INTEGER,
+        initial_mileage REAL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    // 保养记录表
+    await db.execute('''
+      CREATE TABLE maintenance_records (
+        id TEXT PRIMARY KEY,
+        vehicle_id TEXT NOT NULL,
+        date INTEGER NOT NULL,
+        mileage REAL NOT NULL,
+        items TEXT NOT NULL,
+        price REAL NOT NULL,
+        notes TEXT,
+        time_diff_from_last INTEGER,
+        mileage_diff_from_last REAL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
+      )
+    ''');
+
+    // 保养项目表
+    await db.execute('''
+      CREATE TABLE maintenance_items (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        is_default INTEGER NOT NULL DEFAULT 1,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+    // 创建索引
+    await db.execute('''
+      CREATE INDEX idx_maintenance_records_vehicle_id 
+      ON maintenance_records(vehicle_id)
+    ''');
+    await db.execute('''
+      CREATE INDEX idx_maintenance_records_date 
+      ON maintenance_records(date DESC)
+    ''');
+
+    // 初始化默认保养项目
+    await _initDefaultMaintenanceItems(db);
   }
-  
-  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // 数据库升级逻辑
+
+  /// 数据库升级
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // 处理数据库升级逻辑
+    if (oldVersion < newVersion) {
+      // 示例：添加新字段
+      // await db.execute('ALTER TABLE table_name ADD COLUMN new_column TEXT');
+    }
+  }
+
+  /// 初始化默认保养项目
+  Future<void> _initDefaultMaintenanceItems(Database db) async {
+    for (int i = 0; i < AppConstants.defaultMaintenanceItems.length; i++) {
+      final item = MaintenanceItem.defaultItem(
+        name: AppConstants.defaultMaintenanceItems[i],
+        sortOrder: i,
+      );
+      await db.insert(
+        'maintenance_items',
+        item.toJson(),
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+    }
+  }
+
+  /// 关闭数据库
+  Future<void> close() async {
+    final db = await instance.database;
+    db.close();
+  }
+
+  /// 删除数据库（仅用于开发调试）
+  Future<void> deleteDatabase() async {
+    final Directory appDocDir = await getApplicationDocumentsDirectory();
+    final String path = join(appDocDir.path, AppConstants.databaseName);
+    await databaseFactory.deleteDatabase(path);
+    _database = null;
   }
 }
 ```
@@ -171,17 +231,18 @@ class DatabaseHelper {
 
 #### 4.1.1 添加记录时计算间隔
 ```dart
-Future<void> calculateAndSetDifferences(MaintenanceRecord record) async {
-  // 获取同一辆车的上一条记录
-  final lastRecord = await _getLastRecordForVehicle(record.vehicleId);
+/// 计算与上一条记录的差值
+Future<MaintenanceRecord> _calculateDifferences(MaintenanceRecord record) async {
+  final lastRecord = await getLastRecordForVehicle(record.vehicleId, record.date);
   
   if (lastRecord != null) {
-    // 计算时间差
-    record.timeDiffFromLast = record.date.difference(lastRecord.date);
-    
-    // 计算里程差
-    record.mileageDiffFromLast = record.mileage - lastRecord.mileage;
+    return record.copyWith(
+      timeDiffFromLast: record.date.difference(lastRecord.date),
+      mileageDiffFromLast: record.mileage - lastRecord.mileage,
+    );
   }
+  
+  return record;
 }
 ```
 
@@ -228,31 +289,82 @@ class CsvExporter {
 
 #### 4.3.1 使用 Provider 管理保养记录
 ```dart
-class MaintenanceProvider extends ChangeNotifier {
+class MaintenanceProvider with ChangeNotifier {
   final MaintenanceRepository _repository;
+  
   List<MaintenanceRecord> _records = [];
+  List<MaintenanceItem> _maintenanceItems = [];
   bool _isLoading = false;
-  
+  String? _errorMessage;
+
   MaintenanceProvider(this._repository);
-  
+
   List<MaintenanceRecord> get records => _records;
+  List<MaintenanceItem> get maintenanceItems => _maintenanceItems;
   bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  bool get hasRecords => _records.isNotEmpty;
+
+  /// 获取统计数据
+  int get recordCount => _records.length;
   
+  double get totalPrice {
+    return _records.fold(0.0, (sum, record) => sum + record.price);
+  }
+
+  /// 加载某辆车的保养记录
   Future<void> loadRecords(String vehicleId) async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
-    
-    _records = await _repository.getRecordsByVehicleId(vehicleId);
-    
-    _isLoading = false;
+
+    try {
+      _records = await _repository.getRecordsByVehicleId(vehicleId);
+    } catch (e) {
+      _errorMessage = '加载保养记录失败: $e';
+      debugPrint(_errorMessage);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// 加载所有保养项目
+  Future<void> loadMaintenanceItems() async {
+    _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
+
+    try {
+      _maintenanceItems = await _repository.getAllMaintenanceItems();
+    } catch (e) {
+      _errorMessage = '加载保养项目失败: $e';
+      debugPrint(_errorMessage);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
-  
-  Future<void> addRecord(MaintenanceRecord record) async {
-    await _repository.insert(record);
-    await loadRecords(record.vehicleId);
+
+  /// 添加保养记录
+  Future<bool> addRecord(MaintenanceRecord record) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.insert(record);
+      await loadRecords(record.vehicleId);
+      return true;
+    } catch (e) {
+      _errorMessage = '添加保养记录失败: $e';
+      debugPrint(_errorMessage);
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
-  
+
   // 其他方法...
 }
 ```
@@ -261,40 +373,40 @@ class MaintenanceProvider extends ChangeNotifier {
 
 ## 5. 路由设计
 
-### 5.1 路由配置 (GoRouter)
+### 5.1 路由配置 (Navigator)
+目前项目使用标准的Navigator进行路由管理，在`main.dart`中通过MaterialApp配置。
+
 ```dart
-final router = GoRouter(
-  initialLocation: '/',
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const RecordListScreen(),
-    ),
-    GoRoute(
-      path: '/record/add',
-      builder: (context, state) => const RecordFormScreen(),
-    ),
-    GoRoute(
-      path: '/record/edit/:id',
-      builder: (context, state) {
-        final id = state.pathParameters['id']!;
-        return RecordFormScreen(recordId: id);
-      },
-    ),
-    GoRoute(
-      path: '/statistics',
-      builder: (context, state) => const StatisticsScreen(),
-    ),
-    GoRoute(
-      path: '/vehicles',
-      builder: (context, state) => const VehicleListScreen(),
-    ),
-    GoRoute(
-      path: '/settings',
-      builder: (context, state) => const SettingsScreen(),
-    ),
-  ],
-);
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // 初始化依赖
+    final dbHelper = DatabaseHelper.instance;
+    final vehicleRepository = VehicleRepository(dbHelper);
+    final maintenanceRepository = MaintenanceRepository(dbHelper);
+
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => VehicleProvider(vehicleRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => MaintenanceProvider(maintenanceRepository),
+        ),
+      ],
+      child: MaterialApp(
+        title: AppConstants.appName,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        home: const RecordListScreen(),
+      ),
+    );
+  }
+}
 ```
 
 ---
