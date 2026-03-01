@@ -26,4 +26,4 @@ Thumbs.db       # Windows 系统隐藏文件
 **/android/app/debug
 **/android/app/profile
 **/android/app/release
-.trae/.*
+.trae/
