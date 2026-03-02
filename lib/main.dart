@@ -7,7 +7,7 @@ import 'providers/vehicle_provider.dart';
 import 'providers/maintenance_provider.dart';
 import 'repositories/vehicle_repository.dart';
 import 'repositories/maintenance_repository.dart';
-import 'views/home/record_list_screen.dart';
+import 'views/home/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: const RecordListScreen(),
+        home: const HomeScreen(),
       ),
     );
   }
