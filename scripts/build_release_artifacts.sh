@@ -46,6 +46,8 @@ DERIVED_DATA_PATH="${BUILD_DIR}/DerivedData"
 PAYLOAD_DIR="${BUILD_DIR}/Payload"
 APP_PATH="${DERIVED_DATA_PATH}/Build/Products/Release-iphoneos/${APP_NAME}.app"
 IPA_PATH="${OUTPUT_DIR}/${APP_NAME}.ipa"
+IPA_TAGGED_NAME="${APP_NAME}-${RELEASE_TAG}.ipa"
+IPA_TAGGED_PATH="${OUTPUT_DIR}/${IPA_TAGGED_NAME}"
 
 MARKETING_VERSION_RAW="$(xcodebuild -showBuildSettings -project "${PROJECT_PATH}" -scheme "${SCHEME}" 2>/dev/null | awk -F' = ' '/MARKETING_VERSION/ {print $2; exit}')"
 CURRENT_PROJECT_VERSION_RAW="$(xcodebuild -showBuildSettings -project "${PROJECT_PATH}" -scheme "${SCHEME}" 2>/dev/null | awk -F' = ' '/CURRENT_PROJECT_VERSION/ {print $2; exit}')"
@@ -86,27 +88,30 @@ cp -R "${APP_PATH}" "${PAYLOAD_DIR}/"
   cd "${BUILD_DIR}"
   /usr/bin/zip -qry "${IPA_PATH}" Payload
 )
+cp -f "${IPA_PATH}" "${IPA_TAGGED_PATH}"
 
-IPA_SIZE_BYTES="$(stat -f%z "${IPA_PATH}")"
-SHA256="$(shasum -a 256 "${IPA_PATH}" | awk '{print $1}')"
+IPA_SIZE_BYTES="$(stat -f%z "${IPA_TAGGED_PATH}")"
+SHA256="$(shasum -a 256 "${IPA_TAGGED_PATH}" | awk '{print $1}')"
 
-echo "${SHA256}  ${APP_NAME}.ipa" >"${OUTPUT_DIR}/sha256.txt"
+echo "${SHA256}  ${IPA_TAGGED_NAME}" >"${OUTPUT_DIR}/sha256.txt"
 
 VERSION_DATE="$(TZ="${TIME_ZONE}" date +"%Y-%m-%dT%H:%M:%S%z")"
 VERSION_DATE_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 IPA_PUBLIC_URL="${PUBLIC_RELEASE_BASE_URL}/${APP_NAME}.ipa"
-IPA_PUBLIC_DOWNLOAD_URL="${IPA_PUBLIC_URL}?v=${RELEASE_TAG}"
+IPA_PUBLIC_DOWNLOAD_URL="${PUBLIC_RELEASE_BASE_URL}/${IPA_TAGGED_NAME}"
 SOURCE_PUBLIC_URL="${PUBLIC_RELEASE_BASE_URL}/source.json"
 INSTALL_PUBLIC_URL="${PUBLIC_RELEASE_BASE_URL}/install.html"
 
 if [[ -n "${LAN_BASE_URL}" ]]; then
   IPA_LAN_URL="${LAN_BASE_URL}/${APP_NAME}.ipa"
+  IPA_LAN_TAGGED_URL="${LAN_BASE_URL}/${IPA_TAGGED_NAME}"
   SOURCE_LAN_URL="${LAN_BASE_URL}/source.json"
   INSTALL_LAN_URL="${LAN_BASE_URL}/install.html"
 else
   # 未配置局域网时回退到外网地址，确保产物结构稳定且 CI 不因缺文件失败。
   IPA_LAN_URL="${IPA_PUBLIC_URL}"
+  IPA_LAN_TAGGED_URL="${IPA_PUBLIC_DOWNLOAD_URL}"
   SOURCE_LAN_URL="${SOURCE_PUBLIC_URL}"
   INSTALL_LAN_URL="${INSTALL_PUBLIC_URL}"
 fi
@@ -152,7 +157,7 @@ cat >"${OUTPUT_DIR}/source.lan.json" <<JSON
           "version": "${APP_VERSION}",
           "buildVersion": "${BUILD_NUMBER}",
           "date": "${VERSION_DATE}",
-          "downloadURL": "${IPA_LAN_URL}",
+          "downloadURL": "${IPA_LAN_TAGGED_URL}",
           "size": ${IPA_SIZE_BYTES},
           "minOSVersion": "17.0"
         }
@@ -246,6 +251,7 @@ cat >"${OUTPUT_DIR}/build-meta.json" <<JSON
     "public_base_url": "${PUBLIC_RELEASE_BASE_URL}",
     "ipa": "${IPA_PUBLIC_URL}",
     "ipa_download": "${IPA_PUBLIC_DOWNLOAD_URL}",
+    "ipa_tagged_name": "${IPA_TAGGED_NAME}",
     "source": "${SOURCE_PUBLIC_URL}",
     "install": "${INSTALL_PUBLIC_URL}",
     "lan_base_url": "${LAN_BASE_URL}",

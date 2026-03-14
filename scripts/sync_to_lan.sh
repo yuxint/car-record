@@ -60,6 +60,11 @@ for file in CarRecord.ipa sha256.txt build-meta.json; do
   cp -f "${SRC_DIR}/${file}" "${DEST_DIR}/${file}"
 done
 
+# 关键逻辑：若存在带发布标签的 IPA，一并同步，保证 LAN 版 source.json 可直接命中。
+if ls "${SRC_DIR}"/CarRecord-*.ipa >/dev/null 2>&1; then
+  cp -f "${SRC_DIR}"/CarRecord-*.ipa "${DEST_DIR}/"
+fi
+
 if [[ -f "${SRC_DIR}/source.lan.json" ]]; then
   cp -f "${SRC_DIR}/source.lan.json" "${DEST_DIR}/source.json"
 else

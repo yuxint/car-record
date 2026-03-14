@@ -45,7 +45,7 @@ CI 成功后会自动发布固定链接（始终指向最新版本）：
 - 页面会显示当次 `release_tag` 与构建时间（Asia/Shanghai + UTC）。
 - AltStore `version` 与 App 内版本号一致：格式为 `主版本.次版本.CI_RUN_NUMBER`（例如 `1.0.125`），每次 push 触发 CI 自动递增；`buildVersion` 使用 `CI_RUN_NUMBER`。
 - `source.json` 地址固定不变（gh-pages），但内部 `downloadURL` 指向当次 release tag 直链，确保对应最新构建产物。
-- `downloadURL` 附带 `?v=<release_tag>` 缓存戳，降低 AltStore 命中旧包缓存的概率。
+- `downloadURL` 指向唯一文件名（`CarRecord-<release_tag>.ipa`），从根源规避 AltStore 旧包缓存命中。
 
 首次使用请在仓库 Settings -> Pages 中确认：
 - Source 为 `Deploy from a branch`
