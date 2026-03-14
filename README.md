@@ -36,10 +36,20 @@
 建议在 GitHub 仓库设置以下 Secret：
 - `LAN_BASE_URL`：可选，局域网托管基地址，例如 `http://nas.local/car-record`
 
+## 固定安装链接（推荐）
+
+CI 成功后会自动发布固定链接（始终指向最新版本）：
+- 安装页：`https://<你的GitHub用户名>.github.io/car-record/install.html`
+- AltStore 源：`https://<你的GitHub用户名>.github.io/car-record/source.json`
+
+首次使用请在仓库 Settings -> Pages 中确认：
+- Source 为 `Deploy from a branch`
+- Branch 选择 `gh-pages`，目录 `/ (root)`
+
 ## iPhone 安装方式（AltStore）
 
 1. 在 iPhone 安装 AltStore 并登录你的 Apple ID。
-2. 打开 Release 里的 `source.json`（外网）或 `source.lan.json`（内网）链接。
+2. 打开固定安装页，点击“**一键打开 AltStore 添加源**”或手动复制固定 `source.json` 链接。
 3. 在 AltStore 添加该源并安装 `CarRecord`。
 4. 每 7 天在 AltStore 执行续签。
 

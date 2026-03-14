@@ -64,3 +64,38 @@ jobs:
           name: release-${{ steps.release_tag.outputs.tag }}
           path: release/
           retention-days: 7
+
+  publish-static-install-page:
+    # 模块职责：把“最新一次构建”的安装入口发布为固定 URL，iPhone 只需点同一个链接。
+    needs: build-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release artifact
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: artifact
+
+      - name: Prepare static page
+        run: |
+          # 关键逻辑：固定托管 install/source，内部仍指向本次 Release 资产，实现“链接不变、内容自动更新”。
+          mkdir -p pages
+          cp artifact/install.html pages/install.html
+          cp artifact/source.json pages/source.json
+          cp artifact/build-meta.json pages/build-meta.json
+          cp artifact/sha256.txt pages/sha256.txt
+          cp artifact/install.html pages/index.html
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./pages
+          force_orphan: true
+
+      - name: Write summary
+        run: |
+          echo "固定安装页: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/install.html" >> "$GITHUB_STEP_SUMMARY"
+          echo "固定 AltStore 源: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/source.json" >> "$GITHUB_STEP_SUMMARY"

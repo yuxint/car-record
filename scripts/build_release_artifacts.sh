@@ -176,6 +176,7 @@ cat >"${OUTPUT_DIR}/install.html" <<HTML
       <p class="warn">无 Apple Developer Program 付费账号时，不能 Safari 一键企业直装；请使用 AltStore 安装并每 7 天续签。</p>
       <a class="btn" href="${IPA_PUBLIC_URL}">下载 IPA（外网）</a>
       <a class="btn" href="${SOURCE_PUBLIC_URL}">AltStore 源（外网）</a>
+      <a class="btn" href="altstore://source?url=${SOURCE_PUBLIC_URL}">一键打开 AltStore 添加源</a>
       <a class="btn" href="${INSTALL_PUBLIC_URL}">当前页面（外网）</a>
     </section>
 
