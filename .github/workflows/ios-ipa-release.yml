@@ -13,6 +13,8 @@ jobs:
   build-release:
     # 关键逻辑：在 macOS runner 上完成“无签名构建 -> 产物生成 -> Release 上传”全流程。
     runs-on: macos-latest
+    outputs:
+      release_tag: ${{ steps.release_tag.outputs.tag }}
     env:
       APP_NAME: CarRecord
       SCHEME: CarRecord
@@ -36,6 +38,7 @@ jobs:
       - name: Build IPA and metadata
         env:
           RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+          CI_BUILD_NUMBER: ${{ github.run_number }}
           PUBLIC_RELEASE_BASE_URL: https://github.com/${{ github.repository }}/releases/download/${{ steps.release_tag.outputs.tag }}
         run: |
           chmod +x scripts/build_release_artifacts.sh
@@ -74,8 +77,7 @@ jobs:
       - name: Download release artifact
         uses: actions/download-artifact@v4
         with:
-          pattern: release-*
-          merge-multiple: true
+          name: release-${{ needs.build-release.outputs.release_tag }}
           path: artifact
 
       - name: Prepare static page

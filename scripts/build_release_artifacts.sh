@@ -84,7 +84,8 @@ CURRENT_PROJECT_VERSION="$(xcodebuild -showBuildSettings -project "${PROJECT_PAT
 MARKETING_VERSION="${MARKETING_VERSION:-1.0.0}"
 CURRENT_PROJECT_VERSION="${CURRENT_PROJECT_VERSION:-1}"
 APP_VERSION="${MARKETING_VERSION}"
-BUILD_NUMBER="${CURRENT_PROJECT_VERSION}"
+# 关键逻辑：CI 场景优先使用 run number，确保每次构建都有递增 buildVersion。
+BUILD_NUMBER="${CI_BUILD_NUMBER:-${GITHUB_RUN_NUMBER:-${CURRENT_PROJECT_VERSION}}}"
 VERSION_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 IPA_PUBLIC_URL="${PUBLIC_RELEASE_BASE_URL}/${APP_NAME}.ipa"
@@ -181,6 +182,7 @@ cat >"${OUTPUT_DIR}/install.html" <<HTML
     <section class="card">
       <h1>${APP_NAME} 安装说明</h1>
       <p>版本：<strong>${APP_VERSION}</strong>（Build ${BUILD_NUMBER}）</p>
+      <p>发布标签：<strong>${RELEASE_TAG}</strong></p>
       <p>构建时间（UTC）：${VERSION_DATE}</p>
       <p class="warn">无 Apple Developer Program 付费账号时，不能 Safari 一键企业直装；请使用 AltStore 安装并每 7 天续签。</p>
       <a class="btn" href="${IPA_PUBLIC_URL}">下载 IPA（外网）</a>
