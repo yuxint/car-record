@@ -92,7 +92,11 @@ jobs:
           cp artifact/source.json pages/source.json
           cp artifact/build-meta.json pages/build-meta.json
           cp artifact/sha256.txt pages/sha256.txt
-          cp artifact/install.html pages/index.html
+          # 关键逻辑：将安装页中的 source 链接改为固定 gh-pages 地址，避免 AltStore 源地址随 tag 变化。
+          STABLE_SOURCE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/source.json"
+          STABLE_INSTALL_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/install.html"
+          perl -0777 -i -pe "s#https://github\\.com/[^\\\"]+/releases/download/[^/]+/source\\.json#${STABLE_SOURCE_URL//\//\\/}#g; s#https://github\\.com/[^\\\"]+/releases/download/[^/]+/install\\.html#${STABLE_INSTALL_URL//\//\\/}#g; s#altstore://source\\?url=https://github\\.com/[^\\\"]+/releases/download/[^/]+/source\\.json#altstore://source?url=${STABLE_SOURCE_URL//\//\\/}#g" pages/install.html
+          cp pages/install.html pages/index.html
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
