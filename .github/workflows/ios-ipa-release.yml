@@ -106,6 +106,27 @@ jobs:
           publish_dir: ./pages
           force_orphan: true
 
+      - name: Post-release self-check
+        run: |
+          # 关键逻辑：发布后校验固定 source.json 是否已指向“本次 tag 的 IPA”，避免旧链接继续被客户端使用。
+          STABLE_SOURCE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/source.json"
+          EXPECTED_URL="https://github.com/${{ github.repository }}/releases/download/${{ needs.build-release.outputs.release_tag }}/CarRecord.ipa"
+          ACTUAL_URL=""
+
+          for i in {1..12}; do
+            echo "自检第 ${i} 次：${STABLE_SOURCE_URL}"
+            ACTUAL_URL="$(curl -fsSL "${STABLE_SOURCE_URL}" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["apps"][0]["versions"][0]["downloadURL"])' || true)"
+            echo "当前 downloadURL: ${ACTUAL_URL}"
+            if [[ "${ACTUAL_URL}" == "${EXPECTED_URL}" ]]; then
+              echo "自检通过：固定 source 已更新为本次发布产物。"
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "自检失败：downloadURL 未更新到本次发布。期望=${EXPECTED_URL}，实际=${ACTUAL_URL}" >&2
+          exit 1
+
       - name: Write summary
         run: |
           echo "固定安装页: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/install.html" >> "$GITHUB_STEP_SUMMARY"
