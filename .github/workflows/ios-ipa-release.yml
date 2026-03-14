@@ -1,0 +1,66 @@
+name: ios-ipa-release
+
+on:
+  # 模块职责：代码进入 main 后自动构建并发布 IPA，或支持手动触发紧急发布。
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    # 关键逻辑：在 macOS runner 上完成“无签名构建 -> 产物生成 -> Release 上传”全流程。
+    runs-on: macos-latest
+    env:
+      APP_NAME: CarRecord
+      SCHEME: CarRecord
+      PROJECT_PATH: CarRecord/CarRecord.xcodeproj
+      # 局域网基地址示例：http://nas.local/car-record
+      LAN_BASE_URL: ${{ secrets.LAN_BASE_URL }}
+      ALTSTORE_SOURCE_NAME: CarRecord Source
+      BUNDLE_IDENTIFIER: com.tx.app.CarRecord
+      DEVELOPER_NAME: tx
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate release tag
+        id: release_tag
+        run: |
+          echo "tag=build-$(date -u +'%Y%m%d-%H%M')" >> "$GITHUB_OUTPUT"
+
+      - name: Build IPA and metadata
+        env:
+          RELEASE_TAG: ${{ steps.release_tag.outputs.tag }}
+          PUBLIC_RELEASE_BASE_URL: https://github.com/${{ github.repository }}/releases/download/${{ steps.release_tag.outputs.tag }}
+        run: |
+          chmod +x scripts/build_release_artifacts.sh
+          scripts/build_release_artifacts.sh
+
+      - name: Upload release assets
+        # 关键逻辑：发布外网可访问资产，供 AltStore 源直接引用下载链接。
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release_tag.outputs.tag }}
+          name: CarRecord ${{ steps.release_tag.outputs.tag }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release/CarRecord.ipa
+            release/source.json
+            release/install.html
+            release/sha256.txt
+            release/build-meta.json
+            release/source.lan.json
+            release/install.lan.html
+
+      - name: Upload build artifacts for debug
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ steps.release_tag.outputs.tag }}
+          path: release/
+          retention-days: 7
