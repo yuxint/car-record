@@ -96,6 +96,7 @@ VERSION_DATE="$(TZ="${TIME_ZONE}" date +"%Y-%m-%dT%H:%M:%S%z")"
 VERSION_DATE_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 IPA_PUBLIC_URL="${PUBLIC_RELEASE_BASE_URL}/${APP_NAME}.ipa"
+IPA_PUBLIC_DOWNLOAD_URL="${IPA_PUBLIC_URL}?v=${RELEASE_TAG}"
 SOURCE_PUBLIC_URL="${PUBLIC_RELEASE_BASE_URL}/source.json"
 INSTALL_PUBLIC_URL="${PUBLIC_RELEASE_BASE_URL}/install.html"
 
@@ -126,7 +127,7 @@ cat >"${OUTPUT_DIR}/source.json" <<JSON
           "version": "${APP_VERSION}",
           "buildVersion": "${BUILD_NUMBER}",
           "date": "${VERSION_DATE}",
-          "downloadURL": "${IPA_PUBLIC_URL}",
+          "downloadURL": "${IPA_PUBLIC_DOWNLOAD_URL}",
           "size": ${IPA_SIZE_BYTES},
           "minOSVersion": "17.0"
         }
@@ -193,7 +194,7 @@ cat >"${OUTPUT_DIR}/install.html" <<HTML
       <p>构建时间（Asia/Shanghai）：${VERSION_DATE}</p>
       <p>构建时间（UTC）：${VERSION_DATE_UTC}</p>
       <p class="warn">无 Apple Developer Program 付费账号时，不能 Safari 一键企业直装；请使用 AltStore 安装并每 7 天续签。</p>
-      <a class="btn" href="${IPA_PUBLIC_URL}">下载 IPA（外网）</a>
+      <a class="btn" href="${IPA_PUBLIC_DOWNLOAD_URL}">下载 IPA（外网）</a>
       <a class="btn" href="${SOURCE_PUBLIC_URL}">AltStore 源（外网）</a>
       <a class="btn" href="altstore://source?url=${SOURCE_PUBLIC_URL}">一键打开 AltStore 添加源</a>
       <a class="btn" href="${INSTALL_PUBLIC_URL}">当前页面（外网）</a>
@@ -244,6 +245,7 @@ cat >"${OUTPUT_DIR}/build-meta.json" <<JSON
   "artifact_urls": {
     "public_base_url": "${PUBLIC_RELEASE_BASE_URL}",
     "ipa": "${IPA_PUBLIC_URL}",
+    "ipa_download": "${IPA_PUBLIC_DOWNLOAD_URL}",
     "source": "${SOURCE_PUBLIC_URL}",
     "install": "${INSTALL_PUBLIC_URL}",
     "lan_base_url": "${LAN_BASE_URL}",

@@ -115,7 +115,7 @@ jobs:
         run: |
           # 关键逻辑：发布后校验固定 source.json 是否已指向“本次 tag 的 IPA”，避免旧链接继续被客户端使用。
           STABLE_SOURCE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/source.json"
-          EXPECTED_URL="https://github.com/${{ github.repository }}/releases/download/${{ needs.build-release.outputs.release_tag }}/CarRecord.ipa"
+          EXPECTED_URL="https://github.com/${{ github.repository }}/releases/download/${{ needs.build-release.outputs.release_tag }}/CarRecord.ipa?v=${{ needs.build-release.outputs.release_tag }}"
           ACTUAL_URL=""
 
           for i in {1..12}; do
