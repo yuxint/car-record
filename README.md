@@ -42,7 +42,8 @@
 CI 成功后会自动发布固定链接（始终指向最新版本）：
 - 安装页：`https://<你的GitHub用户名>.github.io/car-record/install.html`
 - AltStore 源：`https://<你的GitHub用户名>.github.io/car-record/source.json`
-- 页面会显示当次 `release_tag` 与构建时间，`buildVersion` 使用 CI `run_number` 自动递增。
+- 页面会显示当次 `release_tag` 与构建时间（Asia/Shanghai + UTC）。
+- AltStore `version` 使用 `MARKETING_VERSION.CI_RUN_NUMBER` 自动递增，`buildVersion` 使用 `CI_RUN_NUMBER`。
 
 首次使用请在仓库 Settings -> Pages 中确认：
 - Source 为 `Deploy from a branch`

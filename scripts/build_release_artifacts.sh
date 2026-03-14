@@ -19,6 +19,7 @@ DEVELOPER_NAME="${DEVELOPER_NAME:-tx}"
 ICON_URL="${ICON_URL:-}"
 PUBLIC_RELEASE_BASE_URL="${PUBLIC_RELEASE_BASE_URL:-}"
 LAN_BASE_URL="${LAN_BASE_URL:-}"
+TIME_ZONE="${TIME_ZONE:-Asia/Shanghai}"
 
 if [[ -z "${ICON_URL}" && -n "${GITHUB_REPOSITORY:-}" ]]; then
   # 关键逻辑：AltStore 要求 apps[].iconURL 非空，默认使用仓库拥有者头像作为稳定图标地址。
@@ -83,10 +84,12 @@ MARKETING_VERSION="$(xcodebuild -showBuildSettings -project "${PROJECT_PATH}" -s
 CURRENT_PROJECT_VERSION="$(xcodebuild -showBuildSettings -project "${PROJECT_PATH}" -scheme "${SCHEME}" 2>/dev/null | awk -F' = ' '/CURRENT_PROJECT_VERSION/ {print $2; exit}')"
 MARKETING_VERSION="${MARKETING_VERSION:-1.0.0}"
 CURRENT_PROJECT_VERSION="${CURRENT_PROJECT_VERSION:-1}"
-APP_VERSION="${MARKETING_VERSION}"
 # 关键逻辑：CI 场景优先使用 run number，确保每次构建都有递增 buildVersion。
 BUILD_NUMBER="${CI_BUILD_NUMBER:-${GITHUB_RUN_NUMBER:-${CURRENT_PROJECT_VERSION}}}"
-VERSION_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+# 关键逻辑：AltStore 的 version 也随构建递增，避免长期固定为 1.0。
+APP_VERSION="${MARKETING_VERSION}.${BUILD_NUMBER}"
+VERSION_DATE="$(TZ="${TIME_ZONE}" date +"%Y-%m-%dT%H:%M:%S%z")"
+VERSION_DATE_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 IPA_PUBLIC_URL="${PUBLIC_RELEASE_BASE_URL}/${APP_NAME}.ipa"
 SOURCE_PUBLIC_URL="${PUBLIC_RELEASE_BASE_URL}/source.json"
@@ -183,7 +186,8 @@ cat >"${OUTPUT_DIR}/install.html" <<HTML
       <h1>${APP_NAME} 安装说明</h1>
       <p>版本：<strong>${APP_VERSION}</strong>（Build ${BUILD_NUMBER}）</p>
       <p>发布标签：<strong>${RELEASE_TAG}</strong></p>
-      <p>构建时间（UTC）：${VERSION_DATE}</p>
+      <p>构建时间（Asia/Shanghai）：${VERSION_DATE}</p>
+      <p>构建时间（UTC）：${VERSION_DATE_UTC}</p>
       <p class="warn">无 Apple Developer Program 付费账号时，不能 Safari 一键企业直装；请使用 AltStore 安装并每 7 天续签。</p>
       <a class="btn" href="${IPA_PUBLIC_URL}">下载 IPA（外网）</a>
       <a class="btn" href="${SOURCE_PUBLIC_URL}">AltStore 源（外网）</a>
@@ -229,6 +233,8 @@ cat >"${OUTPUT_DIR}/build-meta.json" <<JSON
 {
   "git_sha": "${GITHUB_SHA:-$(git -C "${ROOT_DIR}" rev-parse HEAD)}",
   "build_time": "${VERSION_DATE}",
+  "build_time_utc": "${VERSION_DATE_UTC}",
+  "time_zone": "${TIME_ZONE}",
   "version": "${APP_VERSION}",
   "release_tag": "${RELEASE_TAG}",
   "artifact_urls": {

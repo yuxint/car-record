@@ -16,6 +16,7 @@ jobs:
     outputs:
       release_tag: ${{ steps.release_tag.outputs.tag }}
     env:
+      TZ: Asia/Shanghai
       APP_NAME: CarRecord
       SCHEME: CarRecord
       PROJECT_PATH: CarRecord/CarRecord.xcodeproj
@@ -33,7 +34,8 @@ jobs:
       - name: Generate release tag
         id: release_tag
         run: |
-          echo "tag=build-$(date -u +'%Y%m%d-%H%M')" >> "$GITHUB_OUTPUT"
+          # 关键逻辑：发布标签使用上海时区，和你本地时间一致，避免时差误解。
+          echo "tag=build-$(date +'%Y%m%d-%H%M')" >> "$GITHUB_OUTPUT"
 
       - name: Build IPA and metadata
         env:
@@ -73,6 +75,8 @@ jobs:
     # 模块职责：把“最新一次构建”的安装入口发布为固定 URL，iPhone 只需点同一个链接。
     needs: build-release
     runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai
     steps:
       - name: Download release artifact
         uses: actions/download-artifact@v4
