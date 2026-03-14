@@ -43,7 +43,7 @@ CI 成功后会自动发布固定链接（始终指向最新版本）：
 - 安装页：`https://<你的GitHub用户名>.github.io/car-record/install.html`
 - AltStore 源：`https://<你的GitHub用户名>.github.io/car-record/source.json`
 - 页面会显示当次 `release_tag` 与构建时间（Asia/Shanghai + UTC）。
-- AltStore `version` 使用 `MARKETING_VERSION.CI_RUN_NUMBER` 自动递增，`buildVersion` 使用 `CI_RUN_NUMBER`。
+- AltStore `version` 与 App 内版本号一致：格式为 `主版本.次版本.CI_RUN_NUMBER`（例如 `1.0.125`），每次 push 触发 CI 自动递增；`buildVersion` 使用 `CI_RUN_NUMBER`。
 - `source.json` 地址固定不变（gh-pages），但内部 `downloadURL` 指向当次 release tag 直链，确保对应最新构建产物。
 
 首次使用请在仓库 Settings -> Pages 中确认：

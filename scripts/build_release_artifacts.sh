@@ -47,6 +47,16 @@ PAYLOAD_DIR="${BUILD_DIR}/Payload"
 APP_PATH="${DERIVED_DATA_PATH}/Build/Products/Release-iphoneos/${APP_NAME}.app"
 IPA_PATH="${OUTPUT_DIR}/${APP_NAME}.ipa"
 
+MARKETING_VERSION_RAW="$(xcodebuild -showBuildSettings -project "${PROJECT_PATH}" -scheme "${SCHEME}" 2>/dev/null | awk -F' = ' '/MARKETING_VERSION/ {print $2; exit}')"
+CURRENT_PROJECT_VERSION_RAW="$(xcodebuild -showBuildSettings -project "${PROJECT_PATH}" -scheme "${SCHEME}" 2>/dev/null | awk -F' = ' '/CURRENT_PROJECT_VERSION/ {print $2; exit}')"
+MARKETING_VERSION_RAW="${MARKETING_VERSION_RAW:-1.0.0}"
+CURRENT_PROJECT_VERSION_RAW="${CURRENT_PROJECT_VERSION_RAW:-0}"
+# 关键逻辑：版本前缀固定取主次版本（如 1.0），patch 位使用构建号自动递增。
+VERSION_PREFIX="$(awk -F'.' '{ if (NF >= 2) print $1 "." $2; else print "1.0" }' <<<"${MARKETING_VERSION_RAW}")"
+# 关键逻辑：CI 场景优先使用 run number，确保每次 push 都生成递增版本。
+BUILD_NUMBER="${CI_BUILD_NUMBER:-${GITHUB_RUN_NUMBER:-${CURRENT_PROJECT_VERSION_RAW}}}"
+APP_VERSION="${VERSION_PREFIX}.${BUILD_NUMBER}"
+
 echo "[1/5] 构建未签名 iOS 真机包..."
 xcodebuild \
   -project "${PROJECT_PATH}" \
@@ -55,6 +65,8 @@ xcodebuild \
   -sdk iphoneos \
   -destination 'generic/platform=iOS' \
   -derivedDataPath "${DERIVED_DATA_PATH}" \
+  MARKETING_VERSION="${APP_VERSION}" \
+  CURRENT_PROJECT_VERSION="${BUILD_NUMBER}" \
   CODE_SIGNING_ALLOWED=NO \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGN_IDENTITY="" \
@@ -80,14 +92,6 @@ SHA256="$(shasum -a 256 "${IPA_PATH}" | awk '{print $1}')"
 
 echo "${SHA256}  ${APP_NAME}.ipa" >"${OUTPUT_DIR}/sha256.txt"
 
-MARKETING_VERSION="$(xcodebuild -showBuildSettings -project "${PROJECT_PATH}" -scheme "${SCHEME}" 2>/dev/null | awk -F' = ' '/MARKETING_VERSION/ {print $2; exit}')"
-CURRENT_PROJECT_VERSION="$(xcodebuild -showBuildSettings -project "${PROJECT_PATH}" -scheme "${SCHEME}" 2>/dev/null | awk -F' = ' '/CURRENT_PROJECT_VERSION/ {print $2; exit}')"
-MARKETING_VERSION="${MARKETING_VERSION:-1.0.0}"
-CURRENT_PROJECT_VERSION="${CURRENT_PROJECT_VERSION:-1}"
-# 关键逻辑：CI 场景优先使用 run number，确保每次构建都有递增 buildVersion。
-BUILD_NUMBER="${CI_BUILD_NUMBER:-${GITHUB_RUN_NUMBER:-${CURRENT_PROJECT_VERSION}}}"
-# 关键逻辑：AltStore 的 version 也随构建递增，避免长期固定为 1.0。
-APP_VERSION="${MARKETING_VERSION}.${BUILD_NUMBER}"
 VERSION_DATE="$(TZ="${TIME_ZONE}" date +"%Y-%m-%dT%H:%M:%S%z")"
 VERSION_DATE_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 

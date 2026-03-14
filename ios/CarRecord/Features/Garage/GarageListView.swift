@@ -68,6 +68,15 @@ struct MyView: View {
                     Label("重置全部数据", systemImage: "trash")
                 }
             }
+
+            Section("关于") {
+                HStack {
+                    Text("版本号")
+                    Spacer()
+                    Text(appVersionText)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
         .navigationTitle("我的")
         .onAppear {
@@ -133,6 +142,13 @@ struct MyView: View {
         } catch {
             print("重置数据失败：\(error)")
         }
+    }
+
+    /// 统一读取 App 包内版本号，确保与安装页使用同一构建注入值。
+    private var appVersionText: String {
+        let shortVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        let normalized = shortVersion?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return normalized.isEmpty ? "未知版本" : normalized
     }
 }
 
