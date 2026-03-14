@@ -1,0 +1,43 @@
+# macOS 系统自动生成文件
+.DS_Store
+
+# Node.js 依赖与构建产物
+node_modules/
+dist/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 环境变量与本地敏感配置（保留示例文件）
+.env
+.env.*
+!.env.example
+
+# Xcode / Swift 本地编译与用户态文件
+DerivedData/
+.build/
+.swiftpm/
+Packages/
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+!default.pbxuser
+
+# iOS 常见第三方构建目录（若后续引入）
+Pods/
+Carthage/Build/
+
+# 编辑器临时文件
+.idea/
+.vscode/
+*.swp
+*.swo
