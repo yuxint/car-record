@@ -35,6 +35,7 @@
 
 建议在 GitHub 仓库设置以下 Secret：
 - `LAN_BASE_URL`：可选，局域网托管基地址，例如 `http://nas.local/car-record`
+- `ICON_URL`：可选，AltStore 应用图标 URL（不填时默认使用 GitHub 头像）
 
 ## 固定安装链接（推荐）
 

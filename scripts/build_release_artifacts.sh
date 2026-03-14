@@ -16,8 +16,17 @@ BUNDLE_IDENTIFIER="${BUNDLE_IDENTIFIER:-com.tx.app.CarRecord}"
 ALTSTORE_SOURCE_NAME="${ALTSTORE_SOURCE_NAME:-CarRecord Source}"
 APP_DESCRIPTION="${APP_DESCRIPTION:-CarRecord 本地优先车辆记录应用（需通过 AltStore 安装）。}"
 DEVELOPER_NAME="${DEVELOPER_NAME:-tx}"
+ICON_URL="${ICON_URL:-}"
 PUBLIC_RELEASE_BASE_URL="${PUBLIC_RELEASE_BASE_URL:-}"
 LAN_BASE_URL="${LAN_BASE_URL:-}"
+
+if [[ -z "${ICON_URL}" && -n "${GITHUB_REPOSITORY:-}" ]]; then
+  # 关键逻辑：AltStore 要求 apps[].iconURL 非空，默认使用仓库拥有者头像作为稳定图标地址。
+  ICON_URL="https://github.com/${GITHUB_REPOSITORY%%/*}.png?size=256"
+fi
+if [[ -z "${ICON_URL}" ]]; then
+  ICON_URL="https://github.githubassets.com/favicons/favicon.png"
+fi
 
 if [[ -z "${PUBLIC_RELEASE_BASE_URL}" && -n "${GITHUB_REPOSITORY:-}" ]]; then
   PUBLIC_RELEASE_BASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}"
@@ -103,7 +112,7 @@ cat >"${OUTPUT_DIR}/source.json" <<JSON
       "bundleIdentifier": "${BUNDLE_IDENTIFIER}",
       "developerName": "${DEVELOPER_NAME}",
       "localizedDescription": "${APP_DESCRIPTION}",
-      "iconURL": "",
+      "iconURL": "${ICON_URL}",
       "versions": [
         {
           "version": "${APP_VERSION}",
@@ -128,7 +137,7 @@ cat >"${OUTPUT_DIR}/source.lan.json" <<JSON
       "bundleIdentifier": "${BUNDLE_IDENTIFIER}",
       "developerName": "${DEVELOPER_NAME}",
       "localizedDescription": "${APP_DESCRIPTION}",
-      "iconURL": "",
+      "iconURL": "${ICON_URL}",
       "versions": [
         {
           "version": "${APP_VERSION}",

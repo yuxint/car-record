@@ -19,6 +19,7 @@ jobs:
       PROJECT_PATH: CarRecord/CarRecord.xcodeproj
       # 局域网基地址示例：http://nas.local/car-record
       LAN_BASE_URL: ${{ secrets.LAN_BASE_URL }}
+      ICON_URL: ${{ secrets.ICON_URL }}
       ALTSTORE_SOURCE_NAME: CarRecord Source
       BUNDLE_IDENTIFIER: com.tx.app.CarRecord
       DEVELOPER_NAME: tx
