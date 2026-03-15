@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 模块职责：构建未签名 iOS IPA，并生成 AltStore 源与安装落地页等标准化产物。
+# 模块职责：构建未签名 iOS IPA，并生成 SideStore 源与安装落地页等标准化产物。
 # 关键逻辑：通过 xcodebuild 禁用签名构建真机包，再手工打包 Payload 生成可重签名 IPA。
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,7 +14,7 @@ BUILD_DIR="${BUILD_DIR:-${ROOT_DIR}/.build}"
 RELEASE_TAG="${RELEASE_TAG:-local-$(date +%Y%m%d-%H%M)}"
 BUNDLE_IDENTIFIER="${BUNDLE_IDENTIFIER:-com.tx.app.CarRecord}"
 ALTSTORE_SOURCE_NAME="${ALTSTORE_SOURCE_NAME:-CarRecord Source}"
-APP_DESCRIPTION="${APP_DESCRIPTION:-CarRecord 本地优先车辆记录应用（需通过 AltStore 安装）。}"
+APP_DESCRIPTION="${APP_DESCRIPTION:-CarRecord 本地优先车辆记录应用（需通过 SideStore 安装）。}"
 DEVELOPER_NAME="${DEVELOPER_NAME:-tx}"
 ICON_URL="${ICON_URL:-}"
 PUBLIC_RELEASE_BASE_URL="${PUBLIC_RELEASE_BASE_URL:-}"
@@ -22,7 +22,7 @@ LAN_BASE_URL="${LAN_BASE_URL:-}"
 TIME_ZONE="${TIME_ZONE:-Asia/Shanghai}"
 
 if [[ -z "${ICON_URL}" && -n "${GITHUB_REPOSITORY:-}" ]]; then
-  # 关键逻辑：AltStore 要求 apps[].iconURL 非空，默认使用仓库拥有者头像作为稳定图标地址。
+  # 关键逻辑：SideStore 要求 apps[].iconURL 非空，默认使用仓库拥有者头像作为稳定图标地址。
   ICON_URL="https://github.com/${GITHUB_REPOSITORY%%/*}.png?size=256"
 fi
 if [[ -z "${ICON_URL}" ]]; then
@@ -116,7 +116,7 @@ else
   INSTALL_LAN_URL="${INSTALL_PUBLIC_URL}"
 fi
 
-echo "[3/5] 生成 AltStore 源文件..."
+echo "[3/5] 生成 SideStore 源文件..."
 cat >"${OUTPUT_DIR}/source.json" <<JSON
 {
   "name": "${ALTSTORE_SOURCE_NAME}",
@@ -198,23 +198,24 @@ cat >"${OUTPUT_DIR}/install.html" <<HTML
       <p>发布标签：<strong>${RELEASE_TAG}</strong></p>
       <p>构建时间（Asia/Shanghai）：${VERSION_DATE}</p>
       <p>构建时间（UTC）：${VERSION_DATE_UTC}</p>
-      <p class="warn">无 Apple Developer Program 付费账号时，不能 Safari 一键企业直装；请使用 AltStore 安装并每 7 天续签。</p>
+      <p class="warn">无 Apple Developer Program 付费账号时，不能 Safari 一键企业直装；请使用 SideStore 安装并每 7 天续签。</p>
       <a class="btn" href="${IPA_PUBLIC_DOWNLOAD_URL}">下载 IPA（外网）</a>
-      <a class="btn" href="${SOURCE_PUBLIC_URL}">AltStore 源（外网）</a>
-      <a class="btn" href="altstore://source?url=${SOURCE_PUBLIC_URL}">一键打开 AltStore 添加源</a>
+      <a class="btn" href="${SOURCE_PUBLIC_URL}">SideStore 源（外网）</a>
+      <a class="btn" href="sidestore://source?url=${SOURCE_PUBLIC_URL}">一键打开 SideStore 添加源</a>
+      <a class="btn" href="altstore://source?url=${SOURCE_PUBLIC_URL}">兼容 AltStore 添加源</a>
       <a class="btn" href="${INSTALL_PUBLIC_URL}">当前页面（外网）</a>
     </section>
 
     <section class="card grid">
       <div>
         <h3>外网入口</h3>
-        <p>AltStore 源：</p>
+        <p>SideStore 源：</p>
         <p class="mono">${SOURCE_PUBLIC_URL}</p>
         <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${SOURCE_PUBLIC_URL}" alt="外网源二维码" />
       </div>
       <div>
         <h3>局域网入口</h3>
-        <p>AltStore 源：</p>
+        <p>SideStore 源：</p>
         <p class="mono">${SOURCE_LAN_URL:-未配置 LAN_BASE_URL}</p>
         <img class="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${SOURCE_LAN_URL:-LAN_NOT_CONFIGURED}" alt="局域网源二维码" />
       </div>
@@ -222,10 +223,10 @@ cat >"${OUTPUT_DIR}/install.html" <<HTML
 
     <section class="card">
       <h3>建议流程</h3>
-      <p>1. iPhone 安装 AltStore，并登录你的 Apple ID。</p>
-      <p>2. 在 AltStore 添加上面的源地址（外网或局域网）。</p>
+      <p>1. iPhone 安装 SideStore，并登录你的 Apple ID。</p>
+      <p>2. 在 SideStore 添加上面的源地址（外网或局域网）。</p>
       <p>3. 选择 ${APP_NAME} 安装，首次安装后信任开发者证书。</p>
-      <p>4. 每 7 天在 AltStore 里执行续签，避免 App 失效。</p>
+      <p>4. 每 7 天在 SideStore 里执行续签，避免 App 失效。</p>
     </section>
   </main>
 </body>

@@ -52,7 +52,7 @@ jobs:
           scripts/build_release_artifacts.sh
 
       - name: Upload release assets
-        # 关键逻辑：发布外网可访问资产，供 AltStore 源直接引用下载链接。
+        # 关键逻辑：发布外网可访问资产，供 SideStore 源直接引用下载链接。
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release_tag.outputs.tag }}
@@ -98,10 +98,10 @@ jobs:
           cp artifact/source.json pages/source.json
           cp artifact/build-meta.json pages/build-meta.json
           cp artifact/sha256.txt pages/sha256.txt
-          # 关键逻辑：将安装页中的 source 链接改为固定 gh-pages 地址，避免 AltStore 源地址随 tag 变化。
+          # 关键逻辑：将安装页中的 source 链接改为固定 gh-pages 地址，避免 SideStore 源地址随 tag 变化。
           STABLE_SOURCE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/source.json"
           STABLE_INSTALL_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/install.html"
-          perl -0777 -i -pe "s#https://github\\.com/[^\\\"]+/releases/download/[^/]+/source\\.json#${STABLE_SOURCE_URL//\//\\/}#g; s#https://github\\.com/[^\\\"]+/releases/download/[^/]+/install\\.html#${STABLE_INSTALL_URL//\//\\/}#g; s#altstore://source\\?url=https://github\\.com/[^\\\"]+/releases/download/[^/]+/source\\.json#altstore://source?url=${STABLE_SOURCE_URL//\//\\/}#g" pages/install.html
+          perl -0777 -i -pe "s#https://github\\.com/[^\\\"]+/releases/download/[^/]+/source\\.json#${STABLE_SOURCE_URL//\//\\/}#g; s#https://github\\.com/[^\\\"]+/releases/download/[^/]+/install\\.html#${STABLE_INSTALL_URL//\//\\/}#g; s#sidestore://source\\?url=https://github\\.com/[^\\\"]+/releases/download/[^/]+/source\\.json#sidestore://source?url=${STABLE_SOURCE_URL//\//\\/}#g; s#altstore://source\\?url=https://github\\.com/[^\\\"]+/releases/download/[^/]+/source\\.json#altstore://source?url=${STABLE_SOURCE_URL//\//\\/}#g" pages/install.html
           cp pages/install.html pages/index.html
 
       - name: Deploy to gh-pages
@@ -136,4 +136,4 @@ jobs:
       - name: Write summary
         run: |
           echo "固定安装页: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/install.html" >> "$GITHUB_STEP_SUMMARY"
-          echo "固定 AltStore 源: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/source.json" >> "$GITHUB_STEP_SUMMARY"
+          echo "固定 SideStore 源: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/source.json" >> "$GITHUB_STEP_SUMMARY"

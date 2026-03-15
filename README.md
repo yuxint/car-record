@@ -1,9 +1,9 @@
 # car-record
 
 本仓库包含 `CarRecord` iOS 项目，以及一套“无 Apple Developer Program 付费账号”的自动化分发方案：
-- CI 构建未签名 IPA（供 AltStore 重签安装）
+- CI 构建未签名 IPA（供 SideStore 重签安装）
 - 自动发布 GitHub Release（外网）
-- 生成 AltStore 源文件与安装落地页
+- 生成 SideStore 源文件与安装落地页
 - 可同步到局域网静态目录（Nginx/NAS）
 
 ## 项目结构
@@ -18,8 +18,8 @@
 
 每次发布会产出以下文件（位于 `release/`）：
 - `CarRecord.ipa`
-- `source.json`（外网 AltStore 源）
-- `source.lan.json`（局域网 AltStore 源）
+- `source.json`（外网 SideStore 源）
+- `source.lan.json`（局域网 SideStore 源）
 - `install.html`（外网安装页）
 - `install.lan.html`（局域网安装页）
 - `sha256.txt`
@@ -35,28 +35,28 @@
 
 建议在 GitHub 仓库设置以下 Secret：
 - `LAN_BASE_URL`：可选，局域网托管基地址，例如 `http://nas.local/car-record`
-- `ICON_URL`：可选，AltStore 应用图标 URL（不填时默认使用 GitHub 头像）
+- `ICON_URL`：可选，SideStore 应用图标 URL（不填时默认使用 GitHub 头像）
 
 ## 固定安装链接（推荐）
 
 CI 成功后会自动发布固定链接（始终指向最新版本）：
 - 安装页：`https://<你的GitHub用户名>.github.io/car-record/install.html`
-- AltStore 源：`https://<你的GitHub用户名>.github.io/car-record/source.json`
+- SideStore 源：`https://<你的GitHub用户名>.github.io/car-record/source.json`
 - 页面会显示当次 `release_tag` 与构建时间（Asia/Shanghai + UTC）。
-- AltStore `version` 与 App 内版本号一致：格式为 `主版本.次版本.CI_RUN_NUMBER`（例如 `1.0.125`），每次 push 触发 CI 自动递增；`buildVersion` 使用 `CI_RUN_NUMBER`。
+- SideStore `version` 与 App 内版本号一致：格式为 `主版本.次版本.CI_RUN_NUMBER`（例如 `1.0.125`），每次 push 触发 CI 自动递增；`buildVersion` 使用 `CI_RUN_NUMBER`。
 - `source.json` 地址固定不变（gh-pages），但内部 `downloadURL` 指向当次 release tag 直链，确保对应最新构建产物。
-- `downloadURL` 指向唯一文件名（`CarRecord-<release_tag>.ipa`），从根源规避 AltStore 旧包缓存命中。
+- `downloadURL` 指向唯一文件名（`CarRecord-<release_tag>.ipa`），从根源规避 SideStore 旧包缓存命中。
 
 首次使用请在仓库 Settings -> Pages 中确认：
 - Source 为 `Deploy from a branch`
 - Branch 选择 `gh-pages`，目录 `/ (root)`
 
-## iPhone 安装方式（AltStore）
+## iPhone 安装方式（SideStore）
 
-1. 在 iPhone 安装 AltStore 并登录你的 Apple ID。
-2. 打开固定安装页，点击“**一键打开 AltStore 添加源**”或手动复制固定 `source.json` 链接。
-3. 在 AltStore 添加该源并安装 `CarRecord`。
-4. 每 7 天在 AltStore 执行续签。
+1. 在 iPhone 安装 SideStore 并登录你的 Apple ID。
+2. 打开固定安装页，点击“**一键打开 SideStore 添加源**”（页面同时提供 AltStore 兼容入口）或手动复制固定 `source.json` 链接。
+3. 在 SideStore 添加该源并安装 `CarRecord`。
+4. 每 7 天在 SideStore 执行续签。
 
 注意：无付费开发者账号时，不支持 Safari 企业签名式一键直装。
 
