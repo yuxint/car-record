@@ -16,8 +16,8 @@ enum ModelContainerProvider {
     private static func build(isStoredInMemoryOnly: Bool) -> ModelContainer {
         let schema = Schema([
             Car.self,
-            MaintenanceLog.self,
-            FuelLog.self,
+            MaintenanceRecord.self,
+            MaintenanceRecordItem.self,
             MaintenanceItemOption.self,
         ])
 
@@ -34,56 +34,35 @@ enum ModelContainerProvider {
             }
         }
 
-        let configuration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false
-        )
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
             return try ModelContainer(for: schema, configurations: [configuration])
         } catch {
-            /// 当 SwiftData 因旧库结构不兼容而加载失败时，自动重建本地库避免应用启动崩溃。
-            print("首次加载本地数据库失败，准备重建本地库：\(error)")
-            do {
-                try purgePersistentStoreFiles()
-                return try ModelContainer(for: schema, configurations: [configuration])
-            } catch {
-                fatalError("初始化本地数据库失败：\(error)")
-            }
-        }
-    }
-
-    /// 清理应用容器内的本地数据库文件，重建时避免继续读取到旧结构。
-    private static func purgePersistentStoreFiles() throws {
-        let fileManager = FileManager.default
-        let baseURL = fileManager.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        ).first ?? fileManager.temporaryDirectory
-
-        let removableSuffixes = [
-            ".store",
-            ".store-shm",
-            ".store-wal",
-            ".sqlite",
-            ".sqlite-shm",
-            ".sqlite-wal",
-        ]
-
-        guard let enumerator = fileManager.enumerator(
-            at: baseURL,
-            includingPropertiesForKeys: [.isRegularFileKey],
-            options: [.skipsHiddenFiles]
-        ) else {
-            return
-        }
-
-        for case let fileURL as URL in enumerator {
-            let fileName = fileURL.lastPathComponent.lowercased()
-            guard removableSuffixes.contains(where: { fileName.hasSuffix($0) }) else {
-                continue
-            }
-            try fileManager.removeItem(at: fileURL)
+            fatalError("初始化本地数据库失败：\(error)")
         }
     }
 }
+
+/// ModelContext 保存工具：统一收敛保存失败日志，避免各页面静默吞错。
+extension ModelContext {
+    @discardableResult
+    func saveOrLog(_ action: String) -> String? {
+        do {
+            try save()
+            return nil
+        } catch {
+            print("\(action)失败：\(error)")
+            return userFacingSaveErrorMessage(for: action, error: error)
+        }
+    }
+
+    /// 统一用户可读错误文案：不暴露底层日志，仅给出可执行的提示。
+    private func userFacingSaveErrorMessage(for action: String, error: Error) -> String {
+        let message = (error as NSError).localizedDescription.lowercased()
+        if message.contains("unique") || message.contains("constraint") || message.contains("duplicate") {
+            return "\(action)失败：存在重复数据，请检查同车同日记录、项目名称或车辆信息。"
+        }
+        return "\(action)失败，请稍后重试。"
+    }
+} 

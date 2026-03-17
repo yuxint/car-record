@@ -1,0 +1,252 @@
+{
+  "vehicles": [
+    {
+      "car": {
+        "brand": "东风本田",
+        "id": "b0315f02-a7a4-4d3e-aee9-1d499bbe1b56",
+        "mileage": 59600,
+        "modelName": "思域",
+        "purchaseDate": "2021-10-30"
+      },
+      "maintenanceLogs": [
+        {
+          "cost": 0.0,
+          "date": "2022-01-23",
+          "id": "15c56a6a-cc32-4d19-bc0e-9bfcca495429",
+          "itemNames": [
+            "机油（含机滤，放油口垫片）",
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 2000,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2022-07-09",
+          "id": "97720dfc-d08e-4dcf-8120-2a27480514ce",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 7000,
+          "note": ""
+        },
+        {
+          "cost": 436.0,
+          "date": "2022-07-09",
+          "id": "309a1920-eb41-4db5-9378-66c708e3d76d",
+          "itemNames": [
+            "机油（含机滤，放油口垫片）"
+          ],
+          "mileage": 7500,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2022-11-05",
+          "id": "9210e0ae-4355-4f09-a246-ad3dfb41b446",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 12600,
+          "note": ""
+        },
+        {
+          "cost": 775.0,
+          "date": "2022-11-05",
+          "id": "1249a7d9-1a26-407c-bbcc-996dd1c3230f",
+          "itemNames": [
+            "机油（含机滤，放油口垫片）",
+            "空调滤芯"
+          ],
+          "mileage": 13000,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2023-05-13",
+          "id": "eab7ebef-be4b-4c31-85dc-7ffb7293f533",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 17600,
+          "note": ""
+        },
+        {
+          "cost": 141.41,
+          "date": "2023-05-13",
+          "id": "e65bc1c4-6ce6-4d87-a8ce-3ed27ed6d5c2",
+          "itemNames": [
+            "机油（含机滤，放油口垫片）",
+            "空气滤芯"
+          ],
+          "mileage": 20000,
+          "note": ""
+        },
+        {
+          "cost": 235.94,
+          "date": "2023-10-08",
+          "id": "31aef333-fdac-4f34-93dd-4a4b69921003",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 22700,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2023-10-08",
+          "id": "358eec6f-1c42-4fe1-9314-5e0490ed5773",
+          "itemNames": [
+            "机油（含机滤，放油口垫片）",
+            "空调滤芯"
+          ],
+          "mileage": 25500,
+          "note": ""
+        },
+        {
+          "cost": 709.41,
+          "date": "2024-03-04",
+          "id": "2b06718c-7886-4ee7-982e-43dea7e3c76a",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 27900,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2024-03-04",
+          "id": "8f4368b6-3c43-4fc1-95aa-c7d0c794f95c",
+          "itemNames": [
+            "机油（含机滤，放油口垫片）"
+          ],
+          "mileage": 31800,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2024-05-31",
+          "id": "6d4d5756-7ea4-4f28-b248-90fcee134d66",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 32900,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2024-07-20",
+          "id": "3c8cf9a7-d7d3-4b0b-9484-320798b95730",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 38100,
+          "note": ""
+        },
+        {
+          "cost": 316.43,
+          "date": "2024-08-31",
+          "id": "784ca8ed-adb7-46af-b041-f050c37ae9e0",
+          "itemNames": [
+            "机油（含机滤，放油口垫片）",
+            "空气滤芯",
+            "变速箱油"
+          ],
+          "mileage": 39900,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2024-10-01",
+          "id": "83e02e74-cf8d-42b0-95c4-f987c6fe6c0a",
+          "itemNames": [
+            "空调滤芯"
+          ],
+          "mileage": 33000,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2024-11-19",
+          "id": "36c6a82b-9b9a-4348-a18d-a4875c36ac50",
+          "itemNames": [
+            "刹车油"
+          ],
+          "mileage": 42000,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2025-01-11",
+          "id": "3c4ba024-1f43-4a43-8f84-a7abc4e35409",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 43700,
+          "note": ""
+        },
+        {
+          "cost": 267.8,
+          "date": "2025-01-11",
+          "id": "e429f594-eb9d-4b3c-bc41-a2d7bd4656f0",
+          "itemNames": [
+            "机油（含机滤，放油口垫片）"
+          ],
+          "mileage": 47600,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2025-09-21",
+          "id": "88c84b79-67c7-4951-bda1-90f42fda2c1c",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 49000,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2025-09-21",
+          "id": "ba595315-9a46-4015-8c45-7b503ee93c77",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 54500,
+          "note": ""
+        },
+        {
+          "cost": 191.44,
+          "date": "2025-09-21",
+          "id": "480f3eca-6d32-474c-b274-872f2a91f27f",
+          "itemNames": [
+            "机油（含机滤，放油口垫片）"
+          ],
+          "mileage": 55100,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2025-11-01",
+          "id": "f195fec4-f841-452c-beae-cabd4fff3630",
+          "itemNames": [
+            "空调滤芯"
+          ],
+          "mileage": 56000,
+          "note": ""
+        },
+        {
+          "cost": 0.0,
+          "date": "2026-03-07",
+          "id": "6ec4917e-56c5-4dbf-9fd7-5ca1a340f9f2",
+          "itemNames": [
+            "汽油发动机清洁剂"
+          ],
+          "mileage": 59600,
+          "note": ""
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

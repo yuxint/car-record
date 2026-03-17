@@ -12,7 +12,7 @@ struct RootTabView: View {
             }
 
             NavigationStack {
-                LogsView()
+                RecordsView()
             }
             .tabItem {
                 Label("记录", systemImage: "list.bullet.clipboard")
