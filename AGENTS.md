@@ -42,12 +42,16 @@ xcodebuild -project CarRecord/CarRecord.xcodeproj -scheme CarRecord build
 ```
 
 - **注意**：修改完代码后，由于项目使用 SwiftData，可能会遇到构建问题。如果只是修改了文件名或文件夹名等非核心逻辑，无需强制构建。
-- 若要查看模拟器里的本地数据库，可使用：
-
-```sh
-scripts/sim_data_backup.sh
-scripts/sim_data_restore.sh <backup_dir>
-```
+- 若要查看模拟器里的本地数据库并生成可导入快照，先启动模拟器并安装 CarRecord，再运行
+  `scripts/sim_data_backup.sh [bundle_id] [backup_root]`。默认 `bundle_id=com.tx.app.CarRecord`、
+  `backup_root=tmp/data-backup`，脚本会调用 `xcrun simctl get_app_container booted … data` 与
+  `sqlite3`（确保已安装 Xcode 命令行工具），拷贝 `default.store`（含 WAL/SHM）、导出
+  `default.store.sql`，并生成 `maintenance-export-v1.json` 与 `row-counts.txt`（包含 ZCAR 等核心
+  表的行数），便于离线检查与版本比对。
+- 想把快照回灌到已运行模拟器，则使用 `scripts/sim_data_restore.sh <backup_dir> [bundle_id]`，脚本会
+  校验 `default.store`、清空目标容器 `Library/Application Support` 下旧库，再复制 WAL/SHM，并
+  输出 `default.store` 列表以确认覆盖成功；如需支持非默认 bundle id，可将其作为第二个参数
+  覆盖默认的 `com.tx.app.CarRecord`。
 
 ## 代码事实
 
