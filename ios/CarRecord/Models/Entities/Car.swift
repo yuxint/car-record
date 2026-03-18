@@ -12,7 +12,7 @@ final class Car {
 
     /// 关联保养记录，删除车辆时级联删除，避免脏数据残留。
     @Relationship(deleteRule: .cascade, inverse: \MaintenanceRecord.car)
-    var maintenanceRecords: [MaintenanceRecord]
+    var serviceRecords: [MaintenanceRecord]
 
     init(
         id: UUID = UUID(),
@@ -26,6 +26,6 @@ final class Car {
         self.modelName = modelName
         self.mileage = mileage
         self.purchaseDate = purchaseDate
-        self.maintenanceRecords = []
+        self.serviceRecords = []
     }
 }

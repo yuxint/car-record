@@ -10,11 +10,22 @@
 ## 目录说明
 
 - `ios/CarRecord/App`: 应用入口与根导航。
-- `ios/CarRecord/Models`: SwiftData 模型与保养项目目录工具。
+- `ios/CarRecord/Models`: 数据模型与模型工具。
+  - `Entities`: SwiftData `@Model` 实体（`Car`、`MaintenanceRecord`、`MaintenanceRecordItem`、`MaintenanceItemOption`）。
+  - `Catalog`: 保养项目目录工具（序列化、展示、排序、关系同步等）。
 - `ios/CarRecord/Persistence`: `ModelContainer` 构建与 `ModelContext` 保存封装。
-- `ios/CarRecord/Features/Dashboard`: 概览页，展示保养提醒进度。
-- `ios/CarRecord/Features/MaintenanceRecords`: 保养记录列表与新增/编辑流程。
-- `ios/CarRecord/Features/Garage`: 实际承载“我的”页、车辆管理、数据管理。
+- `ios/CarRecord/Features/Dashboard`: 概览页。
+  - `View`: 页面与展示逻辑。
+  - `UseCase`: 提醒计算等业务规则。
+  - `State`: 页面展示模型。
+- `ios/CarRecord/Features/MaintenanceRecords`: 保养记录域。
+  - `AddMaintenanceRecord`: 新增/编辑记录页面、状态与用例。
+  - `Records`: 列表、筛选、分组、删除等页面与用例。
+- `ios/CarRecord/Features/Garage`: 我的/车库域。
+  - `AddCar`: 新增/编辑车辆页面、状态与用例。
+  - `My`: 我的页入口与数据操作用例。
+  - `MaintenanceItems`: 保养项目管理相关页面。
+  - `DataTransfer`: 备份/恢复编解码与导入导出支持。
 - `ios/CarRecord/Shared`: 日期、货币、里程、当前应用车辆等共享工具。
 - `scripts`: 模拟器数据备份与回灌脚本。
 - `tmp/data-backup`: 脚本生成的本地备份产物，不属于业务源码。
@@ -60,6 +71,7 @@ scripts/sim_data_restore.sh <backup_dir>
 ## 修改约定
 
 - 优先保持现有架构，不要无必要引入网络层、状态管理框架或额外抽象层。
+- 目录组织遵循 `Feature + UseCase + State + Components(View)`，页面文件仅承载 UI 编排与事件转发。
 - 新增持久化字段或模型时，先检查 `ModelContainerProvider` 的 `Schema` 是否需要同步更新。
 - 涉及保存操作时，优先复用 `ModelContext.saveOrLog(_:)`，保持错误提示风格一致。
 - 涉及日期展示、金额展示、里程拆分时，优先复用 `Shared/Formatters.swift` 中已有工具。
@@ -86,4 +98,3 @@ scripts/sim_data_restore.sh <backup_dir>
 - 仓库中暂未看到单元测试或 UI 测试目标。
 - 暂未看到 CI 工作流配置。
 - 如果新增自动化验证，请优先从不依赖真实设备签名的检查开始。
-
