@@ -132,7 +132,7 @@
 			path = Persistence;
 			sourceTree = "<group>";
 		};
-		F1D68A5B2F640E6D00CFD30D /* Shared */ = {
+		F1D68A5B2F640E6D00CFD30D /* Core */ = {
 			isa = PBXGroup;
 			children = (
 				F1D68A6B2F64123400CFD30D /* AppliedCarContext.swift */,
@@ -140,7 +140,7 @@
 				F1D68A5A2F640E6D00CFD30D /* Formatters.swift */,
 				F1D68A6F2F64123500CFD30D /* SheetViews.swift */,
 			);
-			path = Shared;
+			path = "Core";
 			sourceTree = "<group>";
 		};
 		F1D68A5C2F640E6D00CFD30D /* CarRecord */ = {
@@ -151,7 +151,7 @@
 				F1D68A532F640E6D00CFD30D /* Features */,
 				F1D68A572F640E6D00CFD30D /* Models */,
 				F1D68A592F640E6D00CFD30D /* Persistence */,
-				F1D68A5B2F640E6D00CFD30D /* Shared */,
+				F1D68A5B2F640E6D00CFD30D /* Core */,
 			);
 			name = CarRecord;
 			path = ../ios/CarRecord;
