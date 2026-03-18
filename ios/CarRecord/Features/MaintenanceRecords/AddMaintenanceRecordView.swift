@@ -57,7 +57,7 @@ struct AddMaintenanceRecordView: View {
                     } else {
                         Picker("车辆", selection: $selectedCarID) {
                             ForEach(availableCars) { car in
-                                Text("\(CarDisplayFormatter.name(car))（\(DateTextFormatter.shortDate(car.purchaseDate))）")
+                                Text("\(CarDisplayFormatter.name(car))（\(AppDateContext.formatShortDate(car.purchaseDate))）")
                                     .tag(Optional(car.id))
                             }
                         }
@@ -70,7 +70,7 @@ struct AddMaintenanceRecordView: View {
                         HStack {
                             Text("保养时间")
                             Spacer()
-                            Text(DateTextFormatter.shortDate(maintenanceDate))
+                            Text(AppDateContext.formatShortDate(maintenanceDate))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
@@ -435,7 +435,7 @@ struct AddMaintenanceRecordView: View {
 
         if let editingRecord {
             if let existingCycleRecord {
-                duplicateCycleAlertMessage = "“\(DateTextFormatter.shortDate(existingCycleRecord.date))”已存在保养记录，请到记录页编辑该日期记录。"
+                duplicateCycleAlertMessage = "“\(AppDateContext.formatShortDate(existingCycleRecord.date))”已存在保养记录，请到记录页编辑该日期记录。"
                 isDuplicateCycleAlertPresented = true
                 return
             }
@@ -462,7 +462,7 @@ struct AddMaintenanceRecordView: View {
             }
         } else {
             if let existingCycleRecord {
-                duplicateCycleAlertMessage = "“\(DateTextFormatter.shortDate(existingCycleRecord.date))”已存在保养记录，请到记录页编辑该日期记录。"
+                duplicateCycleAlertMessage = "“\(AppDateContext.formatShortDate(existingCycleRecord.date))”已存在保养记录，请到记录页编辑该日期记录。"
                 isDuplicateCycleAlertPresented = true
             } else {
                 let itemIDsRaw = MaintenanceItemCatalog.joinItemIDs(orderedSelectedItemIDs)

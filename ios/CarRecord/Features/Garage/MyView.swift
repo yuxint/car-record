@@ -39,7 +39,7 @@ struct MyView: View {
                             Text(CarDisplayFormatter.name(car))
                                 .font(.headline)
 
-                            Text("上路日期：\(DateTextFormatter.shortDate(car.purchaseDate))")
+                            Text("上路日期：\(AppDateContext.formatShortDate(car.purchaseDate))")
                                 .foregroundStyle(.secondary)
                             Text("车龄：\(CarAgeFormatter.yearsText(from: car.purchaseDate, now: AppDateContext.now())) 年")
                                 .foregroundStyle(.secondary)
@@ -134,7 +134,7 @@ struct MyView: View {
                         HStack {
                             Text("手动日期")
                             Spacer()
-                            Text(DateTextFormatter.shortDate(manualNowDate))
+                            Text(AppDateContext.formatShortDate(manualNowDate))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -668,9 +668,9 @@ struct MyView: View {
         return formatter.string(from: date)
     }
 
-    /// 导出统一日期格式：只保留“年-月-日”，与表单输入口径保持一致。
+    /// 导出统一日期格式：只保留"年-月-日"，与表单输入口径保持一致。
     private func exportDateString(_ date: Date) -> String {
-        DateTextFormatter.shortDate(date)
+        AppDateContext.formatShortDate(date)
     }
 
     /// 车型配置键：用于备份与恢复时按“品牌+车型”匹配项目配置。
@@ -1245,7 +1245,7 @@ private struct ItemRelatedLogsView: View {
                                 Text(CarDisplayFormatter.name(car))
                                     .font(.headline)
                             }
-                            Text("保养时间：\(DateTextFormatter.shortDate(log.date))")
+                            Text("保养时间：\(AppDateContext.formatShortDate(log.date))")
                                 .foregroundStyle(.secondary)
                             Text("里程：\(log.mileage) km")
                                 .foregroundStyle(.secondary)

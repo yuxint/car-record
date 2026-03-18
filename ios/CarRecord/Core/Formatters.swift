@@ -13,14 +13,6 @@ enum CurrencyFormatter {
     }
 }
 
-/// 统一日期格式化，保证全局中文日期展示一致。
-enum DateTextFormatter {
-    static func shortDate(_ date: Date) -> String {
-        let formatter = AppDateContext.makeDisplayFormatter("yyyy-MM-dd")
-        return formatter.string(from: date)
-    }
-}
-
 /// 里程分段工具：统一“万 + 千”两段选择与整数公里之间的转换。
 enum MileageSegmentFormatter {
     static func mileage(wan: Int, qian: Int, bai: Int) -> Int {

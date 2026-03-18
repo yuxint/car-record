@@ -22,6 +22,12 @@ enum AppDateContext {
         return formatter
     }
 
+    /// 格式化短日期（yyyy-MM-dd）。
+    static func formatShortDate(_ date: Date) -> String {
+        let formatter = makeDisplayFormatter("yyyy-MM-dd")
+        return formatter.string(from: date)
+    }
+
     /// 业务“当前时间”入口：支持临时切换为用户手动日期，便于本地调试提醒逻辑。
     static func now() -> Date {
         if isManualNowEnabled() {

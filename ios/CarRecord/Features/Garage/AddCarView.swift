@@ -100,7 +100,7 @@ struct AddCarView: View {
                         HStack {
                             Text("上路日期")
                             Spacer()
-                            Text(DateTextFormatter.shortDate(onRoadDate))
+                            Text(AppDateContext.formatShortDate(onRoadDate))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
