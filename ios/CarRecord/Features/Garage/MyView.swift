@@ -166,7 +166,7 @@ struct MyView: View {
         }
         .sheet(isPresented: $isManualNowPickerPresented) {
             DayDatePickerSheetView(
-                title: "选择手动日期",
+                title: "选择日期",
                 label: "手动日期",
                 draftDate: $draftManualNowDate,
                 currentDate: manualNowDate,

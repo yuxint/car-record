@@ -48,7 +48,7 @@ struct MileagePickerSheetView: View {
     }
 }
 
-/// 通用日期选择弹窗：统一图形化日期选择和“选择即应用”的行为。
+/// 通用日期选择弹窗：统一图形化日期选择和"选择即应用"的行为。
 struct DayDatePickerSheetView: View {
     let title: String
     let label: String
@@ -59,24 +59,29 @@ struct DayDatePickerSheetView: View {
 
     var body: some View {
         NavigationStack {
-            DatePicker(label, selection: $draftDate, displayedComponents: .date)
-                .datePickerStyle(.graphical)
-                .labelsHidden()
-                .padding()
-                .navigationTitle(title)
-                .navigationBarTitleDisplayMode(.inline)
-                .onChange(of: draftDate) { _, newValue in
-                    onApply(newValue)
-                }
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("取消") {
-                            draftDate = currentDate
-                            onCancel()
-                        }
+            VStack {
+                DatePicker(label, selection: $draftDate, displayedComponents: .date)
+                    .datePickerStyle(.graphical)
+                    .labelsHidden()
+            }
+            .padding(.top, 4)
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") {
+                        draftDate = currentDate
+                        onCancel()
                     }
                 }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("确认") {
+                        onApply(draftDate)
+                    }
+                }
+            }
         }
         .presentationDetents([.height(420)])
+        .presentationDragIndicator(.visible)
     }
 }

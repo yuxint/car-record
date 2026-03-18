@@ -42,7 +42,7 @@ struct ItemRelatedLogsView: View {
                                 Text(CarDisplayFormatter.name(car))
                                     .font(.headline)
                             }
-                            Text("保养时间：\(DateTextFormatter.shortDate(log.date))")
+                            Text("保养时间：\(AppDateContext.formatShortDate(log.date))")
                                 .foregroundStyle(.secondary)
                             Text("里程：\(log.mileage) km")
                                 .foregroundStyle(.secondary)

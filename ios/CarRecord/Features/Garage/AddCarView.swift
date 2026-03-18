@@ -308,7 +308,7 @@ struct AddCarView: View {
     @ViewBuilder
     private var onRoadDatePickerSheet: some View {
         DayDatePickerSheetView(
-            title: "选择上路日期",
+            title: "选择日期",
             label: "上路日期",
             draftDate: $draftOnRoadDate,
             currentDate: onRoadDate,

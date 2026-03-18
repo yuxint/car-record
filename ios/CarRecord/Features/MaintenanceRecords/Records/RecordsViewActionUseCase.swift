@@ -14,7 +14,7 @@ extension RecordsView {
         let maxMileage = group.records.map(\.mileage).max()
 
         VStack(alignment: .leading, spacing: 6) {
-            Text(DateTextFormatter.shortDate(group.date))
+            Text(AppDateContext.formatShortDate(group.date))
                 .font(.headline)
 
             if group.records.count == 1, let singleRecord = group.records.first {
@@ -63,7 +63,7 @@ extension RecordsView {
                 .font(.headline)
             Text(row.carName)
                 .foregroundStyle(.secondary)
-            Text("保养时间：\(DateTextFormatter.shortDate(row.record.date))")
+            Text("保养时间：\(AppDateContext.formatShortDate(row.record.date))")
                 .foregroundStyle(.secondary)
             Text("里程：\(row.record.mileage) km")
                 .foregroundStyle(.secondary)

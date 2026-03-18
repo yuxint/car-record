@@ -94,9 +94,9 @@ extension MyView {
         return formatter.string(from: date)
     }
 
-    /// 导出统一日期格式：只保留“年-月-日”，与表单输入口径保持一致。
+    /// 导出统一日期格式：只保留"年-月-日"，与表单输入口径保持一致。
     func exportDateString(_ date: Date) -> String {
-        DateTextFormatter.shortDate(date)
+        AppDateContext.formatShortDate(date)
     }
 
 }

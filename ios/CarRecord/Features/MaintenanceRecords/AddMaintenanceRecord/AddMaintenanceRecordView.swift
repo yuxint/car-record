@@ -57,7 +57,7 @@ struct AddMaintenanceRecordView: View {
                     } else {
                         Picker("车辆", selection: $selectedCarID) {
                             ForEach(availableCars) { car in
-                                Text("\(CarDisplayFormatter.name(car))（\(DateTextFormatter.shortDate(car.purchaseDate))）")
+                                Text("\(CarDisplayFormatter.name(car))（\(AppDateContext.formatShortDate(car.purchaseDate))）")
                                     .tag(Optional(car.id))
                             }
                         }
@@ -70,7 +70,7 @@ struct AddMaintenanceRecordView: View {
                         HStack {
                             Text("保养时间")
                             Spacer()
-                            Text(DateTextFormatter.shortDate(maintenanceDate))
+                            Text(AppDateContext.formatShortDate(maintenanceDate))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())

@@ -39,7 +39,7 @@ struct MyView: View {
                             Text(CarDisplayFormatter.name(car))
                                 .font(.headline)
 
-                            Text("上路日期：\(DateTextFormatter.shortDate(car.purchaseDate))")
+                            Text("上路日期：\(AppDateContext.formatShortDate(car.purchaseDate))")
                                 .foregroundStyle(.secondary)
                             Text("车龄：\(CarAgeFormatter.yearsText(from: car.purchaseDate, now: AppDateContext.now())) 年")
                                 .foregroundStyle(.secondary)
@@ -134,7 +134,7 @@ struct MyView: View {
                         HStack {
                             Text("手动日期")
                             Spacer()
-                            Text(DateTextFormatter.shortDate(manualNowDate))
+                            Text(AppDateContext.formatShortDate(manualNowDate))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -166,7 +166,7 @@ struct MyView: View {
         }
         .sheet(isPresented: $isManualNowPickerPresented) {
             DayDatePickerSheetView(
-                title: "选择手动日期",
+                title: "选择日期",
                 label: "手动日期",
                 draftDate: $draftManualNowDate,
                 currentDate: manualNowDate,
