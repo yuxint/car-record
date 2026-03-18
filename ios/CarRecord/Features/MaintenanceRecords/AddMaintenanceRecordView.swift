@@ -178,9 +178,6 @@ struct AddMaintenanceRecordView: View {
                 syncAppliedCarSelectionIfNeeded()
                 ensureSelectedCarIsValid()
             }
-            .onChange(of: appliedCarIDRaw) { _, _ in
-                ensureSelectedCarIsValid()
-            }
             .onChange(of: selectedCarID) { _, newValue in
                 applyDefaultMileageIfNeeded(for: newValue)
             }

@@ -117,9 +117,6 @@ struct RecordsView: View {
             syncAppliedCarSelection()
             normalizeFilterSelectionsForAppliedCar()
         }
-        .onChange(of: appliedCarIDRaw) { _, _ in
-            normalizeFilterSelectionsForAppliedCar()
-        }
     }
 
     /// 分区标题：展示“按周期”统计数量（按分组条数统计）。
