@@ -157,7 +157,7 @@ struct RecordsView: View {
     /// 按日期分组并倒序，自动合并同一天的保养记录。
     private func buildDateGroups(from records: [MaintenanceRecord]) -> [MaintenanceDateGroup] {
         let grouped = Dictionary(grouping: records) { record in
-            Calendar.current.startOfDay(for: record.date)
+            AppDateContext.calendar.startOfDay(for: record.date)
         }
 
         return grouped
@@ -368,7 +368,7 @@ struct RecordsView: View {
 
     /// 按周期可选年份：按年份倒序展示。
     private var cycleYearOptions: [Int] {
-        let years = scopedMaintenanceRecords.map { Calendar.current.component(.year, from: $0.date) }
+        let years = scopedMaintenanceRecords.map { AppDateContext.calendar.component(.year, from: $0.date) }
         return Array(Set(years)).sorted(by: >)
     }
 
@@ -537,7 +537,7 @@ struct RecordsView: View {
         }
 
         if let selectedYear = filters.selectedYear {
-            let recordYear = Calendar.current.component(.year, from: record.date)
+            let recordYear = AppDateContext.calendar.component(.year, from: record.date)
             if recordYear != selectedYear {
                 return false
             }

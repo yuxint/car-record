@@ -7,8 +7,9 @@ enum AppDateContext {
     static let manualNowTimestampStorageKey = "app_date_manual_now_timestamp"
 
     static var calendar: Calendar {
-        var calendar = Calendar.current
+        var calendar = Calendar(identifier: .gregorian)
         calendar.locale = locale
+        calendar.timeZone = .current
         return calendar
     }
 

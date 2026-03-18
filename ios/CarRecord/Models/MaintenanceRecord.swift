@@ -19,7 +19,7 @@ final class MaintenanceRecord {
 
     init(
         id: UUID = UUID(),
-        date: Date = Date(),
+        date: Date = AppDateContext.now(),
         itemIDsRaw: String,
         cost: Double,
         mileage: Int,
@@ -40,7 +40,7 @@ final class MaintenanceRecord {
     /// 生成“同车同日”唯一键，日期统一按 yyyy-MM-dd 落键。
     static func cycleKey(carID: UUID, date: Date) -> String {
         let formatter = AppDateContext.makeDisplayFormatter("yyyy-MM-dd")
-        let day = formatter.string(from: Calendar.current.startOfDay(for: date))
+        let day = formatter.string(from: AppDateContext.calendar.startOfDay(for: date))
         return "\(carID.uuidString)|\(day)"
     }
 }
@@ -363,7 +363,7 @@ enum MaintenanceItemCatalog {
 
         guard let carID = record.car?.id else { return }
 
-        let cycleDay = Calendar.current.startOfDay(for: record.date)
+        let cycleDay = AppDateContext.calendar.startOfDay(for: record.date)
         if record.date != cycleDay {
             record.date = cycleDay
         }

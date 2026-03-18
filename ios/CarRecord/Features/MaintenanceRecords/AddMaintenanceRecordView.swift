@@ -490,7 +490,7 @@ struct AddMaintenanceRecordView: View {
         }
 
         /// 当保养日期是今天时，自动同步车辆当前里程。
-        if Calendar.current.isDate(maintenanceDate, inSameDayAs: AppDateContext.now()) {
+        if AppDateContext.calendar.isDate(maintenanceDate, inSameDayAs: AppDateContext.now()) {
             selectedCar.mileage = currentMileage
         }
 

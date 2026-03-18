@@ -57,7 +57,7 @@ struct DashboardView: View {
         let options = sortedMaintenanceItemOptions
         let logIndex = buildLatestLogIndex()
         let firstServiceIndex = buildFirstServiceLogIndex()
-        let calendar = Calendar.current
+        let calendar = AppDateContext.calendar
         let now = AppDateContext.now()
 
         return scopedCars.compactMap { car in
