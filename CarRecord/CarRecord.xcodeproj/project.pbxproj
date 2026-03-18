@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		F1D68A6A2F64123400CFD30D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F1D68A692F64123400CFD30D /* Assets.xcassets */; };
 		F1D68A6C2F64123400CFD30D /* AppliedCarContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A6B2F64123400CFD30D /* AppliedCarContext.swift */; };
+		F1D68A6E2F64123500CFD30D /* AppDateContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A6D2F64123500CFD30D /* AppDateContext.swift */; };
+		F1D68A702F64123500CFD30D /* SheetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A6F2F64123500CFD30D /* SheetViews.swift */; };
 		F1D68A5D2F640E6D00CFD30D /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A5A2F640E6D00CFD30D /* Formatters.swift */; };
 		F1D68A5E2F640E6D00CFD30D /* AddMaintenanceRecordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A502F640E6D00CFD30D /* AddMaintenanceRecordView.swift */; };
 		F1D68A5F2F640E6D00CFD30D /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A4B2F640E6D00CFD30D /* DashboardView.swift */; };
@@ -26,6 +28,8 @@
 		F1D68A382F640AE500CFD30D /* CarRecord.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CarRecord.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F1D68A692F64123400CFD30D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F1D68A6B2F64123400CFD30D /* AppliedCarContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppliedCarContext.swift; sourceTree = "<group>"; };
+		F1D68A6D2F64123500CFD30D /* AppDateContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDateContext.swift; sourceTree = "<group>"; };
+		F1D68A6F2F64123500CFD30D /* SheetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetViews.swift; sourceTree = "<group>"; };
 		F1D68A482F640E6D00CFD30D /* CarRecordApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarRecordApp.swift; sourceTree = "<group>"; };
 		F1D68A492F640E6D00CFD30D /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		F1D68A4B2F640E6D00CFD30D /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -132,7 +136,9 @@
 			isa = PBXGroup;
 			children = (
 				F1D68A6B2F64123400CFD30D /* AppliedCarContext.swift */,
+				F1D68A6D2F64123500CFD30D /* AppDateContext.swift */,
 				F1D68A5A2F640E6D00CFD30D /* Formatters.swift */,
+				F1D68A6F2F64123500CFD30D /* SheetViews.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -224,7 +230,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				F1D68A6C2F64123400CFD30D /* AppliedCarContext.swift in Sources */,
+				F1D68A6E2F64123500CFD30D /* AppDateContext.swift in Sources */,
 				F1D68A5D2F640E6D00CFD30D /* Formatters.swift in Sources */,
+				F1D68A702F64123500CFD30D /* SheetViews.swift in Sources */,
 				F1D68A5E2F640E6D00CFD30D /* AddMaintenanceRecordView.swift in Sources */,
 				F1D68A5F2F640E6D00CFD30D /* DashboardView.swift in Sources */,
 				F1D68A602F640E6D00CFD30D /* RecordsView.swift in Sources */,
