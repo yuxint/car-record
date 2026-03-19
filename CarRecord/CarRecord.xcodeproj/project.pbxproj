@@ -85,7 +85,7 @@
 		F1D68A722F640E6D00CFD30D /* AddMaintenanceRecordViewSaveUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordViewSaveUseCase.swift; sourceTree = "<group>"; };
 		F1D68A732F640E6D00CFD30D /* AddMaintenanceRecordState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordState.swift; sourceTree = "<group>"; };
 		F1D68A742F640E6D00CFD30D /* AddCarViewSaveUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarViewSaveUseCase.swift; sourceTree = "<group>"; };
-		F1D68A752F640E6D00CFD30D /* AddCarState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarState.swift; sourceTree = "<group>"; };
+		F1D68A752F640E6D00CFD30D /* AddCarState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarModels.swift; sourceTree = "<group>"; };
 		F1D68A762F640E6D00CFD30D /* MyViewBackupUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewBackupUseCase.swift; sourceTree = "<group>"; };
 		F1D68A7A2F640E6D00CFD31D /* RecordsViewFilterPanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewFilterPanelComponents.swift; sourceTree = "<group>"; };
 		F1D68A7B2F640E6D00CFD31D /* RecordsViewActionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewActionUseCase.swift; sourceTree = "<group>"; };
@@ -186,15 +186,39 @@
 			path = MaintenanceReminder;
 			sourceTree = "<group>";
 		};
-		F1D68AB12F640E6D00CFD30D /* AddCar */ = {
+		F1D68AC02F640E6D00CFD30D /* View */ = {
 			isa = PBXGroup;
 			children = (
 				F1D68A4D2F640E6D00CFD30D /* AddCarView.swift */,
+				F1D68A7D2F640E6D00CFD31D /* AddCarViewSheetComponents.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		F1D68AC12F640E6D00CFD30D /* UseCase */ = {
+			isa = PBXGroup;
+			children = (
 				F1D68A742F640E6D00CFD30D /* AddCarViewSaveUseCase.swift */,
 				F1D68A962F640E6D00CFD30D /* AddCarViewStateUseCase.swift */,
 				F1D68A972F640E6D00CFD30D /* AddCarViewDraftUseCase.swift */,
-				F1D68A7D2F640E6D00CFD31D /* AddCarViewSheetComponents.swift */,
+			);
+			path = UseCase;
+			sourceTree = "<group>";
+		};
+		F1D68AC22F640E6D00CFD30D /* State */ = {
+			isa = PBXGroup;
+			children = (
 				F1D68A752F640E6D00CFD30D /* AddCarState.swift */,
+			);
+			path = State;
+			sourceTree = "<group>";
+		};
+		F1D68AB12F640E6D00CFD30D /* AddCar */ = {
+			isa = PBXGroup;
+			children = (
+				F1D68AC02F640E6D00CFD30D /* View */,
+				F1D68AC12F640E6D00CFD30D /* UseCase */,
+				F1D68AC22F640E6D00CFD30D /* State */,
 			);
 			path = AddCar;
 			sourceTree = "<group>";

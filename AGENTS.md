@@ -82,6 +82,31 @@ xcodebuild -project CarRecord/CarRecord.xcodeproj -scheme CarRecord build
 - 现有页面大量通过选择器和弹窗避免复杂输入；改表单交互前先理解当前 UX 约束。
 - UI 文案、注释与命名以中文语义为主，新增内容应与现有风格一致。
 
+## Xcode 项目文件更新规则
+
+修改代码后，以下情况需要同步更新 `CarRecord/CarRecord.xcodeproj/project.pbxproj`：
+
+### 需要更新 project.pbxproj 的场景：
+
+1. **文件移动或重命名**：当 Swift 文件在目录间移动或重命名时
+   - 例如：将 `AddCarState.swift` 移动到 `AddCar/State/` 目录并重命名为 `AddCarModels.swift`
+
+2. **新增/删除文件**：当在 Feature 目录中添加或移除子目录（如 `State/`、`UseCase/`、`View/`）时
+
+3. **目录结构重组**：当调整 Feature 的目录组织结构以保持一致性时
+   - 例如：将 `AddCar` 目录从平铺结构改为 `State/UseCase/View` 三层结构
+
+### 不需要更新 project.pbxproj 的场景：
+
+1. **仅修改文件内容**：只修改 Swift 文件的代码逻辑，不改变文件路径
+2. **修改非源码文件**：如 Assets、LaunchScreen 等资源文件（通常 Xcode 自动管理）
+
+### 验证方法：
+
+- 运行 `plutil -lint CarRecord/CarRecord.xcodeproj/project.pbxproj` 检查语法
+- 在 Xcode 中确认文件引用显示正常（无红色文件图标）
+- 尝试构建项目验证所有文件正确引用
+
 ## 验证建议
 
 - 修改 SwiftData 约束相关逻辑后，至少手动验证：
