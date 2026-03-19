@@ -59,29 +59,27 @@ struct DayDatePickerSheetView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                DatePicker(label, selection: $draftDate, displayedComponents: .date)
-                    .datePickerStyle(.graphical)
-                    .labelsHidden()
-            }
-            .padding(.top, 4)
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") {
-                        draftDate = currentDate
-                        onCancel()
+            DatePicker(label, selection: $draftDate, displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .labelsHidden()
+                .padding(.horizontal)
+                .navigationTitle(title)
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("取消") {
+                            draftDate = currentDate
+                            onCancel()
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("确认") {
+                            onApply(draftDate)
+                        }
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("确认") {
-                        onApply(draftDate)
-                    }
-                }
-            }
         }
-        .presentationDetents([.height(420)])
+        .presentationDetents([.medium]) // HIG 推荐的适中高度
         .presentationDragIndicator(.visible)
     }
 }
