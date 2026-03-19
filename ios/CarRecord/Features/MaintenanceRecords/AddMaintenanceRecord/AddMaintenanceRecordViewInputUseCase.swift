@@ -12,7 +12,7 @@ extension AddMaintenanceRecordView {
             if let lockedItemID {
                 selectedItems = [lockedItemID]
             } else {
-                selectedItems = Set(MaintenanceItemConfig.parseItemIDs(editingRecord.itemIDsRaw))
+                selectedItems = Set(CoreConfig.parseItemIDs(editingRecord.itemIDsRaw))
             }
             maintenanceDate = editingRecord.date
             draftMaintenanceDate = editingRecord.date

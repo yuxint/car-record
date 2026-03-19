@@ -325,7 +325,7 @@ struct MyView: View {
                 MaintenanceDataTransferLogPayload(
                     id: log.id,
                     date: exportDateString(log.date),
-                    itemNames: MaintenanceItemConfig.itemNames(
+                    itemNames: CoreConfig.itemNames(
                         from: log.itemIDsRaw,
                         options: maintenanceItemOptions
                     ),
@@ -565,7 +565,7 @@ struct MyView: View {
                     names: logPayload.itemNames,
                     optionsByName: optionsByName
                 )
-                let itemIDsRaw = MaintenanceItemConfig.joinItemIDs(itemIDs)
+                let itemIDsRaw = CoreConfig.joinItemIDs(itemIDs)
                 let newLog = MaintenanceRecord(
                     id: logPayload.id,
                     date: parsedLogDate,
@@ -576,7 +576,7 @@ struct MyView: View {
                     car: car
                 )
                 modelContext.insert(newLog)
-                MaintenanceItemConfig.syncCycleAndRelations(for: newLog, in: modelContext)
+                CoreConfig.syncCycleAndRelations(for: newLog, in: modelContext)
                 summary.insertedLogs += 1
             }
         }
@@ -849,7 +849,7 @@ struct MaintenanceItemManagerView: View {
                                 }
                             }
 
-                            Text("提醒规则：\(MaintenanceItemConfig.reminderSummary(for: option))")
+                            Text("提醒规则：\(CoreConfig.reminderSummary(for: option))")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
@@ -918,7 +918,7 @@ struct MaintenanceItemManagerView: View {
 
     /// 默认项目优先，其次按创建时间展示自定义项目。
     private var sortedMaintenanceItemOptions: [MaintenanceItemOption] {
-        MaintenanceItemConfig.naturalSortedOptions(maintenanceItemOptions)
+        CoreConfig.naturalSortedOptions(maintenanceItemOptions)
     }
 
     /// 自定义项目新增校验：非空且不与现有项目重名。
@@ -942,8 +942,8 @@ struct MaintenanceItemManagerView: View {
                 mileageInterval: 5000,
                 remindByTime: false,
                 monthInterval: 0,
-                warningStartPercent: MaintenanceItemConfig.defaultWarningStartPercent,
-                dangerStartPercent: MaintenanceItemConfig.defaultDangerStartPercent
+                warningStartPercent: CoreConfig.defaultWarningStartPercent,
+                dangerStartPercent: CoreConfig.defaultDangerStartPercent
             )
         )
         if let message = modelContext.saveOrLog("新增自定义保养项目") {
@@ -959,7 +959,7 @@ struct MaintenanceItemManagerView: View {
         guard option.isDefault == false else { return }
 
         let relatedLogs = maintenanceRecords.filter {
-            MaintenanceItemConfig.contains(itemID: option.id, in: $0.itemIDsRaw)
+            CoreConfig.contains(itemID: option.id, in: $0.itemIDsRaw)
         }
 
         if relatedLogs.isEmpty {
@@ -980,7 +980,7 @@ struct MaintenanceItemManagerView: View {
     /// 恢复默认项目名称与提醒规则。
     private func restoreDefaultMaintenanceItems() {
         let primaryCar = cars.first
-        let definitions = MaintenanceItemConfig.defaultItemDefinitions(
+        let definitions = CoreConfig.defaultItemDefinitions(
             brand: primaryCar?.brand,
             modelName: primaryCar?.modelName
         )
@@ -999,8 +999,8 @@ struct MaintenanceItemManagerView: View {
                     mileageInterval: definition.mileageInterval ?? 0,
                     remindByTime: definition.monthInterval != nil,
                     monthInterval: definition.monthInterval ?? 0,
-                    warningStartPercent: MaintenanceItemConfig.defaultWarningStartPercent,
-                    dangerStartPercent: MaintenanceItemConfig.defaultDangerStartPercent
+                    warningStartPercent: CoreConfig.defaultWarningStartPercent,
+                    dangerStartPercent: CoreConfig.defaultDangerStartPercent
                 )
                 modelContext.insert(newOption)
                 continue
@@ -1017,8 +1017,8 @@ struct MaintenanceItemManagerView: View {
             option.mileageInterval = definition.mileageInterval ?? 0
             option.remindByTime = definition.monthInterval != nil
             option.monthInterval = definition.monthInterval ?? 0
-            option.warningStartPercent = MaintenanceItemConfig.defaultWarningStartPercent
-            option.dangerStartPercent = MaintenanceItemConfig.defaultDangerStartPercent
+            option.warningStartPercent = CoreConfig.defaultWarningStartPercent
+            option.dangerStartPercent = CoreConfig.defaultDangerStartPercent
         }
 
         if let message = modelContext.saveOrLog("恢复默认保养项目") {
@@ -1056,7 +1056,7 @@ private struct MaintenanceItemReminderSettingView: View {
         _remindByTime = State(initialValue: option.remindByTime)
         let normalizedMonths = max(1, option.monthInterval)
         _yearInterval = State(initialValue: max(0.5, Double(normalizedMonths) / 12.0))
-        let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
+        let thresholds = CoreConfig.normalizedProgressThresholds(
             warning: option.warningStartPercent,
             danger: option.dangerStartPercent
         )
@@ -1176,7 +1176,7 @@ private struct MaintenanceItemReminderSettingView: View {
             return
         }
 
-        let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
+        let thresholds = CoreConfig.normalizedProgressThresholds(
             warning: warningStartPercent,
             danger: dangerStartPercent
         )
@@ -1228,7 +1228,7 @@ private struct ItemRelatedLogsView: View {
 
     private var relatedLogs: [MaintenanceRecord] {
         maintenanceRecords.filter {
-            $0.car != nil && MaintenanceItemConfig.contains(itemID: itemID, in: $0.itemIDsRaw)
+            $0.car != nil && CoreConfig.contains(itemID: itemID, in: $0.itemIDsRaw)
         }
     }
 
@@ -1297,7 +1297,7 @@ private struct ItemRelatedLogsView: View {
         let targetLogIDs = Set(targetLogs.map(\.id))
 
         for log in targetLogs {
-            var itemIDs = MaintenanceItemConfig.parseItemIDs(log.itemIDsRaw)
+            var itemIDs = CoreConfig.parseItemIDs(log.itemIDsRaw)
             if itemIDs.count <= 1 {
                 modelContext.delete(log)
                 continue
@@ -1313,8 +1313,8 @@ private struct ItemRelatedLogsView: View {
                 modelContext.delete(log)
             } else {
                 /// 仅移除当前项目，避免误删同单其他保养项目。
-                log.itemIDsRaw = MaintenanceItemConfig.joinItemIDs(itemIDs)
-                MaintenanceItemConfig.syncCycleAndRelations(for: log, in: modelContext)
+                log.itemIDsRaw = CoreConfig.joinItemIDs(itemIDs)
+                CoreConfig.syncCycleAndRelations(for: log, in: modelContext)
             }
         }
 

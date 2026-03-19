@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension MaintenanceItemConfig {
+extension CoreConfig {
     /// 同步记录与“周期-项目”关系：用于维持数据库硬唯一约束。
     static func syncCycleAndRelations(for record: MaintenanceRecord, in modelContext: ModelContext) {
         let existingRelations = Array(record.itemRelations)

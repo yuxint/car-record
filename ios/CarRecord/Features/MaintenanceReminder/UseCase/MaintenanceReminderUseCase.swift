@@ -6,7 +6,7 @@ enum MaintenanceReminderUseCase {
     static func buildLatestLogIndex(record: MaintenanceRecord) -> [String: MaintenanceRecord] {
         guard let carID = record.car?.id else { return [:] }
 
-        let itemIDs = Set(MaintenanceItemConfig.parseItemIDs(record.itemIDsRaw))
+        let itemIDs = Set(CoreConfig.parseItemIDs(record.itemIDsRaw))
         var index: [String: MaintenanceRecord] = [:]
 
         for itemID in itemIDs {
@@ -97,7 +97,7 @@ enum MaintenanceReminderUseCase {
         let clampedProgress = min(max(rawProgress, 0), 1)
         let rawPercent = max(0, rawProgress * 100)
         let percent = Int(rawPercent.rounded())
-        let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
+        let thresholds = CoreConfig.normalizedProgressThresholds(
             warning: option.warningStartPercent,
             danger: option.dangerStartPercent
         )

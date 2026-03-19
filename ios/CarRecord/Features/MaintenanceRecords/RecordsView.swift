@@ -161,7 +161,7 @@ struct RecordsView: View {
             .map { date, groupRecords in
                 var seenItemIDs = Set<UUID>()
                 let uniqueItemIDs = groupRecords
-                    .flatMap { MaintenanceItemConfig.parseItemIDs($0.itemIDsRaw) }
+                    .flatMap { CoreConfig.parseItemIDs($0.itemIDsRaw) }
                     .filter { itemID in
                         if seenItemIDs.contains(itemID) {
                             return false
@@ -203,7 +203,7 @@ struct RecordsView: View {
         let nameByID = Dictionary(uniqueKeysWithValues: maintenanceItemOptions.map { ($0.id, $0.name) })
 
         return records.flatMap { record in
-            let itemIDs = MaintenanceItemConfig.parseItemIDs(record.itemIDsRaw)
+            let itemIDs = CoreConfig.parseItemIDs(record.itemIDsRaw)
             guard itemIDs.isEmpty == false else { return [MaintenanceItemRow]() }
             guard let car = record.car else { return [MaintenanceItemRow]() }
 
@@ -419,7 +419,7 @@ struct RecordsView: View {
 
     /// 筛选弹窗项目顺序：与“新增/编辑保养”保持一致，避免同类页面排序规则不一致。
     private var sortedSelectionItemOptions: [MaintenanceItemOption] {
-        MaintenanceItemConfig.sortedSelectionOptions(
+        CoreConfig.sortedSelectionOptions(
             options: maintenanceItemOptions,
             records: scopedMaintenanceRecords
         )
@@ -427,7 +427,7 @@ struct RecordsView: View {
 
     /// 项目自然顺序索引：用于“按周期”项目摘要排序稳定且与项目管理顺序一致。
     private var naturalItemOrderIndexByID: [UUID: Int] {
-        let naturalOptions = MaintenanceItemConfig.naturalSortedOptions(maintenanceItemOptions)
+        let naturalOptions = CoreConfig.naturalSortedOptions(maintenanceItemOptions)
         return Dictionary(uniqueKeysWithValues: naturalOptions.enumerated().map { ($1.id, $0) })
     }
 
@@ -559,7 +559,7 @@ struct RecordsView: View {
     /// 字符串项目集合筛选：至少命中一个选中项目才通过。
     private func matchesItemSelection(itemIDsRaw: String, selectedItemIDs: Set<UUID>) -> Bool {
         guard selectedItemIDs.isEmpty == false else { return true }
-        let itemIDs = Set(MaintenanceItemConfig.parseItemIDs(itemIDsRaw))
+        let itemIDs = Set(CoreConfig.parseItemIDs(itemIDsRaw))
         guard itemIDs.isEmpty == false else { return false }
         return itemIDs.isDisjoint(with: selectedItemIDs) == false
     }
@@ -662,7 +662,7 @@ struct RecordsView: View {
 
     /// “按项目”删除：优先只移除当前项目；仅剩 1 个项目时删除整条记录。
     private func deleteItemRow(_ row: MaintenanceItemRow) {
-        let originalItemIDs = MaintenanceItemConfig.parseItemIDs(row.record.itemIDsRaw)
+        let originalItemIDs = CoreConfig.parseItemIDs(row.record.itemIDsRaw)
         guard !originalItemIDs.isEmpty else {
             deleteRecords([row.record])
             return
@@ -685,8 +685,8 @@ struct RecordsView: View {
             return
         }
 
-        row.record.itemIDsRaw = MaintenanceItemConfig.joinItemIDs(updatedItemIDs)
-        MaintenanceItemConfig.syncCycleAndRelations(for: row.record, in: modelContext)
+        row.record.itemIDsRaw = CoreConfig.joinItemIDs(updatedItemIDs)
+        CoreConfig.syncCycleAndRelations(for: row.record, in: modelContext)
         if let message = modelContext.saveOrLog("删除项目维度保养记录") {
             saveErrorMessage = message
             isSaveErrorAlertPresented = true

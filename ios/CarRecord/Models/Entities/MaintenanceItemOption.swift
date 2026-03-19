@@ -27,8 +27,8 @@ final class MaintenanceItemOption {
         mileageInterval: Int = 5000,
         remindByTime: Bool = false,
         monthInterval: Int = 0,
-        warningStartPercent: Int = MaintenanceItemConfig.defaultWarningStartPercent,
-        dangerStartPercent: Int = MaintenanceItemConfig.defaultDangerStartPercent,
+        warningStartPercent: Int = CoreConfig.defaultWarningStartPercent,
+        dangerStartPercent: Int = CoreConfig.defaultDangerStartPercent,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -39,7 +39,7 @@ final class MaintenanceItemOption {
         self.mileageInterval = mileageInterval
         self.remindByTime = remindByTime
         self.monthInterval = monthInterval
-        let normalizedThresholds = MaintenanceItemConfig.normalizedProgressThresholds(
+        let normalizedThresholds = CoreConfig.normalizedProgressThresholds(
             warning: warningStartPercent,
             danger: dangerStartPercent
         )

@@ -47,7 +47,7 @@ extension AddMaintenanceRecordView {
                     return
                 }
             } else {
-                let itemIDsRaw = MaintenanceItemConfig.joinItemIDs(orderedSelectedItemIDs)
+                let itemIDsRaw = CoreConfig.joinItemIDs(orderedSelectedItemIDs)
                 editingRecord.date = maintenanceDate
                 editingRecord.itemIDsRaw = itemIDsRaw
                 editingRecord.cost = finalCost
@@ -55,14 +55,14 @@ extension AddMaintenanceRecordView {
                 editingRecord.note = normalizedNote
                 editingRecord.car = selectedCar
                 editingRecord.cycleKey = targetCycleKey
-                MaintenanceItemConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
+                CoreConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
             }
         } else {
             if let existingCycleRecord {
                 duplicateCycleAlertMessage = "“\(AppDateContext.formatShortDate(existingCycleRecord.date))”已存在保养记录，请到记录页编辑该日期记录。"
                 isDuplicateCycleAlertPresented = true
             } else {
-                let itemIDsRaw = MaintenanceItemConfig.joinItemIDs(orderedSelectedItemIDs)
+                let itemIDsRaw = CoreConfig.joinItemIDs(orderedSelectedItemIDs)
                 let record = MaintenanceRecord(
                     date: maintenanceDate,
                     itemIDsRaw: itemIDsRaw,
@@ -72,7 +72,7 @@ extension AddMaintenanceRecordView {
                     car: selectedCar
                 )
                 modelContext.insert(record)
-                MaintenanceItemConfig.syncCycleAndRelations(for: record, in: modelContext)
+                CoreConfig.syncCycleAndRelations(for: record, in: modelContext)
             }
             if isDuplicateCycleAlertPresented {
                 return
@@ -104,7 +104,7 @@ extension AddMaintenanceRecordView {
         splitCost: Double,
         splitNote: String
     ) -> Bool {
-        let originalItemIDs = MaintenanceItemConfig.parseItemIDs(editingRecord.itemIDsRaw)
+        let originalItemIDs = CoreConfig.parseItemIDs(editingRecord.itemIDsRaw)
         guard let lockedIndex = originalItemIDs.firstIndex(of: lockedItemID) else { return false }
 
         let originalCycleKey = editingRecord.cycleKey
@@ -114,27 +114,27 @@ extension AddMaintenanceRecordView {
             editingRecord.mileage = currentMileage
             editingRecord.car = selectedCar
             editingRecord.cycleKey = targetCycleKey
-            editingRecord.itemIDsRaw = MaintenanceItemConfig.joinItemIDs(originalItemIDs)
-            MaintenanceItemConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
+            editingRecord.itemIDsRaw = CoreConfig.joinItemIDs(originalItemIDs)
+            CoreConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
             return true
         }
 
         var remainingItemIDs = originalItemIDs
         remainingItemIDs.remove(at: lockedIndex)
-        editingRecord.itemIDsRaw = MaintenanceItemConfig.joinItemIDs(remainingItemIDs)
-        MaintenanceItemConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
+        editingRecord.itemIDsRaw = CoreConfig.joinItemIDs(remainingItemIDs)
+        CoreConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
 
         /// 拆分记录时，原单仅剔除当前项目；新单费用默认 0，可在表单中改写。
         let splitRecord = MaintenanceRecord(
             date: maintenanceDate,
-            itemIDsRaw: MaintenanceItemConfig.joinItemIDs([lockedItemID]),
+            itemIDsRaw: CoreConfig.joinItemIDs([lockedItemID]),
             cost: splitCost,
             mileage: currentMileage,
             note: splitNote,
             car: selectedCar
         )
         modelContext.insert(splitRecord)
-        MaintenanceItemConfig.syncCycleAndRelations(for: splitRecord, in: modelContext)
+        CoreConfig.syncCycleAndRelations(for: splitRecord, in: modelContext)
         return true
     }
     /// 构建“下次间隔确认”草稿：仅针对本次选择的保养项目。

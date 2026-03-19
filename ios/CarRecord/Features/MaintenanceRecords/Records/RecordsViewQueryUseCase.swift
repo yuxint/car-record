@@ -44,7 +44,7 @@ extension RecordsView {
             .map { date, groupRecords in
                 var seenItemIDs = Set<UUID>()
                 let uniqueItemIDs = groupRecords
-                    .flatMap { MaintenanceItemConfig.parseItemIDs($0.itemIDsRaw) }
+                    .flatMap { CoreConfig.parseItemIDs($0.itemIDsRaw) }
                     .filter { itemID in
                         if seenItemIDs.contains(itemID) {
                             return false
@@ -86,7 +86,7 @@ extension RecordsView {
         let nameByID = Dictionary(uniqueKeysWithValues: serviceItemOptions.map { ($0.id, $0.name) })
 
         return records.flatMap { record in
-            let itemIDs = MaintenanceItemConfig.parseItemIDs(record.itemIDsRaw)
+            let itemIDs = CoreConfig.parseItemIDs(record.itemIDsRaw)
             guard itemIDs.isEmpty == false else { return [MaintenanceItemRow]() }
             guard let car = record.car else { return [MaintenanceItemRow]() }
 
@@ -160,7 +160,7 @@ extension RecordsView {
 
     /// 筛选弹窗项目顺序：与“新增/编辑保养”保持一致，避免同类页面排序规则不一致。
     var sortedSelectionItemOptions: [MaintenanceItemOption] {
-        MaintenanceItemConfig.sortedSelectionOptions(
+        CoreConfig.sortedSelectionOptions(
             options: serviceItemOptions,
             records: scopedMaintenanceRecords
         )
@@ -168,7 +168,7 @@ extension RecordsView {
 
     /// 项目自然顺序索引：用于“按周期”项目摘要排序稳定且与项目管理顺序一致。
     var naturalItemOrderIndexByID: [UUID: Int] {
-        let naturalOptions = MaintenanceItemConfig.naturalSortedOptions(serviceItemOptions)
+        let naturalOptions = CoreConfig.naturalSortedOptions(serviceItemOptions)
         return Dictionary(uniqueKeysWithValues: naturalOptions.enumerated().map { ($1.id, $0) })
     }
     /// 当前已应用车型ID：若历史值失效，自动回退到首辆车。

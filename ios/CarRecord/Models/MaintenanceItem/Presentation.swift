@@ -1,6 +1,6 @@
 import Foundation
 
-extension MaintenanceItemConfig {
+extension CoreConfig {
     /// 生成提醒规则文本，用于列表摘要展示。
     static func reminderSummary(for option: MaintenanceItemOption) -> String {
         var parts: [String] = []

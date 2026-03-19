@@ -404,7 +404,7 @@ struct AddCarView: View {
         }
 
         for draft in enabledDrafts {
-            let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
+            let thresholds = CoreConfig.normalizedProgressThresholds(
                 warning: draft.warningStartPercent,
                 danger: draft.dangerStartPercent
             )
@@ -434,7 +434,7 @@ struct AddCarView: View {
     /// 品牌/车型切换时重建默认项目草稿，并保留已录入的自定义项目和已调参数。
     private func rebuildItemDraftsForCurrentModel() {
         guard maintenanceItemOptions.isEmpty else { return }
-        let definitions = MaintenanceItemConfig.defaultItemDefinitions(brand: brand, modelName: modelName)
+        let definitions = CoreConfig.defaultItemDefinitions(brand: brand, modelName: modelName)
         let existingDefaultByKey = Dictionary(
             uniqueKeysWithValues: itemDrafts.compactMap { draft -> (String, MaintenanceItemDraft)? in
                 guard draft.isDefault, let key = draft.catalogKey else { return nil }
@@ -462,7 +462,7 @@ struct AddCarView: View {
             return
         }
         let existingByID = Dictionary(uniqueKeysWithValues: existingItemDrafts.map { ($0.id, $0) })
-        let options = MaintenanceItemConfig.naturalSortedOptions(maintenanceItemOptions)
+        let options = CoreConfig.naturalSortedOptions(maintenanceItemOptions)
         existingItemDrafts = options.map { option in
             if var existing = existingByID[option.id] {
                 existing.isDefault = option.isDefault
@@ -546,7 +546,7 @@ struct AddCarView: View {
             return false
         }
 
-        let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
+        let thresholds = CoreConfig.normalizedProgressThresholds(
             warning: draft.warningStartPercent,
             danger: draft.dangerStartPercent
         )
@@ -585,7 +585,7 @@ struct AddCarView: View {
             return false
         }
 
-        let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
+        let thresholds = CoreConfig.normalizedProgressThresholds(
             warning: draft.warningStartPercent,
             danger: draft.dangerStartPercent
         )
@@ -617,7 +617,7 @@ struct AddCarView: View {
         let optionByID = Dictionary(uniqueKeysWithValues: maintenanceItemOptions.map { ($0.id, $0) })
         for draft in existingItemDrafts {
             guard let option = optionByID[draft.id] else { continue }
-            let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
+            let thresholds = CoreConfig.normalizedProgressThresholds(
                 warning: draft.warningStartPercent,
                 danger: draft.dangerStartPercent
             )
@@ -825,7 +825,7 @@ private struct MaintenanceItemDraft: Identifiable, Equatable {
     var warningStartPercent: Int
     var dangerStartPercent: Int
 
-    static func defaultDraft(from definition: MaintenanceItemConfig.DefaultItemDefinition) -> MaintenanceItemDraft {
+    static func defaultDraft(from definition: CoreConfig.DefaultItemDefinition) -> MaintenanceItemDraft {
         MaintenanceItemDraft(
             name: definition.defaultName,
             isDefault: true,
@@ -835,8 +835,8 @@ private struct MaintenanceItemDraft: Identifiable, Equatable {
             mileageInterval: definition.mileageInterval ?? 5000,
             remindByTime: definition.monthInterval != nil,
             monthInterval: definition.monthInterval ?? 12,
-            warningStartPercent: MaintenanceItemConfig.defaultWarningStartPercent,
-            dangerStartPercent: MaintenanceItemConfig.defaultDangerStartPercent
+            warningStartPercent: CoreConfig.defaultWarningStartPercent,
+            dangerStartPercent: CoreConfig.defaultDangerStartPercent
         )
     }
 
@@ -850,8 +850,8 @@ private struct MaintenanceItemDraft: Identifiable, Equatable {
             mileageInterval: 5000,
             remindByTime: false,
             monthInterval: 12,
-            warningStartPercent: MaintenanceItemConfig.defaultWarningStartPercent,
-            dangerStartPercent: MaintenanceItemConfig.defaultDangerStartPercent
+            warningStartPercent: CoreConfig.defaultWarningStartPercent,
+            dangerStartPercent: CoreConfig.defaultDangerStartPercent
         )
     }
 

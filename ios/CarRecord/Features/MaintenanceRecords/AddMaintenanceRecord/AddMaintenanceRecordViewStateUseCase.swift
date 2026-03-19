@@ -12,7 +12,7 @@ extension AddMaintenanceRecordView {
     /// 1) 无保养记录时：机油/汽油发动机清洁剂/空调滤芯优先，其余按自然顺序。
     /// 2) 有保养记录时：按项目被保养次数倒序，未保养项目按自然顺序。
     var availableItemOptions: [MaintenanceItemOption] {
-        MaintenanceItemConfig.sortedSelectionOptions(
+        CoreConfig.sortedSelectionOptions(
             options: serviceItemOptions,
             records: serviceRecords
         )
@@ -24,7 +24,7 @@ extension AddMaintenanceRecordView {
     /// 按项目入口锁定编辑时，展示当前锁定项目名称。
     var lockedItemNameText: String {
         guard let lockedItemID else { return selectedItemsText }
-        let names = MaintenanceItemConfig.itemNames(from: [lockedItemID], options: serviceItemOptions)
+        let names = CoreConfig.itemNames(from: [lockedItemID], options: serviceItemOptions)
         return names.first ?? ""
     }
 
@@ -41,7 +41,7 @@ extension AddMaintenanceRecordView {
     /// 按项目编辑且跨周期时会拆单；拆单时允许填写新单费用和备注。
     var isSplitEditMode: Bool {
         guard let editingRecord, let lockedItemID else { return false }
-        let originalItemIDs = MaintenanceItemConfig.parseItemIDs(editingRecord.itemIDsRaw)
+        let originalItemIDs = CoreConfig.parseItemIDs(editingRecord.itemIDsRaw)
         guard originalItemIDs.contains(lockedItemID), originalItemIDs.count > 1 else { return false }
         guard let selectedCarID, let selectedCar = availableCars.first(where: { $0.id == selectedCarID }) else { return false }
         let targetCycleKey = MaintenanceRecord.cycleKey(carID: selectedCar.id, date: maintenanceDate)

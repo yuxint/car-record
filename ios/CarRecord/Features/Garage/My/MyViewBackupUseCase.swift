@@ -29,7 +29,7 @@ extension MyView {
                 MyDataTransferLogPayload(
                     id: log.id,
                     date: exportDateString(log.date),
-                    itemNames: MaintenanceItemConfig.itemNames(
+                    itemNames: CoreConfig.itemNames(
                         from: log.itemIDsRaw,
                         options: serviceItemOptions
                     ),

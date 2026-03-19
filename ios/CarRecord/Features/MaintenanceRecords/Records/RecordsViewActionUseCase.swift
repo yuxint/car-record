@@ -100,7 +100,7 @@ extension RecordsView {
 
     /// “按项目”删除：优先只移除当前项目；仅剩 1 个项目时删除整条记录。
     func deleteItemRow(_ row: MaintenanceItemRow) {
-        let originalItemIDs = MaintenanceItemConfig.parseItemIDs(row.record.itemIDsRaw)
+        let originalItemIDs = CoreConfig.parseItemIDs(row.record.itemIDsRaw)
         guard !originalItemIDs.isEmpty else {
             deleteRecords([row.record])
             return
@@ -123,8 +123,8 @@ extension RecordsView {
             return
         }
 
-        row.record.itemIDsRaw = MaintenanceItemConfig.joinItemIDs(updatedItemIDs)
-        MaintenanceItemConfig.syncCycleAndRelations(for: row.record, in: modelContext)
+        row.record.itemIDsRaw = CoreConfig.joinItemIDs(updatedItemIDs)
+        CoreConfig.syncCycleAndRelations(for: row.record, in: modelContext)
         if let message = modelContext.saveOrLog("删除项目维度保养记录") {
             saveErrorMessage = message
             isSaveErrorAlertPresented = true

@@ -30,7 +30,7 @@ struct MaintenanceItemReminderSettingView: View {
         _remindByTime = State(initialValue: option.remindByTime)
         let normalizedMonths = max(1, option.monthInterval)
         _yearInterval = State(initialValue: max(0.5, Double(normalizedMonths) / 12.0))
-        let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
+        let thresholds = CoreConfig.normalizedProgressThresholds(
             warning: option.warningStartPercent,
             danger: option.dangerStartPercent
         )
@@ -150,7 +150,7 @@ struct MaintenanceItemReminderSettingView: View {
             return
         }
 
-        let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
+        let thresholds = CoreConfig.normalizedProgressThresholds(
             warning: warningStartPercent,
             danger: dangerStartPercent
         )
