@@ -54,7 +54,7 @@ struct MaintenanceItemManagerView: View {
                                 }
                             }
 
-                            Text("提醒规则：\(MaintenanceItemCatalog.reminderSummary(for: option))")
+                            Text("提醒规则：\(MaintenanceItemConfig.reminderSummary(for: option))")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
@@ -123,7 +123,7 @@ struct MaintenanceItemManagerView: View {
 
     /// 默认项目优先，其次按创建时间展示自定义项目。
     private var sortedMaintenanceItemOptions: [MaintenanceItemOption] {
-        MaintenanceItemCatalog.naturalSortedOptions(serviceItemOptions)
+        MaintenanceItemConfig.naturalSortedOptions(serviceItemOptions)
     }
 
     /// 自定义项目新增校验：非空且不与现有项目重名。
@@ -147,8 +147,8 @@ struct MaintenanceItemManagerView: View {
                 mileageInterval: 5000,
                 remindByTime: false,
                 monthInterval: 0,
-                warningStartPercent: MaintenanceItemCatalog.defaultWarningStartPercent,
-                dangerStartPercent: MaintenanceItemCatalog.defaultDangerStartPercent
+                warningStartPercent: MaintenanceItemConfig.defaultWarningStartPercent,
+                dangerStartPercent: MaintenanceItemConfig.defaultDangerStartPercent
             )
         )
         if let message = modelContext.saveOrLog("新增自定义保养项目") {
@@ -164,7 +164,7 @@ struct MaintenanceItemManagerView: View {
         guard option.isDefault == false else { return }
 
         let relatedLogs = serviceRecords.filter {
-            MaintenanceItemCatalog.contains(itemID: option.id, in: $0.itemIDsRaw)
+            MaintenanceItemConfig.contains(itemID: option.id, in: $0.itemIDsRaw)
         }
 
         if relatedLogs.isEmpty {
@@ -185,7 +185,7 @@ struct MaintenanceItemManagerView: View {
     /// 恢复默认项目名称与提醒规则。
     private func restoreDefaultMaintenanceItems() {
         let primaryCar = cars.first
-        let definitions = MaintenanceItemCatalog.defaultItemDefinitions(
+        let definitions = MaintenanceItemConfig.defaultItemDefinitions(
             brand: primaryCar?.brand,
             modelName: primaryCar?.modelName
         )
@@ -204,8 +204,8 @@ struct MaintenanceItemManagerView: View {
                     mileageInterval: definition.mileageInterval ?? 0,
                     remindByTime: definition.monthInterval != nil,
                     monthInterval: definition.monthInterval ?? 0,
-                    warningStartPercent: MaintenanceItemCatalog.defaultWarningStartPercent,
-                    dangerStartPercent: MaintenanceItemCatalog.defaultDangerStartPercent
+                    warningStartPercent: MaintenanceItemConfig.defaultWarningStartPercent,
+                    dangerStartPercent: MaintenanceItemConfig.defaultDangerStartPercent
                 )
                 modelContext.insert(newOption)
                 continue
@@ -222,8 +222,8 @@ struct MaintenanceItemManagerView: View {
             option.mileageInterval = definition.mileageInterval ?? 0
             option.remindByTime = definition.monthInterval != nil
             option.monthInterval = definition.monthInterval ?? 0
-            option.warningStartPercent = MaintenanceItemCatalog.defaultWarningStartPercent
-            option.dangerStartPercent = MaintenanceItemCatalog.defaultDangerStartPercent
+            option.warningStartPercent = MaintenanceItemConfig.defaultWarningStartPercent
+            option.dangerStartPercent = MaintenanceItemConfig.defaultDangerStartPercent
         }
 
         if let message = modelContext.saveOrLog("恢复默认保养项目") {

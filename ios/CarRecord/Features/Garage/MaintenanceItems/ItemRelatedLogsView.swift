@@ -25,7 +25,7 @@ struct ItemRelatedLogsView: View {
 
     private var relatedLogs: [MaintenanceRecord] {
         serviceRecords.filter {
-            $0.car != nil && MaintenanceItemCatalog.contains(itemID: itemID, in: $0.itemIDsRaw)
+            $0.car != nil && MaintenanceItemConfig.contains(itemID: itemID, in: $0.itemIDsRaw)
         }
     }
 
@@ -94,7 +94,7 @@ struct ItemRelatedLogsView: View {
         let targetLogIDs = Set(targetLogs.map(\.id))
 
         for log in targetLogs {
-            var itemIDs = MaintenanceItemCatalog.parseItemIDs(log.itemIDsRaw)
+            var itemIDs = MaintenanceItemConfig.parseItemIDs(log.itemIDsRaw)
             if itemIDs.count <= 1 {
                 modelContext.delete(log)
                 continue
@@ -110,8 +110,8 @@ struct ItemRelatedLogsView: View {
                 modelContext.delete(log)
             } else {
                 /// 仅移除当前项目，避免误删同单其他保养项目。
-                log.itemIDsRaw = MaintenanceItemCatalog.joinItemIDs(itemIDs)
-                MaintenanceItemCatalog.syncCycleAndRelations(for: log, in: modelContext)
+                log.itemIDsRaw = MaintenanceItemConfig.joinItemIDs(itemIDs)
+                MaintenanceItemConfig.syncCycleAndRelations(for: log, in: modelContext)
             }
         }
 

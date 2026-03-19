@@ -160,7 +160,7 @@ extension MyView {
                     names: logPayload.itemNames,
                     optionsByName: optionsByName
                 )
-                let itemIDsRaw = MaintenanceItemCatalog.joinItemIDs(itemIDs)
+                let itemIDsRaw = MaintenanceItemConfig.joinItemIDs(itemIDs)
                 let newLog = MaintenanceRecord(
                     id: logPayload.id,
                     date: parsedLogDate,
@@ -171,7 +171,7 @@ extension MyView {
                     car: car
                 )
                 modelContext.insert(newLog)
-                MaintenanceItemCatalog.syncCycleAndRelations(for: newLog, in: modelContext)
+                MaintenanceItemConfig.syncCycleAndRelations(for: newLog, in: modelContext)
                 summary.insertedLogs += 1
             }
         }

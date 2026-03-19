@@ -4,7 +4,7 @@ import SwiftData
 extension AddCarView {
     func rebuildItemDraftsForCurrentModel() {
         guard maintenanceItemOptions.isEmpty else { return }
-        let definitions = MaintenanceItemCatalog.defaultItemDefinitions(brand: brand, modelName: modelName)
+        let definitions = MaintenanceItemConfig.defaultItemDefinitions(brand: brand, modelName: modelName)
         let existingDefaultByKey = Dictionary(
             uniqueKeysWithValues: itemDrafts.compactMap { draft -> (String, MaintenanceItemDraft)? in
                 guard draft.isDefault, let key = draft.catalogKey else { return nil }
@@ -32,7 +32,7 @@ extension AddCarView {
             return
         }
         let existingByID = Dictionary(uniqueKeysWithValues: existingItemDrafts.map { ($0.id, $0) })
-        let options = MaintenanceItemCatalog.sortedSelectionOptions(options: maintenanceItemOptions, records: [])
+        let options = MaintenanceItemConfig.sortedSelectionOptions(options: maintenanceItemOptions, records: [])
         existingItemDrafts = options.map { option in
             if var existing = existingByID[option.id] {
                 existing.isDefault = option.isDefault
@@ -116,7 +116,7 @@ extension AddCarView {
             return false
         }
 
-        let thresholds = MaintenanceItemCatalog.normalizedProgressThresholds(
+        let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
             warning: draft.warningStartPercent,
             danger: draft.dangerStartPercent
         )
@@ -155,7 +155,7 @@ extension AddCarView {
             return false
         }
 
-        let thresholds = MaintenanceItemCatalog.normalizedProgressThresholds(
+        let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
             warning: draft.warningStartPercent,
             danger: draft.dangerStartPercent
         )
@@ -187,7 +187,7 @@ extension AddCarView {
         let optionByID = Dictionary(uniqueKeysWithValues: maintenanceItemOptions.map { ($0.id, $0) })
         for draft in existingItemDrafts {
             guard let option = optionByID[draft.id] else { continue }
-            let thresholds = MaintenanceItemCatalog.normalizedProgressThresholds(
+            let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
                 warning: draft.warningStartPercent,
                 danger: draft.dangerStartPercent
             )

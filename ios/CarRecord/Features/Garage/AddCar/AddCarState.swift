@@ -46,7 +46,7 @@ struct MaintenanceItemDraft: Identifiable, Equatable {
     var warningStartPercent: Int
     var dangerStartPercent: Int
 
-    static func defaultDraft(from definition: MaintenanceItemCatalog.DefaultItemDefinition) -> MaintenanceItemDraft {
+    static func defaultDraft(from definition: MaintenanceItemConfig.DefaultItemDefinition) -> MaintenanceItemDraft {
         MaintenanceItemDraft(
             name: definition.defaultName,
             isDefault: true,
@@ -56,8 +56,8 @@ struct MaintenanceItemDraft: Identifiable, Equatable {
             mileageInterval: definition.mileageInterval ?? 0,
             remindByTime: definition.monthInterval != nil,
             monthInterval: definition.monthInterval ?? 0,
-            warningStartPercent: MaintenanceItemCatalog.defaultWarningStartPercent,
-            dangerStartPercent: MaintenanceItemCatalog.defaultDangerStartPercent
+            warningStartPercent: MaintenanceItemConfig.defaultWarningStartPercent,
+            dangerStartPercent: MaintenanceItemConfig.defaultDangerStartPercent
         )
     }
 
@@ -71,8 +71,8 @@ struct MaintenanceItemDraft: Identifiable, Equatable {
             mileageInterval: 5000,
             remindByTime: false,
             monthInterval: 0,
-            warningStartPercent: MaintenanceItemCatalog.defaultWarningStartPercent,
-            dangerStartPercent: MaintenanceItemCatalog.defaultDangerStartPercent
+            warningStartPercent: MaintenanceItemConfig.defaultWarningStartPercent,
+            dangerStartPercent: MaintenanceItemConfig.defaultDangerStartPercent
         )
     }
 

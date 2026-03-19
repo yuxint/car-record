@@ -35,7 +35,7 @@ extension RecordsView {
     /// 字符串项目集合筛选：至少命中一个选中项目才通过。
     func matchesItemSelection(itemIDsRaw: String, selectedItemIDs: Set<UUID>) -> Bool {
         guard selectedItemIDs.isEmpty == false else { return true }
-        let itemIDs = Set(MaintenanceItemCatalog.parseItemIDs(itemIDsRaw))
+        let itemIDs = Set(MaintenanceItemConfig.parseItemIDs(itemIDsRaw))
         guard itemIDs.isEmpty == false else { return false }
         return itemIDs.isDisjoint(with: selectedItemIDs) == false
     }

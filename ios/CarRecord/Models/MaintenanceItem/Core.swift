@@ -1,7 +1,7 @@
 import Foundation
 
 /// 保养项目工具：默认项维护 + 多选字符串序列化。
-enum MaintenanceItemCatalog {
+enum MaintenanceItemConfig {
     static let itemIDSeparator = "|"
 
     /// 默认项目定义：通过固定 `key` 映射规则，避免依赖名称字符串。

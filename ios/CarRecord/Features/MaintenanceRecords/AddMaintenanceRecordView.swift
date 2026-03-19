@@ -348,7 +348,7 @@ struct AddMaintenanceRecordView: View {
     /// 1) 无保养记录时：机油/汽油发动机清洁剂/空调滤芯优先，其余按自然顺序。
     /// 2) 有保养记录时：按项目被保养次数倒序，未保养项目按自然顺序。
     private var availableItemOptions: [MaintenanceItemOption] {
-        MaintenanceItemCatalog.sortedSelectionOptions(
+        MaintenanceItemConfig.sortedSelectionOptions(
             options: maintenanceItemOptions,
             records: maintenanceRecords
         )
@@ -361,7 +361,7 @@ struct AddMaintenanceRecordView: View {
     /// 按项目入口锁定编辑时，展示当前锁定项目名称。
     private var lockedItemNameText: String {
         guard let lockedItemID else { return selectedItemsText }
-        let names = MaintenanceItemCatalog.itemNames(from: [lockedItemID], options: maintenanceItemOptions)
+        let names = MaintenanceItemConfig.itemNames(from: [lockedItemID], options: maintenanceItemOptions)
         return names.first ?? ""
     }
 
@@ -378,7 +378,7 @@ struct AddMaintenanceRecordView: View {
     /// 按项目编辑且跨周期时会拆单；拆单时允许填写新单费用和备注。
     private var isSplitEditMode: Bool {
         guard let editingRecord, let lockedItemID else { return false }
-        let originalItemIDs = MaintenanceItemCatalog.parseItemIDs(editingRecord.itemIDsRaw)
+        let originalItemIDs = MaintenanceItemConfig.parseItemIDs(editingRecord.itemIDsRaw)
         guard originalItemIDs.contains(lockedItemID), originalItemIDs.count > 1 else { return false }
         guard let selectedCarID, let selectedCar = availableCars.first(where: { $0.id == selectedCarID }) else { return false }
         let targetCycleKey = MaintenanceRecord.cycleKey(carID: selectedCar.id, date: maintenanceDate)
@@ -450,7 +450,7 @@ struct AddMaintenanceRecordView: View {
                     return
                 }
             } else {
-                let itemIDsRaw = MaintenanceItemCatalog.joinItemIDs(orderedSelectedItemIDs)
+                let itemIDsRaw = MaintenanceItemConfig.joinItemIDs(orderedSelectedItemIDs)
                 editingRecord.date = maintenanceDate
                 editingRecord.itemIDsRaw = itemIDsRaw
                 editingRecord.cost = finalCost
@@ -458,14 +458,14 @@ struct AddMaintenanceRecordView: View {
                 editingRecord.note = normalizedNote
                 editingRecord.car = selectedCar
                 editingRecord.cycleKey = targetCycleKey
-                MaintenanceItemCatalog.syncCycleAndRelations(for: editingRecord, in: modelContext)
+                MaintenanceItemConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
             }
         } else {
             if let existingCycleRecord {
                 duplicateCycleAlertMessage = "“\(AppDateContext.formatShortDate(existingCycleRecord.date))”已存在保养记录，请到记录页编辑该日期记录。"
                 isDuplicateCycleAlertPresented = true
             } else {
-                let itemIDsRaw = MaintenanceItemCatalog.joinItemIDs(orderedSelectedItemIDs)
+                let itemIDsRaw = MaintenanceItemConfig.joinItemIDs(orderedSelectedItemIDs)
                 let record = MaintenanceRecord(
                     date: maintenanceDate,
                     itemIDsRaw: itemIDsRaw,
@@ -475,7 +475,7 @@ struct AddMaintenanceRecordView: View {
                     car: selectedCar
                 )
                 modelContext.insert(record)
-                MaintenanceItemCatalog.syncCycleAndRelations(for: record, in: modelContext)
+                MaintenanceItemConfig.syncCycleAndRelations(for: record, in: modelContext)
             }
             if isDuplicateCycleAlertPresented {
                 return
@@ -507,7 +507,7 @@ struct AddMaintenanceRecordView: View {
         splitCost: Double,
         splitNote: String
     ) -> Bool {
-        let originalItemIDs = MaintenanceItemCatalog.parseItemIDs(editingRecord.itemIDsRaw)
+        let originalItemIDs = MaintenanceItemConfig.parseItemIDs(editingRecord.itemIDsRaw)
         guard let lockedIndex = originalItemIDs.firstIndex(of: lockedItemID) else { return false }
 
         let originalCycleKey = editingRecord.cycleKey
@@ -517,27 +517,27 @@ struct AddMaintenanceRecordView: View {
             editingRecord.mileage = currentMileage
             editingRecord.car = selectedCar
             editingRecord.cycleKey = targetCycleKey
-            editingRecord.itemIDsRaw = MaintenanceItemCatalog.joinItemIDs(originalItemIDs)
-            MaintenanceItemCatalog.syncCycleAndRelations(for: editingRecord, in: modelContext)
+            editingRecord.itemIDsRaw = MaintenanceItemConfig.joinItemIDs(originalItemIDs)
+            MaintenanceItemConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
             return true
         }
 
         var remainingItemIDs = originalItemIDs
         remainingItemIDs.remove(at: lockedIndex)
-        editingRecord.itemIDsRaw = MaintenanceItemCatalog.joinItemIDs(remainingItemIDs)
-        MaintenanceItemCatalog.syncCycleAndRelations(for: editingRecord, in: modelContext)
+        editingRecord.itemIDsRaw = MaintenanceItemConfig.joinItemIDs(remainingItemIDs)
+        MaintenanceItemConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
 
         /// 拆分记录时，原单仅剔除当前项目；新单费用默认 0，可在表单中改写。
         let splitRecord = MaintenanceRecord(
             date: maintenanceDate,
-            itemIDsRaw: MaintenanceItemCatalog.joinItemIDs([lockedItemID]),
+            itemIDsRaw: MaintenanceItemConfig.joinItemIDs([lockedItemID]),
             cost: splitCost,
             mileage: currentMileage,
             note: splitNote,
             car: selectedCar
         )
         modelContext.insert(splitRecord)
-        MaintenanceItemCatalog.syncCycleAndRelations(for: splitRecord, in: modelContext)
+        MaintenanceItemConfig.syncCycleAndRelations(for: splitRecord, in: modelContext)
         return true
     }
 
@@ -551,7 +551,7 @@ struct AddMaintenanceRecordView: View {
             if let lockedItemID {
                 selectedItems = [lockedItemID]
             } else {
-                selectedItems = Set(MaintenanceItemCatalog.parseItemIDs(editingRecord.itemIDsRaw))
+                selectedItems = Set(MaintenanceItemConfig.parseItemIDs(editingRecord.itemIDsRaw))
             }
             maintenanceDate = editingRecord.date
             draftMaintenanceDate = editingRecord.date

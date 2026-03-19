@@ -1,6 +1,6 @@
 import Foundation
 
-extension MaintenanceItemCatalog {
+extension MaintenanceItemConfig {
     /// 默认项目自然顺序索引：默认项返回非空，自定义项返回空。
     static func defaultOrderIndex(for option: MaintenanceItemOption) -> Int? {
         guard let key = option.catalogKey else { return nil }

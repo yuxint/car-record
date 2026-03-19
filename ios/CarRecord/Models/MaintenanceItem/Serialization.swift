@@ -1,6 +1,6 @@
 import Foundation
 
-extension MaintenanceItemCatalog {
+extension MaintenanceItemConfig {
     /// 将项目ID列表拼接为持久化字符串。
     static func joinItemIDs(_ itemIDs: [UUID]) -> String {
         itemIDs.map(\.uuidString).joined(separator: itemIDSeparator)

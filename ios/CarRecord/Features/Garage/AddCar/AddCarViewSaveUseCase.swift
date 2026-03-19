@@ -74,7 +74,7 @@ extension AddCarView {
         }
 
         for draft in enabledDrafts {
-            let thresholds = MaintenanceItemCatalog.normalizedProgressThresholds(
+            let thresholds = MaintenanceItemConfig.normalizedProgressThresholds(
                 warning: draft.warningStartPercent,
                 danger: draft.dangerStartPercent
             )
