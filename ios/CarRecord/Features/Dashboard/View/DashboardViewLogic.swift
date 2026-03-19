@@ -1,44 +1,53 @@
 import SwiftUI
 
 extension DashboardView {
-    /// 车辆分组：每辆车下展示全部保养项目。
-    var carSections: [DashboardCarSection] {
+    /// 当前已应用车辆的保养提醒分组。
+    var carSection: DashboardCarSection? {
+        guard let car = scopedCars.first, scopedMaintenanceRecords.min(by: { $0.date < $1.date }) != nil else {
+            return nil
+        }
         let options = sortedMaintenanceItemOptions
-        let logIndex = DashboardUseCase.buildLatestLogIndex(records: scopedMaintenanceRecords)
-        let firstMaintenanceIndex = DashboardUseCase.buildFirstMaintenanceLogIndex(records: scopedMaintenanceRecords)
+        let logIndex = scopedMaintenanceRecords.reduce(into: [String: MaintenanceRecord]()) { partialResult, record in
+            let index = DashboardUseCase.buildLatestLogIndex(record: record)
+            for (key, value) in index {
+                if let existing = partialResult[key] {
+                    if existing.date > value.date {
+                        continue
+                    }
+                    if existing.date == value.date, existing.mileage >= value.mileage {
+                        continue
+                    }
+                }
+                partialResult[key] = value
+            }
+        }
         let now = AppDateContext.now()
 
-        return scopedCars.compactMap { car in
-            guard firstMaintenanceIndex[car.id] != nil else {
-                return nil
-            }
-
-            let rows = options.map { option in
-                let key = DashboardUseCase.latestLogKey(carID: car.id, itemID: option.id)
-                return DashboardUseCase.buildReminderRow(
-                    car: car,
-                    option: option,
-                    itemLatestLog: logIndex[key],
-                    now: now,
-                    calendar: .current
-                )
-            }
-            .sorted { lhs, rhs in
-                if lhs.rawProgress != rhs.rawProgress {
-                    return lhs.rawProgress > rhs.rawProgress
-                }
-                if lhs.duePriority != rhs.duePriority {
-                    return lhs.duePriority < rhs.duePriority
-                }
-                return lhs.itemName < rhs.itemName
-            }
-
-            return DashboardCarSection(
-                id: car.id,
-                title: CarDisplayFormatter.name(car),
-                rows: rows
+        let rows = options.map { option in
+            let key = DashboardUseCase.latestLogKey(carID: car.id, itemID: option.id)
+            return DashboardUseCase.buildReminderRow(
+                car: car,
+                option: option,
+                itemLatestLog: logIndex[key],
+                now: now,
+                calendar: .current
             )
         }
+        .sorted { lhs, rhs in
+            if lhs.rawProgress != rhs.rawProgress {
+                return lhs.rawProgress > rhs.rawProgress
+            }
+            if lhs.duePriority != rhs.duePriority {
+                return lhs.duePriority < rhs.duePriority
+            }
+            return lhs.itemName < rhs.itemName
+        }
+
+        return DashboardCarSection(
+            id: car.id,
+            title: CarDisplayFormatter.name(car),
+            rows: rows
+        )
     }
 
     /// 默认项目优先，随后按创建时间排序，保持与“项目管理”页面一致。

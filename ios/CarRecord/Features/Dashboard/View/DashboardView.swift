@@ -15,15 +15,13 @@ struct DashboardView: View {
             if cars.isEmpty {
                 Text("请先在“我的”中添加车辆。")
                     .foregroundStyle(.secondary)
-            } else if carSections.isEmpty {
+            } else if carSection == nil {
                 Text("暂无保养记录，完成首次保养后开始提醒。")
                     .foregroundStyle(.secondary)
-            } else {
-                ForEach(carSections) { section in
-                    Section(section.title) {
-                        ForEach(section.rows) { row in
-                            reminderRow(row)
-                        }
+            } else if let section = carSection {
+                Section(section.title) {
+                    ForEach(section.rows) { row in
+                        reminderRow(row)
                     }
                 }
             }
