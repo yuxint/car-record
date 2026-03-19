@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// 概览页计算逻辑：索引构建、提醒进度和文案生成。
-enum DashboardUseCase {
-    /// 构建“车辆+项目 -> 最近一次保养记录”索引，避免重复扫描。
+/// 保养提醒页计算逻辑：索引构建、提醒进度和文案生成。
+enum MaintenanceReminderUseCase {
+    /// 构建"车辆+项目 -> 最近一次保养记录"索引，避免重复扫描。
     static func buildLatestLogIndex(record: MaintenanceRecord) -> [String: MaintenanceRecord] {
         guard let carID = record.car?.id else { return [:] }
 
@@ -17,7 +17,7 @@ enum DashboardUseCase {
         return index
     }
 
-    /// 车辆首保索引：取该车最早一条保养记录，作为“首保已完成”后的统一兜底基准。
+    /// 车辆首保索引：取该车最早一条保养记录，作为"首保已完成"后的统一兜底基准。
     static func buildFirstMaintenanceLogIndex(record: MaintenanceRecord) -> [UUID: MaintenanceRecord] {
         guard let carID = record.car?.id else { return [:] }
         return [carID: record]
@@ -34,7 +34,7 @@ enum DashboardUseCase {
         itemLatestLog: MaintenanceRecord?,
         now: Date,
         calendar: Calendar
-    ) -> DashboardReminderRow {
+    ) -> MaintenanceReminderRow {
         let timeBaselineDate = itemLatestLog?.date ?? car.purchaseDate
         let mileageBaseline = itemLatestLog?.mileage ?? 0
 
@@ -110,7 +110,7 @@ enum DashboardUseCase {
             progressColorLevel = .danger
         }
 
-        return DashboardReminderRow(
+        return MaintenanceReminderRow(
             id: latestLogKey(carID: car.id, itemID: option.id),
             itemName: option.name,
             rawProgress: rawProgress,

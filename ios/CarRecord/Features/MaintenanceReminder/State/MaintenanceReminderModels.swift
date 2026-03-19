@@ -1,14 +1,14 @@
 import SwiftUI
 
-/// 概览页车辆分组模型。
-struct DashboardCarSection: Identifiable {
+/// 保养提醒页车辆分组模型。
+struct MaintenanceReminderCarSection: Identifiable {
     let id: UUID
     let title: String
-    let rows: [DashboardReminderRow]
+    let rows: [MaintenanceReminderRow]
 }
 
-/// 概览页单行项目进度模型。
-struct DashboardReminderRow: Identifiable {
+/// 保养提醒页单行项目进度模型。
+struct MaintenanceReminderRow: Identifiable {
     let id: String
     let itemName: String
     let rawProgress: Double
@@ -103,7 +103,7 @@ enum ReminderStrategy {
     }
 }
 
-/// 概览页进度颜色等级：默认绿色，100%~阈值黄色，超过上限红色。
+/// 保养提醒页进度颜色等级：默认绿色，100%~阈值黄色，超过上限红色。
 enum ReminderProgressColorLevel {
     case normal
     case warning
