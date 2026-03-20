@@ -34,17 +34,17 @@
 		F1D68A7F2F640E6D00CFD30D /* AddMaintenanceRecordState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A732F640E6D00CFD30D /* AddMaintenanceRecordState.swift */; };
 		F1D68A8A2F640E6D00CFD30D /* AddMaintenanceRecordViewStateUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A8F2F640E6D00CFD30D /* AddMaintenanceRecordViewStateUseCase.swift */; };
 		F1D68A8B2F640E6D00CFD30D /* AddMaintenanceRecordViewInputUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A902F640E6D00CFD30D /* AddMaintenanceRecordViewInputUseCase.swift */; };
-		F1D68A802F640E6D00CFD30D /* AddCarViewSaveUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A742F640E6D00CFD30D /* AddCarViewSaveUseCase.swift */; };
-		F1D68A882F640E6D00CFD30D /* AddCarViewSheetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7D2F640E6D00CFD31D /* AddCarViewSheetComponents.swift */; };
-		F1D68A812F640E6D00CFD30D /* AddCarState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A752F640E6D00CFD30D /* AddCarState.swift */; };
+		F1D68A802F640E6D00CFD30D /* AddCarSaveUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A742F640E6D00CFD30D /* AddCarSaveUseCase.swift */; };
+		F1D68A882F640E6D00CFD30D /* AddCarSheetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7D2F640E6D00CFD31D /* AddCarSheetComponents.swift */; };
+		F1D68A812F640E6D00CFD30D /* AddCarStateModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A752F640E6D00CFD30D /* AddCarStateModels.swift */; };
 		F1D68A822F640E6D00CFD30D /* MyViewBackupUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A762F640E6D00CFD30D /* MyViewBackupUseCase.swift */; };
 		F1D68A892F640E6D00CFD30D /* MyViewCarActionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7E2F640E6D00CFD31D /* MyViewCarActionUseCase.swift */; };
 		F1D68A832F640E6D00CFD30D /* MyDataTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A772F640E6D00CFD30D /* MyDataTransfer.swift */; };
 		F1D68A842F640E6D00CFD30D /* MaintenanceItemManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A782F640E6D00CFD30D /* MaintenanceItemManagerView.swift */; };
 		F1D68A8C2F640E6D00CFD30D /* MyViewRestoreUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A912F640E6D00CFD30D /* MyViewRestoreUseCase.swift */; };
 		F1D68A8D2F640E6D00CFD30D /* MyViewDataTransferSupportUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A922F640E6D00CFD30D /* MyViewDataTransferSupportUseCase.swift */; };
-		F1D68A932F640E6D00CFD30D /* AddCarViewStateUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A962F640E6D00CFD30D /* AddCarViewStateUseCase.swift */; };
-		F1D68A942F640E6D00CFD30D /* AddCarViewDraftUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A972F640E6D00CFD30D /* AddCarViewDraftUseCase.swift */; };
+		F1D68A932F640E6D00CFD30D /* AddCarStateUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A962F640E6D00CFD30D /* AddCarStateUseCase.swift */; };
+		F1D68A942F640E6D00CFD30D /* AddCarDraftUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A972F640E6D00CFD30D /* AddCarDraftUseCase.swift */; };
 		F1D68A952F640E6D00CFD30D /* RecordsViewSelectionSheetUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A982F640E6D00CFD30D /* RecordsViewSelectionSheetUseCase.swift */; };
 		F1D68A9A2F640E6D00CFD30D /* RecordsViewFilterRulesUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A992F640E6D00CFD30D /* RecordsViewFilterRulesUseCase.swift */; };
 		F1D68A9B2F640E6D00CFD30D /* MaintenanceItemReminderSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A9C2F640E6D00CFD30D /* MaintenanceItemReminderSettingView.swift */; };
@@ -84,20 +84,20 @@
 		F1D68A712F640E6D00CFD30D /* RecordsState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsState.swift; sourceTree = "<group>"; };
 		F1D68A722F640E6D00CFD30D /* AddMaintenanceRecordViewSaveUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordViewSaveUseCase.swift; sourceTree = "<group>"; };
 		F1D68A732F640E6D00CFD30D /* AddMaintenanceRecordState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordState.swift; sourceTree = "<group>"; };
-		F1D68A742F640E6D00CFD30D /* AddCarViewSaveUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarViewSaveUseCase.swift; sourceTree = "<group>"; };
-		F1D68A752F640E6D00CFD30D /* AddCarState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarModels.swift; sourceTree = "<group>"; };
+		F1D68A742F640E6D00CFD30D /* AddCarSaveUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarSaveUseCase.swift; sourceTree = "<group>"; };
+		F1D68A752F640E6D00CFD30D /* AddCarStateModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarStateModels.swift; sourceTree = "<group>"; };
 		F1D68A762F640E6D00CFD30D /* MyViewBackupUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewBackupUseCase.swift; sourceTree = "<group>"; };
 		F1D68A7A2F640E6D00CFD31D /* RecordsViewFilterPanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewFilterPanelComponents.swift; sourceTree = "<group>"; };
 		F1D68A7B2F640E6D00CFD31D /* RecordsViewActionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewActionUseCase.swift; sourceTree = "<group>"; };
 		F1D68A7C2F640E6D00CFD31D /* AddMaintenanceRecordViewSheetComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordViewSheetComponents.swift; sourceTree = "<group>"; };
-		F1D68A7D2F640E6D00CFD31D /* AddCarViewSheetComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarViewSheetComponents.swift; sourceTree = "<group>"; };
+		F1D68A7D2F640E6D00CFD31D /* AddCarSheetComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarSheetComponents.swift; sourceTree = "<group>"; };
 		F1D68A7E2F640E6D00CFD31D /* MyViewCarActionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewCarActionUseCase.swift; sourceTree = "<group>"; };
 		F1D68A8F2F640E6D00CFD30D /* AddMaintenanceRecordViewStateUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordViewStateUseCase.swift; sourceTree = "<group>"; };
 		F1D68A902F640E6D00CFD30D /* AddMaintenanceRecordViewInputUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordViewInputUseCase.swift; sourceTree = "<group>"; };
 		F1D68A912F640E6D00CFD30D /* MyViewRestoreUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewRestoreUseCase.swift; sourceTree = "<group>"; };
 		F1D68A922F640E6D00CFD30D /* MyViewDataTransferSupportUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewDataTransferSupportUseCase.swift; sourceTree = "<group>"; };
-		F1D68A962F640E6D00CFD30D /* AddCarViewStateUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarViewStateUseCase.swift; sourceTree = "<group>"; };
-		F1D68A972F640E6D00CFD30D /* AddCarViewDraftUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarViewDraftUseCase.swift; sourceTree = "<group>"; };
+		F1D68A962F640E6D00CFD30D /* AddCarStateUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarStateUseCase.swift; sourceTree = "<group>"; };
+		F1D68A972F640E6D00CFD30D /* AddCarDraftUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarDraftUseCase.swift; sourceTree = "<group>"; };
 		F1D68A982F640E6D00CFD30D /* RecordsViewSelectionSheetUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewSelectionSheetUseCase.swift; sourceTree = "<group>"; };
 		F1D68A992F640E6D00CFD30D /* RecordsViewFilterRulesUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewFilterRulesUseCase.swift; sourceTree = "<group>"; };
 		F1D68A772F640E6D00CFD30D /* MyDataTransfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyDataTransfer.swift; sourceTree = "<group>"; };
@@ -190,7 +190,7 @@
 			isa = PBXGroup;
 			children = (
 				F1D68A4D2F640E6D00CFD30D /* AddCarView.swift */,
-				F1D68A7D2F640E6D00CFD31D /* AddCarViewSheetComponents.swift */,
+				F1D68A7D2F640E6D00CFD31D /* AddCarSheetComponents.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -198,9 +198,9 @@
 		F1D68AC12F640E6D00CFD30D /* UseCase */ = {
 			isa = PBXGroup;
 			children = (
-				F1D68A742F640E6D00CFD30D /* AddCarViewSaveUseCase.swift */,
-				F1D68A962F640E6D00CFD30D /* AddCarViewStateUseCase.swift */,
-				F1D68A972F640E6D00CFD30D /* AddCarViewDraftUseCase.swift */,
+				F1D68A742F640E6D00CFD30D /* AddCarSaveUseCase.swift */,
+				F1D68A962F640E6D00CFD30D /* AddCarStateUseCase.swift */,
+				F1D68A972F640E6D00CFD30D /* AddCarDraftUseCase.swift */,
 			);
 			path = UseCase;
 			sourceTree = "<group>";
@@ -208,7 +208,7 @@
 		F1D68AC22F640E6D00CFD30D /* State */ = {
 			isa = PBXGroup;
 			children = (
-				F1D68A752F640E6D00CFD30D /* AddCarState.swift */,
+				F1D68A752F640E6D00CFD30D /* AddCarStateModels.swift */,
 			);
 			path = State;
 			sourceTree = "<group>";
@@ -492,11 +492,11 @@
 				F1D68A9B2F640E6D00CFD30D /* MaintenanceItemReminderSettingView.swift in Sources */,
 				F1D68A9D2F640E6D00CFD30D /* ItemRelatedLogsView.swift in Sources */,
 				F1D68A662F640E6D00CFD30D /* AddCarView.swift in Sources */,
-				F1D68A802F640E6D00CFD30D /* AddCarViewSaveUseCase.swift in Sources */,
-				F1D68A932F640E6D00CFD30D /* AddCarViewStateUseCase.swift in Sources */,
-				F1D68A942F640E6D00CFD30D /* AddCarViewDraftUseCase.swift in Sources */,
-				F1D68A882F640E6D00CFD30D /* AddCarViewSheetComponents.swift in Sources */,
-				F1D68A812F640E6D00CFD30D /* AddCarState.swift in Sources */,
+				F1D68A802F640E6D00CFD30D /* AddCarSaveUseCase.swift in Sources */,
+				F1D68A932F640E6D00CFD30D /* AddCarStateUseCase.swift in Sources */,
+				F1D68A942F640E6D00CFD30D /* AddCarDraftUseCase.swift in Sources */,
+				F1D68A882F640E6D00CFD30D /* AddCarSheetComponents.swift in Sources */,
+				F1D68A812F640E6D00CFD30D /* AddCarStateModels.swift in Sources */,
 				F1D68A672F640E6D00CFD30D /* CarRecordApp.swift in Sources */,
 				F1D68A682F640E6D00CFD30D /* RootTabView.swift in Sources */,
 			);

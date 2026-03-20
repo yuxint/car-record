@@ -57,7 +57,7 @@ scripts/sim_data_restore.sh <backup_dir> [bundle_id]
 ## 代码事实
 
 - 应用入口在 `ios/CarRecord/App/CarRecordApp.swift`，全局注入默认 SwiftData 容器。
-- 根 Tab 固定为 3 个入口：`概览`、`记录`、`我的`。
+- 根 Tab 固定为 3 个入口：`保养提醒`、`记录`、`我的`。
 - UI 文案当前以中文为主，格式化区域使用 `zh_Hans_CN`。
 - 项目大量依赖 `@Query`、`@AppStorage` 与页面本地 `@State` 协作，不存在独立的 service/repository 层。
 
