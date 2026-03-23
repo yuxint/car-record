@@ -28,7 +28,7 @@ struct AddCarView: View {
             maintenanceItemsSection
         }
         .navigationTitle(viewModel.navigationTitle)
-        .toolbar(viewModel.editingCar == nil ? .visible : .hidden, for: .tabBar)
+        .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("保存") {

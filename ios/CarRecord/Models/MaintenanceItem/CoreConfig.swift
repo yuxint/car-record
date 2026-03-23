@@ -19,63 +19,8 @@ enum CoreConfig {
     static let transmissionOilKey = "transmission_oil"
     static let brakeFluidKey = "brake_fluid"
 
-    /// 本田车型默认项目：顺序用于列表“自然排序”与“恢复默认”顺序。
-    private static let hondaDefaultItemDefinitions: [DefaultItemDefinition] = [
-        DefaultItemDefinition(
-            key: fuelCleanerKey,
-            defaultName: "汽油发动机清洁剂",
-            mileageInterval: 5000,
-            monthInterval: nil
-        ),
-        DefaultItemDefinition(
-            key: engineOilKey,
-            defaultName: "机油",
-            mileageInterval: 5000,
-            monthInterval: 6
-        ),
-        DefaultItemDefinition(
-            key: acFilterKey,
-            defaultName: "空调滤芯",
-            mileageInterval: 20_000,
-            monthInterval: 12
-        ),
-        DefaultItemDefinition(
-            key: airFilterKey,
-            defaultName: "空气滤芯",
-            mileageInterval: 20_000,
-            monthInterval: nil
-        ),
-        DefaultItemDefinition(
-            key: transmissionOilKey,
-            defaultName: "变速箱油",
-            mileageInterval: nil,
-            monthInterval: 24
-        ),
-        DefaultItemDefinition(
-            key: brakeFluidKey,
-            defaultName: "刹车油",
-            mileageInterval: nil,
-            monthInterval: 36
-        ),
-    ]
-
-    /// 日产车型默认项目：默认与本田一致，部分车型可按车型覆盖。
-    private static let nissanDefaultItemDefinitions: [DefaultItemDefinition] = hondaDefaultItemDefinitions
-    private static let sylphy2022DefaultItemDefinitions: [DefaultItemDefinition] = nissanDefaultItemDefinitions.compactMap { definition in
-        guard definition.key != fuelCleanerKey else { return nil }
-        if definition.key == engineOilKey {
-            return DefaultItemDefinition(
-                key: definition.key,
-                defaultName: definition.defaultName,
-                mileageInterval: 10_000,
-                monthInterval: definition.monthInterval
-            )
-        }
-        return definition
-    }
-
     /// 兜底默认项：用于没有车辆上下文或品牌未覆盖时的默认行为。
-    static let defaultItemDefinitions: [DefaultItemDefinition] = hondaDefaultItemDefinitions
+    static let defaultItemDefinitions: [DefaultItemDefinition] = civic2022DefaultItemDefinitions
 
     static let preferredKeysWhenNoLog: [String] = [
         engineOilKey,
@@ -92,23 +37,18 @@ enum CoreConfig {
         uniqueKeysWithValues: defaultItemDefinitions.enumerated().map { ($1.key, $0) }
     )
 
-    /// 按车辆品牌返回默认项目定义；后续新增车型只需补充这里的分支。
+    /// 按车型返回默认项目定义；品牌信息不参与默认配置选择。
     static func defaultItemDefinitions(brand: String?, modelName: String?) -> [DefaultItemDefinition] {
-        let normalizedBrand = (brand ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        _ = brand
         let normalizedModelName = (modelName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
 
-        switch normalizedBrand {
-        case "日产":
-            switch normalizedModelName {
-            case "22款轩逸":
-                return sylphy2022DefaultItemDefinitions
-            default:
-                return nissanDefaultItemDefinitions
-            }
-        case "本田", "东风本田":
-            return hondaDefaultItemDefinitions
+        switch normalizedModelName {
+        case "22款思域":
+            return civic2022DefaultItemDefinitions
+        case "22款轩逸":
+            return sylphy2022DefaultItemDefinitions
         default:
-            return hondaDefaultItemDefinitions
+            return civic2022DefaultItemDefinitions
         }
     }
 }
