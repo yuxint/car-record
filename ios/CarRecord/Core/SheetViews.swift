@@ -72,6 +72,7 @@ struct MileagePickerSheetView: View {
             }
         }
         .presentationDetents([.height(300)])
+        .presentationBackground(Color(.systemBackground))
     }
 }
 
@@ -99,15 +100,13 @@ struct DayDatePickerSheetView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
+            Form {
                 DatePicker(label, selection: $draftDate, displayedComponents: .date)
                     .datePickerStyle(.graphical)
                     .labelsHidden()
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                Spacer(minLength: 0)
+                    .frame(maxWidth: .infinity)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -122,8 +121,10 @@ struct DayDatePickerSheetView: View {
                     }
                 }
             }
+            .scrollDisabled(true)
         }
-        .presentationDetents([.medium]) // HIG 推荐的适中高度
+        .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
+        .presentationBackground(Color(.systemBackground))
     }
 }
