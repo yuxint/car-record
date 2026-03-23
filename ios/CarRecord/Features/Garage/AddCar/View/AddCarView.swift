@@ -75,28 +75,28 @@ struct AddCarView: View {
             HStack {
                 Text("品牌")
                 Spacer()
-                Menu {
-                    ForEach(viewModel.brandOptions, id: \.self) { option in
-                        Button(option) {
-                            viewModel.brand = option
-                        }
-                    }
-                } label: {
-                    rowValueActionLabel(text: viewModel.brand)
+                if viewModel.editingCar == nil {
+                    下拉单选选择器(
+                        options: viewModel.brandOptions,
+                        selection: $viewModel.brand
+                    )
+                } else {
+                    Text(viewModel.brand)
+                        .foregroundStyle(.secondary)
                 }
             }
 
             HStack {
                 Text("车型")
                 Spacer()
-                Menu {
-                    ForEach(viewModel.displayModelOptions, id: \.self) { option in
-                        Button(option) {
-                            viewModel.modelName = option
-                        }
-                    }
-                } label: {
-                    rowValueActionLabel(text: viewModel.modelName)
+                if viewModel.editingCar == nil {
+                    下拉单选选择器(
+                        options: viewModel.displayModelOptions,
+                        selection: $viewModel.modelName
+                    )
+                } else {
+                    Text(viewModel.modelName)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -210,6 +210,9 @@ struct AddCarView: View {
     private func rowValueActionLabel(text: String) -> some View {
         HStack(spacing: 4) {
             Text(text)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+                .id(text)
             Image(systemName: "chevron.up.chevron.down")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
@@ -284,6 +287,39 @@ struct AddCarView: View {
                         viewModel.draftSheetTarget = nil
                     }
                 )
+            }
+        }
+    }
+}
+
+private struct 下拉单选选择器: View {
+    let options: [String]
+    @Binding var selection: String
+
+    var body: some View {
+        Menu {
+            ForEach(options, id: \.self) { option in
+                Button {
+                    selection = option
+                } label: {
+                    HStack {
+                        Text(option)
+                        if selection == option {
+                            Spacer()
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text(selection)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .id(selection)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
         }
     }

@@ -262,18 +262,15 @@ final class AddCarViewModel: ObservableObject {
     func saveCar(cars: [Car], maintenanceItemOptions: [MaintenanceItemOption], modelContext: ModelContext) -> Bool {
         let normalizedBrand = brand.trimmingCharacters(in: .whitespacesAndNewlines)
         let normalizedModelName = modelName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let targetModelKey = carModelKey(brand: normalizedBrand, modelName: normalizedModelName)
-        let currentEditingID = editingCar?.id
-
-        if let conflictCar = cars.first(where: { car in
-            if let currentEditingID, car.id == currentEditingID {
+        if editingCar == nil {
+            let targetModelKey = carModelKey(brand: normalizedBrand, modelName: normalizedModelName)
+            if let conflictCar = cars.first(where: { car in
+                carModelKey(brand: car.brand, modelName: car.modelName) == targetModelKey
+            }) {
+                saveErrorMessage = "车型“\(conflictCar.brand) \(conflictCar.modelName)”已存在，不能重复添加。"
+                isSaveErrorAlertPresented = true
                 return false
             }
-            return carModelKey(brand: car.brand, modelName: car.modelName) == targetModelKey
-        }) {
-            saveErrorMessage = "车型“\(conflictCar.brand) \(conflictCar.modelName)”已存在，不能重复添加。"
-            isSaveErrorAlertPresented = true
-            return false
         }
 
         if maintenanceItemOptions.isEmpty {
@@ -303,8 +300,6 @@ final class AddCarViewModel: ObservableObject {
         }
 
         if let editingCar {
-            editingCar.brand = normalizedBrand
-            editingCar.modelName = normalizedModelName
             editingCar.mileage = currentMileage
             editingCar.purchaseDate = onRoadDate
             editingCar.disabledItemIDsRaw = disabledItemIDsRaw
