@@ -41,6 +41,7 @@ struct MyDataTransferCarPayload: Codable {
     var brand: String
     var modelName: String
     var mileage: Int
+    var disabledItemIDsRaw: String
     /// 仅保存日期，不保存时间与时区。
     var purchaseDate: String
 }
@@ -102,8 +103,8 @@ struct MyDataTransferDocument: FileDocument {
     }
 }
 
-/// “新增/编辑车辆”弹窗路由：避免首次打开编辑页时状态不同步。
-enum CarFormTarget: Identifiable {
+/// “新增/编辑车辆”页面路由：避免首次打开编辑页时状态不同步。
+enum CarFormTarget: Identifiable, Hashable {
     case add
     case edit(Car)
 
@@ -114,5 +115,13 @@ enum CarFormTarget: Identifiable {
         case .edit(let car):
             return "edit-\(car.id.uuidString)"
         }
+    }
+
+    static func == (lhs: CarFormTarget, rhs: CarFormTarget) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }

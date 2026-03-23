@@ -8,7 +8,6 @@ extension AddMaintenanceRecordView {
         DayDatePickerSheetView(
             title: "选择保养时间",
             label: "保养时间",
-            draftDate: $draftMaintenanceDate,
             currentDate: maintenanceDate,
             onApply: { newValue in
                 maintenanceDate = newValue

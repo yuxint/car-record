@@ -26,13 +26,24 @@ struct RecordsView: View {
 
     var body: some View {
         List {
-            Section {
-                Picker("展示方式", selection: $displayMode) {
-                    ForEach(LogDisplayMode.allCases) { mode in
-                        Text(mode.title).tag(mode)
+            if let appliedCar = scopedCars.first {
+                Section(CarDisplayFormatter.name(appliedCar)) {
+                    Picker("展示方式", selection: $displayMode) {
+                        ForEach(LogDisplayMode.allCases) { mode in
+                            Text(mode.title).tag(mode)
+                        }
                     }
+                    .pickerStyle(.segmented)
                 }
-                .pickerStyle(.segmented)
+            } else {
+                Section {
+                    Picker("展示方式", selection: $displayMode) {
+                        ForEach(LogDisplayMode.allCases) { mode in
+                            Text(mode.title).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
             }
 
             if scopedMaintenanceRecords.isEmpty {

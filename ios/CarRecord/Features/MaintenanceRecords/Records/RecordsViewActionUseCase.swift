@@ -18,10 +18,6 @@ extension RecordsView {
                 .font(.headline)
 
             if group.records.count == 1, let singleRecord = group.records.first {
-                if let car = singleRecord.car {
-                    Text(CarDisplayFormatter.name(car))
-                        .foregroundStyle(.secondary)
-                }
                 Text("里程：\(singleRecord.mileage) km")
                     .foregroundStyle(.secondary)
             } else {
@@ -61,8 +57,6 @@ extension RecordsView {
         VStack(alignment: .leading, spacing: 6) {
             Text(row.itemName)
                 .font(.headline)
-            Text(row.carName)
-                .foregroundStyle(.secondary)
             Text("保养时间：\(AppDateContext.formatShortDate(row.record.date))")
                 .foregroundStyle(.secondary)
             Text("里程：\(row.record.mileage) km")

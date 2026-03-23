@@ -12,8 +12,21 @@ extension AddMaintenanceRecordView {
     /// 1) 无保养记录时：机油/汽油发动机清洁剂/空调滤芯优先，其余按自然顺序。
     /// 2) 有保养记录时：按项目被保养次数倒序，未保养项目按自然顺序。
     var availableItemOptions: [MaintenanceItemOption] {
-        CoreConfig.sortedSelectionOptions(
-            options: serviceItemOptions,
+        let visibleOptions: [MaintenanceItemOption]
+        if editingRecord == nil {
+            let disabledItemIDs: Set<UUID>
+            if let selectedCarID,
+               let selectedCar = availableCars.first(where: { $0.id == selectedCarID }) {
+                disabledItemIDs = Set(CoreConfig.parseItemIDs(selectedCar.disabledItemIDsRaw))
+            } else {
+                disabledItemIDs = []
+            }
+            visibleOptions = serviceItemOptions.filter { disabledItemIDs.contains($0.id) == false }
+        } else {
+            visibleOptions = serviceItemOptions
+        }
+        return CoreConfig.sortedSelectionOptions(
+            options: visibleOptions,
             records: serviceRecords
         )
     }

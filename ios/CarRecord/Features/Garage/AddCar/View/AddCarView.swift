@@ -9,15 +9,15 @@ struct AddCarView: View {
     @Query(sort: \MaintenanceItemOption.createdAt, order: .forward) var maintenanceItemOptions: [MaintenanceItemOption]
 
     @StateObject var viewModel: AddCarViewModel
+    @State var isMileagePickerPresented = false
+    @State var isOnRoadDatePickerPresented = false
 
     init(editingCar: Car? = nil) {
         _viewModel = StateObject(wrappedValue: AddCarViewModel(editingCar: editingCar))
     }
 
     var body: some View {
-        NavigationStack {
-            addCarForm
-        }
+        addCarForm
     }
 
     private var addCarForm: some View {
@@ -28,12 +28,8 @@ struct AddCarView: View {
             maintenanceItemsSection
         }
         .navigationTitle(viewModel.navigationTitle)
+        .toolbar(viewModel.editingCar == nil ? .visible : .hidden, for: .tabBar)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("取消") {
-                    dismiss()
-                }
-            }
             ToolbarItem(placement: .confirmationAction) {
                 Button("保存") {
                     if viewModel.saveCar(
@@ -45,14 +41,6 @@ struct AddCarView: View {
                     }
                 }
                 .disabled(!viewModel.canSave)
-            }
-        }
-        .sheet(item: $viewModel.activePickerSheet) { sheet in
-            switch sheet {
-            case .mileage:
-                mileagePickerSheet
-            case .onRoadDate:
-                onRoadDatePickerSheet
             }
         }
         .onChange(of: viewModel.brand) { _, _ in
@@ -77,22 +65,38 @@ struct AddCarView: View {
         } message: {
             Text(viewModel.validationMessage)
         }
-        .sheet(item: $viewModel.draftSheetTarget) { target in
-            draftEditorSheet(target: target)
+        .navigationDestination(item: $viewModel.draftSheetTarget) { target in
+            draftEditorPage(target: target)
         }
     }
 
     private var vehicleSection: some View {
         Section("车辆信息") {
-            Picker("品牌", selection: $viewModel.brand) {
-                ForEach(viewModel.brandOptions, id: \.self) { option in
-                    Text(option).tag(option)
+            HStack {
+                Text("品牌")
+                Spacer()
+                Menu {
+                    ForEach(viewModel.brandOptions, id: \.self) { option in
+                        Button(option) {
+                            viewModel.brand = option
+                        }
+                    }
+                } label: {
+                    rowValueActionLabel(text: viewModel.brand)
                 }
             }
 
-            Picker("车型", selection: $viewModel.modelName) {
-                ForEach(viewModel.displayModelOptions, id: \.self) { option in
-                    Text(option).tag(option)
+            HStack {
+                Text("车型")
+                Spacer()
+                Menu {
+                    ForEach(viewModel.displayModelOptions, id: \.self) { option in
+                        Button(option) {
+                            viewModel.modelName = option
+                        }
+                    }
+                } label: {
+                    rowValueActionLabel(text: viewModel.modelName)
                 }
             }
         }
@@ -100,20 +104,23 @@ struct AddCarView: View {
 
     private var mileageSection: some View {
         Section("当前里程") {
-            Button {
-                viewModel.presentPickerSheet(.mileage)
-            } label: {
-                HStack {
-                    Text("里程")
-                    Spacer()
-                    Text(MileageSegmentFormatter.text(
-                        wan: viewModel.mileageWan,
-                        qian: viewModel.mileageQian,
-                        bai: viewModel.mileageBai
-                    ))
+            HStack {
+                Text("里程")
+                Spacer()
+                Button {
+                    isMileagePickerPresented = true
+                } label: {
+                    rowValueActionLabel(
+                        text: MileageSegmentFormatter.text(
+                            wan: viewModel.mileageWan,
+                            qian: viewModel.mileageQian,
+                            bai: viewModel.mileageBai
+                        )
+                    )
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
+                .sheet(isPresented: $isMileagePickerPresented) {
+                    mileagePickerSheet
+                }
             }
             .buttonStyle(.plain)
         }
@@ -121,63 +128,55 @@ struct AddCarView: View {
 
     private var onRoadSection: some View {
         Section("上路信息") {
-            Button {
-                viewModel.draftOnRoadDate = viewModel.onRoadDate
-                viewModel.presentPickerSheet(.onRoadDate)
-            } label: {
-                HStack {
-                    Text("上路日期")
-                    Spacer()
-                    Text(AppDateContext.formatShortDate(viewModel.onRoadDate))
+            HStack {
+                Text("上路日期")
+                Spacer()
+                Button {
+                    isOnRoadDatePickerPresented = true
+                } label: {
+                    rowValueActionLabel(text: AppDateContext.formatShortDate(viewModel.onRoadDate))
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
+                .sheet(isPresented: $isOnRoadDatePickerPresented) {
+                    onRoadDatePickerSheet
+                }
             }
             .buttonStyle(.plain)
-            Text("车龄：\(CarAgeFormatter.yearsText(from: viewModel.onRoadDate, now: AppDateContext.now())) 年")
-                .foregroundStyle(.secondary)
         }
     }
 
     @ViewBuilder
     private var maintenanceItemsSection: some View {
-        Section("保养项目设置") {
+        Section {
             if maintenanceItemOptions.isEmpty {
                 ForEach(viewModel.itemDrafts) { draft in
                     draftRow(draft)
                 }
-
-                Button {
-                    viewModel.customDraft = MaintenanceItemDraft.defaultDraft(name: "自定义项目")
-                    viewModel.draftSheetTarget = .addCustom
-                } label: {
-                    Label("新增自定义项目", systemImage: "plus.circle")
-                }
-                .buttonStyle(.bordered)
-
-                Text("可按需关闭项目，也可点项目进入设置里程/时间提醒规则与阈值。")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
             } else {
-                ForEach(viewModel.existingItemDrafts) { draft in
+                ForEach(viewModel.displayExistingItemDrafts) { draft in
                     existingDraftRow(draft)
                 }
-
-                Text("点任一项目可直接修改名称、提醒规则和阈值；与新增车辆页保持一致。")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
             }
+
+            Button {
+                viewModel.customDraft = MaintenanceItemDraft.defaultDraft(name: "自定义项目")
+                viewModel.draftSheetTarget = .addCustom
+            } label: {
+                Label("新增自定义项目", systemImage: "plus.circle")
+            }
+        } header: {
+            Text("保养项目设置")
+        } footer: {
+            Text("可按需关闭项目，也可点项目进入设置里程/时间提醒规则与阈值。")
         }
     }
 
     private func draftRow(_ draft: MaintenanceItemDraft) -> some View {
         HStack(spacing: 12) {
-            Button {
-                viewModel.draftSheetTarget = .edit(draft.id)
-            } label: {
-                draftSummary(draft)
-            }
-            .buttonStyle(.plain)
+            draftSummary(draft)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    viewModel.draftSheetTarget = .edit(draft.id)
+                }
 
             Toggle("", isOn: viewModel.draftEnabledBinding(id: draft.id))
                 .labelsHidden()
@@ -195,15 +194,26 @@ struct AddCarView: View {
     }
 
     private func existingDraftRow(_ draft: MaintenanceItemDraft) -> some View {
-        HStack(spacing: 8) {
-            Button {
-                viewModel.draftSheetTarget = .editExisting(draft.id)
-            } label: {
-                draftSummary(draft)
-            }
-            .buttonStyle(.plain)
+        HStack(spacing: 12) {
+            draftSummary(draft)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    viewModel.draftSheetTarget = .editExisting(draft.id)
+                }
+
+            Toggle("", isOn: viewModel.existingDraftEnabledBinding(id: draft.id))
+                .labelsHidden()
         }
         .padding(.vertical, 2)
+    }
+
+    private func rowValueActionLabel(text: String) -> some View {
+        HStack(spacing: 4) {
+            Text(text)
+            Image(systemName: "chevron.up.chevron.down")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
     }
 
     private func draftSummary(_ draft: MaintenanceItemDraft) -> some View {
@@ -225,11 +235,11 @@ struct AddCarView: View {
     }
 
     @ViewBuilder
-    private func draftEditorSheet(target: MaintenanceDraftSheetTarget) -> some View {
+    private func draftEditorPage(target: MaintenanceDraftSheetTarget) -> some View {
         switch target {
         case .edit(let draftID):
             if let draftBinding = viewModel.draftBinding(id: draftID) {
-                maintenanceDraftEditorSheet(
+                maintenanceDraftEditorPage(
                     title: "保养项目设置",
                     draft: draftBinding,
                     canEditName: draftBinding.wrappedValue.isDefault == false,
@@ -245,20 +255,25 @@ struct AddCarView: View {
                 )
             }
         case .addCustom:
-            maintenanceDraftEditorSheet(
+            maintenanceDraftEditorPage(
                 title: "新增自定义项目",
                 draft: $viewModel.customDraft,
                 canEditName: true,
                 onDelete: nil,
                 onSave: {
-                    guard viewModel.validateDraft(viewModel.customDraft, excludingID: nil) else { return }
-                    viewModel.itemDrafts.append(viewModel.customDraft)
+                    if maintenanceItemOptions.isEmpty {
+                        guard viewModel.validateDraft(viewModel.customDraft, excludingID: nil) else { return }
+                        viewModel.itemDrafts.append(viewModel.customDraft)
+                    } else {
+                        guard viewModel.validateExistingDraft(viewModel.customDraft, excludingID: nil) else { return }
+                        viewModel.existingItemDrafts.append(viewModel.customDraft)
+                    }
                     viewModel.draftSheetTarget = nil
                 }
             )
         case .editExisting(let optionID):
             if let draftBinding = viewModel.existingDraftBinding(optionID: optionID) {
-                maintenanceDraftEditorSheet(
+                maintenanceDraftEditorPage(
                     title: "保养项目设置",
                     draft: draftBinding,
                     canEditName: true,

@@ -59,8 +59,20 @@ enum CoreConfig {
         ),
     ]
 
-    /// 日产车型默认项目：当前与本田保持一致，后续可独立维护。
+    /// 日产车型默认项目：默认与本田一致，部分车型可按车型覆盖。
     private static let nissanDefaultItemDefinitions: [DefaultItemDefinition] = hondaDefaultItemDefinitions
+    private static let sylphy2022DefaultItemDefinitions: [DefaultItemDefinition] = nissanDefaultItemDefinitions.compactMap { definition in
+        guard definition.key != fuelCleanerKey else { return nil }
+        if definition.key == engineOilKey {
+            return DefaultItemDefinition(
+                key: definition.key,
+                defaultName: definition.defaultName,
+                mileageInterval: 10_000,
+                monthInterval: definition.monthInterval
+            )
+        }
+        return definition
+    }
 
     /// 兜底默认项：用于没有车辆上下文或品牌未覆盖时的默认行为。
     static let defaultItemDefinitions: [DefaultItemDefinition] = hondaDefaultItemDefinitions
@@ -83,12 +95,17 @@ enum CoreConfig {
     /// 按车辆品牌返回默认项目定义；后续新增车型只需补充这里的分支。
     static func defaultItemDefinitions(brand: String?, modelName: String?) -> [DefaultItemDefinition] {
         let normalizedBrand = (brand ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        let _ = (modelName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedModelName = (modelName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
 
         switch normalizedBrand {
         case "日产":
-            return nissanDefaultItemDefinitions
-        case "东风本田":
+            switch normalizedModelName {
+            case "22款轩逸":
+                return sylphy2022DefaultItemDefinitions
+            default:
+                return nissanDefaultItemDefinitions
+            }
+        case "本田", "东风本田":
             return hondaDefaultItemDefinitions
         default:
             return hondaDefaultItemDefinitions

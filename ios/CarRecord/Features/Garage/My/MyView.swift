@@ -19,11 +19,11 @@ struct MyView: View {
     @State var transferResultMessage = ""
     @State var isTransferResultAlertPresented = false
     @State var isRestoreConfirmAlertPresented = false
+    @State var pendingDeleteCar: Car?
     @State var operationErrorMessage = ""
     @State var isOperationErrorAlertPresented = false
     @State var isManualNowEnabled = AppDateContext.isManualNowEnabled()
     @State var manualNowDate = AppDateContext.manualNowDate()
-    @State var draftManualNowDate = AppDateContext.manualNowDate()
     @State var isManualNowPickerPresented = false
 
     var body: some View {
@@ -60,19 +60,21 @@ struct MyView: View {
                                 )
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            Button(role: .destructive) {
-                                deleteCar(car)
+                            Button {
+                                pendingDeleteCar = car
                             } label: {
                                 Label("删除", systemImage: "trash")
                             }
+                            .tint(.red)
 
-                            Button {
-                                applyCar(car)
-                            } label: {
-                                Label(isApplied ? "已应用" : "应用", systemImage: "checkmark.circle")
+                            if !isApplied {
+                                Button {
+                                    applyCar(car)
+                                } label: {
+                                    Label("应用", systemImage: "checkmark.circle")
+                                }
+                                .tint(.blue)
                             }
-                            .tint(.blue)
-                            .disabled(isApplied)
 
                             Button {
                                 openEditCarForm(car)
@@ -128,7 +130,6 @@ struct MyView: View {
 
                 if isManualNowEnabled {
                     Button {
-                        draftManualNowDate = manualNowDate
                         isManualNowPickerPresented = true
                     } label: {
                         HStack {
@@ -156,7 +157,7 @@ struct MyView: View {
             }
         }
         .navigationTitle("我的")
-        .sheet(item: $activeCarForm) { target in
+        .navigationDestination(item: $activeCarForm) { target in
             switch target {
             case .add:
                 AddCarView()
@@ -168,7 +169,6 @@ struct MyView: View {
             DayDatePickerSheetView(
                 title: "选择日期",
                 label: "手动日期",
-                draftDate: $draftManualNowDate,
                 currentDate: manualNowDate,
                 onApply: { newValue in
                     manualNowDate = newValue
@@ -223,6 +223,29 @@ struct MyView: View {
         } message: {
             Text("恢复会先清空当前全部数据，再导入备份文件。")
         }
+        .alert("确认删除车辆？", isPresented: Binding(
+            get: { pendingDeleteCar != nil },
+            set: { newValue in
+                if !newValue {
+                    pendingDeleteCar = nil
+                }
+            }
+        )) {
+            Button("取消", role: .cancel) {
+                pendingDeleteCar = nil
+            }
+            Button("确认删除", role: .destructive) {
+                guard let car = pendingDeleteCar else { return }
+                pendingDeleteCar = nil
+                deleteCar(car)
+            }
+        } message: {
+            if let car = pendingDeleteCar {
+                Text("将删除“\(CarDisplayFormatter.name(car))”及其关联的保养记录、保养项目设置等全部数据，且无法恢复。")
+            } else {
+                Text("将删除该车辆及其关联的保养记录、保养项目设置等全部数据，且无法恢复。")
+            }
+        }
         .alert("备份恢复结果", isPresented: $isTransferResultAlertPresented) {
             Button("我知道了", role: .cancel) {}
         } message: {
@@ -237,7 +260,6 @@ struct MyView: View {
             syncAppliedCarSelection()
             isManualNowEnabled = AppDateContext.isManualNowEnabled()
             manualNowDate = AppDateContext.manualNowDate()
-            draftManualNowDate = manualNowDate
         }
         .onChange(of: cars.map(\.id)) { _, _ in
             syncAppliedCarSelection()

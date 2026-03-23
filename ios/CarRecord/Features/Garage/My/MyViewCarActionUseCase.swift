@@ -4,8 +4,14 @@ import SwiftData
 extension MyView {
     func deleteCars(at offsets: IndexSet) {
         let deletedIDs = Set(offsets.compactMap { cars.indices.contains($0) ? cars[$0].id : nil })
+        let willDeleteAllCars = (cars.count - deletedIDs.count) == 0
         for index in offsets {
             modelContext.delete(cars[index])
+        }
+        if willDeleteAllCars {
+            for option in serviceItemOptions {
+                modelContext.delete(option)
+            }
         }
         if let message = modelContext.saveOrLog("删除车辆") {
             operationErrorMessage = message

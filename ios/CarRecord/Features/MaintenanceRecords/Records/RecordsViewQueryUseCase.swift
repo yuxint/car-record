@@ -88,7 +88,6 @@ extension RecordsView {
         return records.flatMap { record in
             let itemIDs = CoreConfig.parseItemIDs(record.itemIDsRaw)
             guard itemIDs.isEmpty == false else { return [MaintenanceItemRow]() }
-            guard let car = record.car else { return [MaintenanceItemRow]() }
 
             return itemIDs.enumerated().compactMap { index, itemID in
                 guard let itemName = nameByID[itemID] else { return nil }
@@ -96,7 +95,6 @@ extension RecordsView {
                     id: "\(record.id.uuidString)-\(index)-\(itemID.uuidString)",
                     itemID: itemID,
                     itemName: itemName,
-                    carName: CarDisplayFormatter.name(car),
                     record: record
                 )
             }

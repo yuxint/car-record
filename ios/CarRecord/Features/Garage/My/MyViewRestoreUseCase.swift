@@ -131,7 +131,8 @@ extension MyView {
                 brand: carPayload.brand,
                 modelName: carPayload.modelName,
                 mileage: carPayload.mileage,
-                purchaseDate: parsedCarPurchaseDate
+                purchaseDate: parsedCarPurchaseDate,
+                disabledItemIDsRaw: carPayload.disabledItemIDsRaw
             )
             modelContext.insert(car)
             summary.insertedCars += 1

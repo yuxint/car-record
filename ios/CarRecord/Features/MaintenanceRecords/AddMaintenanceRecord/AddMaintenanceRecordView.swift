@@ -19,7 +19,6 @@ struct AddMaintenanceRecordView: View {
     @State var selectedCarID: UUID?
     @State var selectedItems = Set<UUID>()
     @State var maintenanceDate = AppDateContext.now()
-    @State var draftMaintenanceDate = AppDateContext.now()
     /// 新增记录默认总费用为 0，避免首次进入为空导致无法直接保存。
     @State var cost = "0"
     @State var mileageWan = 0
@@ -64,7 +63,6 @@ struct AddMaintenanceRecordView: View {
                     }
 
                     Button {
-                        draftMaintenanceDate = maintenanceDate
                         presentPickerSheet(.serviceDate)
                     } label: {
                         HStack {

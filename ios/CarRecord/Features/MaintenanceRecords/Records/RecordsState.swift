@@ -74,7 +74,6 @@ struct MaintenanceItemRow: Identifiable {
     let id: String
     let itemID: UUID
     let itemName: String
-    let carName: String
     let record: MaintenanceRecord
 }
 

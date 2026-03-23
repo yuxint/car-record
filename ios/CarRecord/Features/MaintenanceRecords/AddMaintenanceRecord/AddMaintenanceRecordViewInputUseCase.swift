@@ -15,7 +15,6 @@ extension AddMaintenanceRecordView {
                 selectedItems = Set(CoreConfig.parseItemIDs(editingRecord.itemIDsRaw))
             }
             maintenanceDate = editingRecord.date
-            draftMaintenanceDate = editingRecord.date
             cost = formatCost(editingRecord.cost)
             let segments = MileageSegmentFormatter.segments(from: editingRecord.mileage)
             mileageWan = segments.wan
@@ -27,7 +26,6 @@ extension AddMaintenanceRecordView {
 
         selectedCarID = availableCars.first?.id
         cost = "0"
-        draftMaintenanceDate = maintenanceDate
         applyDefaultMileageIfNeeded(for: selectedCarID)
     }
 

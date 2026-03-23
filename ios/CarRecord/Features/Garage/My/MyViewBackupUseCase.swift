@@ -22,6 +22,7 @@ extension MyView {
                 brand: car.brand,
                 modelName: car.modelName,
                 mileage: car.mileage,
+                disabledItemIDsRaw: car.disabledItemIDsRaw,
                 purchaseDate: exportDateString(car.purchaseDate)
             )
 

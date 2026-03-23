@@ -14,8 +14,8 @@ enum CarPickerSheet: Identifiable {
     }
 }
 
-/// 保养项目设置弹窗路由：区分“编辑项目”与“新增自定义项目”。
-enum MaintenanceDraftSheetTarget: Identifiable {
+/// 保养项目设置页面路由：区分“编辑项目”与“新增自定义项目”。
+enum MaintenanceDraftSheetTarget: Identifiable, Hashable {
     case edit(UUID)
     case addCustom
     case editExisting(UUID)
