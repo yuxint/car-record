@@ -6,11 +6,11 @@ extension AddCarView {
     var mileagePickerSheet: some View {
         MileagePickerSheetView(
             title: "选择里程",
-            wan: $mileageWan,
-            qian: $mileageQian,
-            bai: $mileageBai,
-            onCancel: { activePickerSheet = nil },
-            onConfirm: { activePickerSheet = nil }
+            wan: $viewModel.mileageWan,
+            qian: $viewModel.mileageQian,
+            bai: $viewModel.mileageBai,
+            onCancel: { viewModel.activePickerSheet = nil },
+            onConfirm: { viewModel.activePickerSheet = nil }
         )
     }
 
@@ -19,13 +19,13 @@ extension AddCarView {
         DayDatePickerSheetView(
             title: "选择上路日期",
             label: "上路日期",
-            draftDate: $draftOnRoadDate,
-            currentDate: onRoadDate,
+            draftDate: $viewModel.draftOnRoadDate,
+            currentDate: viewModel.onRoadDate,
             onApply: { newValue in
-                onRoadDate = newValue
-                activePickerSheet = nil
+                viewModel.onRoadDate = newValue
+                viewModel.activePickerSheet = nil
             },
-            onCancel: { activePickerSheet = nil }
+            onCancel: { viewModel.activePickerSheet = nil }
         )
     }
 
@@ -64,11 +64,11 @@ extension AddCarView {
                     Toggle("按时间提醒", isOn: draft.remindByTime)
                     if draft.wrappedValue.remindByTime {
                         Stepper(
-                            value: monthIntervalYearBinding(for: draft),
+                            value: viewModel.monthIntervalYearBinding(for: draft),
                             in: 0.5...10,
                             step: 0.5
                         ) {
-                            Text("时间间隔：\(yearIntervalText(from: draft.wrappedValue.monthInterval))年")
+                            Text("时间间隔：\(viewModel.yearIntervalText(from: draft.wrappedValue.monthInterval))年")
                         }
                     }
                 }
@@ -97,7 +97,7 @@ extension AddCarView {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") {
-                        draftSheetTarget = nil
+                        viewModel.draftSheetTarget = nil
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -113,5 +113,4 @@ extension AddCarView {
             }
         }
     }
-
 }
