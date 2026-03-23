@@ -40,13 +40,10 @@
 		F1D68A822F640E6D00CFD30D /* MyViewBackupUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A762F640E6D00CFD30D /* MyViewBackupUseCase.swift */; };
 		F1D68A892F640E6D00CFD30D /* MyViewCarActionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7E2F640E6D00CFD31D /* MyViewCarActionUseCase.swift */; };
 		F1D68A832F640E6D00CFD30D /* MyDataTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A772F640E6D00CFD30D /* MyDataTransfer.swift */; };
-		F1D68A842F640E6D00CFD30D /* MaintenanceItemManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A782F640E6D00CFD30D /* MaintenanceItemManagerView.swift */; };
 		F1D68A8C2F640E6D00CFD30D /* MyViewRestoreUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A912F640E6D00CFD30D /* MyViewRestoreUseCase.swift */; };
 		F1D68A8D2F640E6D00CFD30D /* MyViewDataTransferSupportUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A922F640E6D00CFD30D /* MyViewDataTransferSupportUseCase.swift */; };
 		F1D68A952F640E6D00CFD30D /* RecordsViewSelectionSheetUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A982F640E6D00CFD30D /* RecordsViewSelectionSheetUseCase.swift */; };
 		F1D68A9A2F640E6D00CFD30D /* RecordsViewFilterRulesUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A992F640E6D00CFD30D /* RecordsViewFilterRulesUseCase.swift */; };
-		F1D68A9B2F640E6D00CFD30D /* MaintenanceItemReminderSettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A9C2F640E6D00CFD30D /* MaintenanceItemReminderSettingView.swift */; };
-		F1D68A9D2F640E6D00CFD30D /* ItemRelatedLogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A9E2F640E6D00CFD30D /* ItemRelatedLogsView.swift */; };
 		F1D68A9F2F640E6D00CFD30D /* MaintenanceRecordItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68AA02F640E6D00CFD30D /* MaintenanceRecordItem.swift */; };
 		F1D68AA12F640E6D00CFD30D /* MaintenanceItemOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68AA22F640E6D00CFD30D /* MaintenanceItemOption.swift */; };
 		F1D68AA32F640E6D00CFD30D /* CoreConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68AA42F640E6D00CFD30D /* CoreConfig.swift */; };
@@ -99,9 +96,6 @@
 		F1D68A982F640E6D00CFD30D /* RecordsViewSelectionSheetUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewSelectionSheetUseCase.swift; sourceTree = "<group>"; };
 		F1D68A992F640E6D00CFD30D /* RecordsViewFilterRulesUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewFilterRulesUseCase.swift; sourceTree = "<group>"; };
 		F1D68A772F640E6D00CFD30D /* MyDataTransfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyDataTransfer.swift; sourceTree = "<group>"; };
-		F1D68A782F640E6D00CFD30D /* MaintenanceItemManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceItemManagerView.swift; sourceTree = "<group>"; };
-		F1D68A9C2F640E6D00CFD30D /* MaintenanceItemReminderSettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceItemReminderSettingView.swift; sourceTree = "<group>"; };
-		F1D68A9E2F640E6D00CFD30D /* ItemRelatedLogsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemRelatedLogsView.swift; sourceTree = "<group>"; };
 		F1D68AA02F640E6D00CFD30D /* MaintenanceRecordItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceRecordItem.swift; sourceTree = "<group>"; };
 		F1D68AA22F640E6D00CFD30D /* MaintenanceItemOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceItemOption.swift; sourceTree = "<group>"; };
 		F1D68AA42F640E6D00CFD30D /* CoreConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreConfig.swift; sourceTree = "<group>"; };
@@ -235,16 +229,6 @@
 			path = My;
 			sourceTree = "<group>";
 		};
-		F1D68AB42F640E6D00CFD30D /* MaintenanceItems */ = {
-			isa = PBXGroup;
-			children = (
-				F1D68A782F640E6D00CFD30D /* MaintenanceItemManagerView.swift */,
-				F1D68A9C2F640E6D00CFD30D /* MaintenanceItemReminderSettingView.swift */,
-				F1D68A9E2F640E6D00CFD30D /* ItemRelatedLogsView.swift */,
-			);
-			path = MaintenanceItems;
-			sourceTree = "<group>";
-		};
 		F1D68AB32F640E6D00CFD30D /* DataTransfer */ = {
 			isa = PBXGroup;
 			children = (
@@ -258,7 +242,6 @@
 			children = (
 				F1D68AB12F640E6D00CFD30D /* AddCar */,
 				F1D68AB22F640E6D00CFD30D /* My */,
-				F1D68AB42F640E6D00CFD30D /* MaintenanceItems */,
 				F1D68AB32F640E6D00CFD30D /* DataTransfer */,
 			);
 			path = Garage;
@@ -490,9 +473,6 @@
 				F1D68A8D2F640E6D00CFD30D /* MyViewDataTransferSupportUseCase.swift in Sources */,
 				F1D68A892F640E6D00CFD30D /* MyViewCarActionUseCase.swift in Sources */,
 				F1D68A832F640E6D00CFD30D /* MyDataTransfer.swift in Sources */,
-				F1D68A842F640E6D00CFD30D /* MaintenanceItemManagerView.swift in Sources */,
-				F1D68A9B2F640E6D00CFD30D /* MaintenanceItemReminderSettingView.swift in Sources */,
-				F1D68A9D2F640E6D00CFD30D /* ItemRelatedLogsView.swift in Sources */,
 				F1D68A662F640E6D00CFD30D /* AddCarView.swift in Sources */,
 				F1D68A802F640E6D00CFD30D /* AddCarViewModel.swift in Sources */,
 				F1D68A882F640E6D00CFD30D /* AddCarSheetComponents.swift in Sources */,

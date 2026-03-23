@@ -11,6 +11,8 @@ struct AddCarView: View {
     @StateObject var viewModel: AddCarViewModel
     @State var isMileagePickerPresented = false
     @State var isOnRoadDatePickerPresented = false
+    @State var draftValidationMessage = ""
+    @State var isDraftValidationAlertPresented = false
 
     init(editingCar: Car? = nil) {
         _viewModel = StateObject(wrappedValue: AddCarViewModel(editingCar: editingCar))
@@ -18,6 +20,13 @@ struct AddCarView: View {
 
     var body: some View {
         addCarForm
+    }
+
+    private var scopedMaintenanceItemOptions: [MaintenanceItemOption] {
+        CoreConfig.scopedOptions(
+            maintenanceItemOptions,
+            carID: viewModel.editingCar?.id
+        )
     }
 
     private var addCarForm: some View {
@@ -34,7 +43,7 @@ struct AddCarView: View {
                 Button("保存") {
                     if viewModel.saveCar(
                         cars: cars,
-                        maintenanceItemOptions: maintenanceItemOptions,
+                        maintenanceItemOptions: scopedMaintenanceItemOptions,
                         modelContext: modelContext
                     ) {
                         dismiss()
@@ -44,16 +53,16 @@ struct AddCarView: View {
             }
         }
         .onChange(of: viewModel.brand) { _, _ in
-            viewModel.handleBrandChanged(maintenanceItemOptions: maintenanceItemOptions)
+            viewModel.handleBrandChanged(maintenanceItemOptions: scopedMaintenanceItemOptions)
         }
         .onChange(of: viewModel.modelName) { _, _ in
-            viewModel.handleModelChanged(maintenanceItemOptions: maintenanceItemOptions)
+            viewModel.handleModelChanged(maintenanceItemOptions: scopedMaintenanceItemOptions)
         }
         .onAppear {
-            viewModel.handleAppear(maintenanceItemOptions: maintenanceItemOptions)
+            viewModel.handleAppear(maintenanceItemOptions: scopedMaintenanceItemOptions)
         }
         .onChange(of: maintenanceItemOptions.map(\.id)) { _, _ in
-            viewModel.handleMaintenanceOptionsChanged(maintenanceItemOptions: maintenanceItemOptions)
+            viewModel.handleMaintenanceOptionsChanged(maintenanceItemOptions: scopedMaintenanceItemOptions)
         }
         .alert("保存失败", isPresented: $viewModel.isSaveErrorAlertPresented) {
             Button("我知道了", role: .cancel) {}
@@ -147,7 +156,7 @@ struct AddCarView: View {
     @ViewBuilder
     private var maintenanceItemsSection: some View {
         Section {
-            if maintenanceItemOptions.isEmpty {
+            if scopedMaintenanceItemOptions.isEmpty {
                 ForEach(viewModel.itemDrafts) { draft in
                     draftRow(draft)
                 }
@@ -158,7 +167,7 @@ struct AddCarView: View {
             }
 
             Button {
-                viewModel.customDraft = MaintenanceItemDraft.defaultDraft(name: "自定义项目")
+                viewModel.customDraft = viewModel.makeDefaultCustomDraft()
                 viewModel.draftSheetTarget = .addCustom
             } label: {
                 Label("新增自定义项目", systemImage: "plus.circle")
@@ -205,6 +214,15 @@ struct AddCarView: View {
                 .labelsHidden()
         }
         .padding(.vertical, 2)
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if draft.isDefault == false {
+                Button(role: .destructive) {
+                    viewModel.removeExistingCustomDraft(draft.id)
+                } label: {
+                    Label("删除", systemImage: "trash")
+                }
+            }
+        }
     }
 
     private func rowValueActionLabel(text: String) -> some View {
@@ -250,11 +268,20 @@ struct AddCarView: View {
                         viewModel.removeCustomDraft(draftID)
                         viewModel.draftSheetTarget = nil
                     },
+                    onRestoreDefaults: draftBinding.wrappedValue.isDefault ? {
+                        draftBinding.wrappedValue = viewModel.restoreDraftDefaults(draftBinding.wrappedValue)
+                    } : nil,
                     onSave: {
                         let draft = draftBinding.wrappedValue
-                        guard viewModel.validateDraft(draft, excludingID: draft.id) else { return }
+                        if let message = viewModel.validateDraftError(draft, excludingID: draft.id) {
+                            draftValidationMessage = message
+                            isDraftValidationAlertPresented = true
+                            return
+                        }
                         viewModel.draftSheetTarget = nil
-                    }
+                    },
+                    validationMessage: draftValidationMessage,
+                    isValidationAlertPresented: $isDraftValidationAlertPresented
                 )
             }
         case .addCustom:
@@ -263,16 +290,27 @@ struct AddCarView: View {
                 draft: $viewModel.customDraft,
                 canEditName: true,
                 onDelete: nil,
+                onRestoreDefaults: nil,
                 onSave: {
-                    if maintenanceItemOptions.isEmpty {
-                        guard viewModel.validateDraft(viewModel.customDraft, excludingID: nil) else { return }
+                    if scopedMaintenanceItemOptions.isEmpty {
+                        if let message = viewModel.validateDraftError(viewModel.customDraft, excludingID: nil) {
+                            draftValidationMessage = message
+                            isDraftValidationAlertPresented = true
+                            return
+                        }
                         viewModel.itemDrafts.append(viewModel.customDraft)
                     } else {
-                        guard viewModel.validateExistingDraft(viewModel.customDraft, excludingID: nil) else { return }
+                        if let message = viewModel.validateExistingDraftError(viewModel.customDraft, excludingID: nil) {
+                            draftValidationMessage = message
+                            isDraftValidationAlertPresented = true
+                            return
+                        }
                         viewModel.existingItemDrafts.append(viewModel.customDraft)
                     }
                     viewModel.draftSheetTarget = nil
-                }
+                },
+                validationMessage: draftValidationMessage,
+                isValidationAlertPresented: $isDraftValidationAlertPresented
             )
         case .editExisting(let optionID):
             if let draftBinding = viewModel.existingDraftBinding(optionID: optionID) {
@@ -281,11 +319,20 @@ struct AddCarView: View {
                     draft: draftBinding,
                     canEditName: true,
                     onDelete: nil,
+                    onRestoreDefaults: draftBinding.wrappedValue.isDefault ? {
+                        draftBinding.wrappedValue = viewModel.restoreDraftDefaults(draftBinding.wrappedValue)
+                    } : nil,
                     onSave: {
                         let draft = draftBinding.wrappedValue
-                        guard viewModel.validateExistingDraft(draft, excludingID: draft.id) else { return }
+                        if let message = viewModel.validateExistingDraftError(draft, excludingID: draft.id) {
+                            draftValidationMessage = message
+                            isDraftValidationAlertPresented = true
+                            return
+                        }
                         viewModel.draftSheetTarget = nil
-                    }
+                    },
+                    validationMessage: draftValidationMessage,
+                    isValidationAlertPresented: $isDraftValidationAlertPresented
                 )
             }
         }

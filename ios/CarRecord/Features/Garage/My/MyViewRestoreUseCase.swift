@@ -4,7 +4,6 @@ import SwiftData
 extension MyView {
     /// 应用恢复数据并返回统计结果：会在空库中重建保养项目、车辆与记录。
     func applyImportedPayload(_ payload: MyDataTransferPayload) throws -> MyDataTransferImportSummary {
-        var optionsByName: [String: MaintenanceItemOption] = [:]
         var summary = MyDataTransferImportSummary()
         var profileByKey: [String: MyDataTransferModelProfilePayload] = [:]
         for profile in payload.modelProfiles {
@@ -25,61 +24,6 @@ extension MyView {
                 code: 1011,
                 userInfo: [NSLocalizedDescriptionKey: "恢复失败：备份缺少车型保养项目配置。"]
             )
-        }
-
-        for profile in payload.modelProfiles {
-            var profileItemNames = Set<String>()
-            for item in profile.serviceItems {
-                let normalizedName = item.name.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard normalizedName.isEmpty == false else {
-                    throw NSError(
-                        domain: "MyDataTransfer",
-                        code: 1008,
-                        userInfo: [NSLocalizedDescriptionKey: "恢复失败：保养项目名称不能为空。"]
-                    )
-                }
-                if profileItemNames.contains(normalizedName) {
-                    throw NSError(
-                        domain: "MyDataTransfer",
-                        code: 1009,
-                        userInfo: [NSLocalizedDescriptionKey: "恢复失败：车型“\(profile.brand) \(profile.modelName)”存在重复项目“\(normalizedName)”。"]
-                    )
-                }
-                profileItemNames.insert(normalizedName)
-
-                if let existing = optionsByName[normalizedName] {
-                    if existing.remindByMileage != item.remindByMileage ||
-                        existing.mileageInterval != item.mileageInterval ||
-                        existing.remindByTime != item.remindByTime ||
-                        existing.monthInterval != item.monthInterval ||
-                        existing.warningStartPercent != item.warningStartPercent ||
-                        existing.dangerStartPercent != item.dangerStartPercent {
-                        throw NSError(
-                            domain: "MyDataTransfer",
-                            code: 1012,
-                            userInfo: [NSLocalizedDescriptionKey: "恢复失败：项目“\(normalizedName)”在不同车型配置冲突。"]
-                        )
-                    }
-                    continue
-                }
-
-                let option = MaintenanceItemOption(
-                    id: item.id,
-                    name: normalizedName,
-                    isDefault: item.isDefault,
-                    catalogKey: item.catalogKey,
-                    remindByMileage: item.remindByMileage,
-                    mileageInterval: item.mileageInterval,
-                    remindByTime: item.remindByTime,
-                    monthInterval: item.monthInterval,
-                    warningStartPercent: item.warningStartPercent,
-                    dangerStartPercent: item.dangerStartPercent,
-                    createdAt: Date(timeIntervalSince1970: item.createdAt)
-                )
-                modelContext.insert(option)
-                optionsByName[normalizedName] = option
-                summary.insertedItems += 1
-            }
         }
 
         var importedCarIDs = Set<UUID>()
@@ -136,6 +80,53 @@ extension MyView {
             )
             modelContext.insert(car)
             summary.insertedCars += 1
+
+            guard let profile = profileByKey[profileKey] else {
+                throw NSError(
+                    domain: "MyDataTransfer",
+                    code: 1013,
+                    userInfo: [NSLocalizedDescriptionKey: "恢复失败：车型“\(carPayload.brand) \(carPayload.modelName)”缺少保养项目配置。"]
+                )
+            }
+
+            var optionsByName: [String: MaintenanceItemOption] = [:]
+            var profileItemNames = Set<String>()
+            for item in profile.serviceItems {
+                let normalizedName = item.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard normalizedName.isEmpty == false else {
+                    throw NSError(
+                        domain: "MyDataTransfer",
+                        code: 1008,
+                        userInfo: [NSLocalizedDescriptionKey: "恢复失败：保养项目名称不能为空。"]
+                    )
+                }
+                if profileItemNames.contains(normalizedName) {
+                    throw NSError(
+                        domain: "MyDataTransfer",
+                        code: 1009,
+                        userInfo: [NSLocalizedDescriptionKey: "恢复失败：车型“\(profile.brand) \(profile.modelName)”存在重复项目“\(normalizedName)”。"]
+                    )
+                }
+                profileItemNames.insert(normalizedName)
+
+                let option = MaintenanceItemOption(
+                    id: item.id,
+                    name: normalizedName,
+                    ownerCarID: car.id,
+                    isDefault: item.isDefault,
+                    catalogKey: item.catalogKey,
+                    remindByMileage: item.remindByMileage,
+                    mileageInterval: item.mileageInterval,
+                    remindByTime: item.remindByTime,
+                    monthInterval: item.monthInterval,
+                    warningStartPercent: item.warningStartPercent,
+                    dangerStartPercent: item.dangerStartPercent,
+                    createdAt: Date(timeIntervalSince1970: item.createdAt)
+                )
+                modelContext.insert(option)
+                optionsByName[normalizedName] = option
+                summary.insertedItems += 1
+            }
 
             for logPayload in vehicle.serviceLogs {
                 guard

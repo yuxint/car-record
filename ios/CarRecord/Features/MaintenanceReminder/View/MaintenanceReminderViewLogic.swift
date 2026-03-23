@@ -52,7 +52,12 @@ extension MaintenanceReminderView {
 
     /// 默认项目优先，随后按创建时间排序，保持与"项目管理"页面一致。
     var sortedMaintenanceItemOptions: [MaintenanceItemOption] {
-        CoreConfig.naturalSortedOptions(serviceItemOptions)
+        let scopedCar = scopedCars.first
+        return CoreConfig.naturalSortedOptions(
+            CoreConfig.scopedOptions(serviceItemOptions, carID: appliedCarID),
+            brand: scopedCar?.brand,
+            modelName: scopedCar?.modelName
+        )
     }
 
     /// 当前已应用车辆：无有效已应用ID时自动回退到首辆车。

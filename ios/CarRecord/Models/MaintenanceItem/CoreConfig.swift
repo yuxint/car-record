@@ -12,6 +12,18 @@ enum CoreConfig {
         let monthInterval: Int?
     }
 
+    /// 车型配置：默认项目、默认阈值与排序优先级都按车型定义。
+    struct ModelConfig {
+        let defaultItemDefinitions: [DefaultItemDefinition]
+        let preferredKeysWhenNoLog: [String]
+        let defaultWarningStartPercent: Int
+        let defaultDangerStartPercent: Int
+
+        var defaultOrderByKey: [String: Int] {
+            Dictionary(uniqueKeysWithValues: defaultItemDefinitions.enumerated().map { ($1.key, $0) })
+        }
+    }
+
     static let fuelCleanerKey = "fuel_cleaner"
     static let engineOilKey = "engine_oil"
     static let acFilterKey = "ac_filter"
@@ -19,36 +31,44 @@ enum CoreConfig {
     static let transmissionOilKey = "transmission_oil"
     static let brakeFluidKey = "brake_fluid"
 
-    /// 兜底默认项：用于没有车辆上下文或品牌未覆盖时的默认行为。
-    static let defaultItemDefinitions: [DefaultItemDefinition] = civic2022DefaultItemDefinitions
-
-    static let preferredKeysWhenNoLog: [String] = [
-        engineOilKey,
-        fuelCleanerKey,
-        acFilterKey,
-    ]
-
-    /// 默认进度颜色阈值：100% 开始黄色，超过 125% 进入红色。
-    static let defaultWarningStartPercent = 100
-    static let defaultDangerStartPercent = 125
-
-    /// 默认项目顺序索引：用于稳定排序（默认项在前，且按配置顺序）。
-    static let defaultOrderByKey: [String: Int] = Dictionary(
-        uniqueKeysWithValues: defaultItemDefinitions.enumerated().map { ($1.key, $0) }
+    /// 兜底车型配置：用于无车辆上下文时的默认行为。
+    static let fallbackModelConfig = ModelConfig(
+        defaultItemDefinitions: civic2022DefaultItemDefinitions,
+        preferredKeysWhenNoLog: [
+            engineOilKey,
+            fuelCleanerKey,
+            acFilterKey,
+        ],
+        defaultWarningStartPercent: 100,
+        defaultDangerStartPercent: 125
     )
 
-    /// 按车型返回默认项目定义；品牌信息不参与默认配置选择。
-    static func defaultItemDefinitions(brand: String?, modelName: String?) -> [DefaultItemDefinition] {
-        _ = brand
+    /// 按车型返回配置。
+    static func modelConfig(brand: String?, modelName: String?) -> ModelConfig {
+        let normalizedBrand = (brand ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         let normalizedModelName = (modelName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
 
-        switch normalizedModelName {
-        case "22款思域":
-            return civic2022DefaultItemDefinitions
-        case "22款轩逸":
-            return sylphy2022DefaultItemDefinitions
+        switch (normalizedBrand, normalizedModelName) {
+        case ("本田", "22款思域"):
+            return ModelConfig(
+                defaultItemDefinitions: civic2022DefaultItemDefinitions,
+                preferredKeysWhenNoLog: [engineOilKey, fuelCleanerKey, acFilterKey],
+                defaultWarningStartPercent: 100,
+                defaultDangerStartPercent: 125
+            )
+        case ("日产", "22款轩逸"):
+            return ModelConfig(
+                defaultItemDefinitions: sylphy2022DefaultItemDefinitions,
+                preferredKeysWhenNoLog: [engineOilKey, acFilterKey, airFilterKey],
+                defaultWarningStartPercent: 100,
+                defaultDangerStartPercent: 125
+            )
         default:
-            return civic2022DefaultItemDefinitions
+            return fallbackModelConfig
         }
+    }
+
+    static func defaultItemDefinitions(brand: String?, modelName: String?) -> [DefaultItemDefinition] {
+        modelConfig(brand: brand, modelName: modelName).defaultItemDefinitions
     }
 }

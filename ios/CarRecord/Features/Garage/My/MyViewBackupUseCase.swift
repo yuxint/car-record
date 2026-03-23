@@ -32,7 +32,7 @@ extension MyView {
                     date: exportDateString(log.date),
                     itemNames: CoreConfig.itemNames(
                         from: log.itemIDsRaw,
-                        options: serviceItemOptions
+                        options: CoreConfig.scopedOptions(serviceItemOptions, carID: car.id)
                     ),
                     cost: log.cost,
                     mileage: log.mileage,
@@ -56,7 +56,7 @@ extension MyView {
             return MyDataTransferModelProfilePayload(
                 brand: car.brand,
                 modelName: car.modelName,
-                serviceItems: serviceItemOptions.map { option in
+                serviceItems: CoreConfig.scopedOptions(serviceItemOptions, carID: car.id).map { option in
                     MyDataTransferItemPayload(
                         id: option.id,
                         name: option.name,

@@ -5,7 +5,9 @@ import SwiftData
 @Model
 final class MaintenanceItemOption {
     @Attribute(.unique) var id: UUID
-    @Attribute(.unique) var name: String
+    var name: String
+    /// 项目归属车辆ID：所有项目（默认/自定义）都按车辆隔离。
+    var ownerCarID: UUID?
     var isDefault: Bool
     /// 默认项目固定键：用于默认规则映射，避免改名后逻辑失效。
     var catalogKey: String?
@@ -21,18 +23,20 @@ final class MaintenanceItemOption {
     init(
         id: UUID = UUID(),
         name: String,
+        ownerCarID: UUID? = nil,
         isDefault: Bool,
         catalogKey: String? = nil,
         remindByMileage: Bool = true,
         mileageInterval: Int = 5000,
         remindByTime: Bool = false,
         monthInterval: Int = 0,
-        warningStartPercent: Int = CoreConfig.defaultWarningStartPercent,
-        dangerStartPercent: Int = CoreConfig.defaultDangerStartPercent,
+        warningStartPercent: Int = CoreConfig.fallbackModelConfig.defaultWarningStartPercent,
+        dangerStartPercent: Int = CoreConfig.fallbackModelConfig.defaultDangerStartPercent,
         createdAt: Date = Date()
     ) {
         self.id = id
         self.name = name
+        self.ownerCarID = ownerCarID
         self.isDefault = isDefault
         self.catalogKey = catalogKey
         self.remindByMileage = remindByMileage

@@ -17,12 +17,17 @@ final class AddCarViewModel: ObservableObject {
     @Published var itemDrafts: [MaintenanceItemDraft] = []
     @Published var existingItemDrafts: [MaintenanceItemDraft] = []
     @Published private(set) var visibleDefaultCatalogKeys = Set<String>()
-    @Published var customDraft = MaintenanceItemDraft.defaultDraft(name: "自定义项目")
+    @Published var customDraft = MaintenanceItemDraft.defaultDraft(
+        name: "",
+        warningStartPercent: CoreConfig.fallbackModelConfig.defaultWarningStartPercent,
+        dangerStartPercent: CoreConfig.fallbackModelConfig.defaultDangerStartPercent
+    )
     @Published var draftSheetTarget: MaintenanceDraftSheetTarget?
     @Published var saveErrorMessage = ""
     @Published var isSaveErrorAlertPresented = false
     @Published var validationMessage = ""
     @Published var isValidationAlertPresented = false
+    private var hasInitializedDraftsOnAppear = false
 
     private static let fixedBrandOptions = [
         "本田",
@@ -69,6 +74,10 @@ final class AddCarViewModel: ObservableObject {
         !modelName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    var currentModelConfig: CoreConfig.ModelConfig {
+        CoreConfig.modelConfig(brand: brand, modelName: modelName)
+    }
+
     init(editingCar: Car? = nil) {
         self.editingCar = editingCar
 
@@ -94,6 +103,7 @@ final class AddCarViewModel: ObservableObject {
             onRoadDate = now
             initialEditingModelKey = nil
         }
+        customDraft = makeDefaultCustomDraft()
     }
 
     func carModelKey(brand: String, modelName: String) -> String {
@@ -123,6 +133,8 @@ final class AddCarViewModel: ObservableObject {
     }
 
     func handleAppear(maintenanceItemOptions: [MaintenanceItemOption]) {
+        guard hasInitializedDraftsOnAppear == false else { return }
+        hasInitializedDraftsOnAppear = true
         rebuildItemDraftsForCurrentModel(maintenanceItemOptions: maintenanceItemOptions)
         rebuildExistingDraftsFromOptions(maintenanceItemOptions: maintenanceItemOptions)
     }
@@ -149,7 +161,11 @@ final class AddCarViewModel: ObservableObject {
                 existing.catalogKey = definition.key
                 return existing
             }
-            return MaintenanceItemDraft.defaultDraft(from: definition)
+            return MaintenanceItemDraft.defaultDraft(
+                from: definition,
+                warningStartPercent: currentModelConfig.defaultWarningStartPercent,
+                dangerStartPercent: currentModelConfig.defaultDangerStartPercent
+            )
         }
 
         itemDrafts = defaultDrafts + customDrafts
@@ -174,7 +190,12 @@ final class AddCarViewModel: ObservableObject {
             disabledItemIDs = []
         }
         let existingByID = Dictionary(uniqueKeysWithValues: existingItemDrafts.map { ($0.id, $0) })
-        let options = CoreConfig.sortedSelectionOptions(options: maintenanceItemOptions, records: [])
+        let options = CoreConfig.sortedSelectionOptions(
+            options: maintenanceItemOptions,
+            records: [],
+            brand: brand,
+            modelName: modelName
+        )
         let drafts = options.map { option in
             let normalizedName = option.name.trimmingCharacters(in: .whitespacesAndNewlines)
             let isModelAllowedDefault = option.isDefault == false || allowedDefaultKeys.contains(option.catalogKey ?? "")
@@ -259,9 +280,14 @@ final class AddCarViewModel: ObservableObject {
         itemDrafts.removeAll { $0.id == id && $0.isDefault == false }
     }
 
+    func removeExistingCustomDraft(_ id: UUID) {
+        existingItemDrafts.removeAll { $0.id == id && $0.isDefault == false }
+    }
+
     func saveCar(cars: [Car], maintenanceItemOptions: [MaintenanceItemOption], modelContext: ModelContext) -> Bool {
         let normalizedBrand = brand.trimmingCharacters(in: .whitespacesAndNewlines)
         let normalizedModelName = modelName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let targetCarID = editingCar?.id ?? UUID()
         if editingCar == nil {
             let targetModelKey = carModelKey(brand: normalizedBrand, modelName: normalizedModelName)
             if let conflictCar = cars.first(where: { car in
@@ -274,11 +300,12 @@ final class AddCarViewModel: ObservableObject {
         }
 
         if maintenanceItemOptions.isEmpty {
-            guard setupMaintenanceItemsForCurrentCar(modelContext: modelContext) else {
+            guard setupMaintenanceItemsForCurrentCar(carID: targetCarID, modelContext: modelContext) else {
                 return false
             }
         } else {
             guard applyExistingMaintenanceItemsChanges(
+                carID: targetCarID,
                 maintenanceItemOptions: maintenanceItemOptions,
                 modelContext: modelContext
             ) else {
@@ -305,6 +332,7 @@ final class AddCarViewModel: ObservableObject {
             editingCar.disabledItemIDsRaw = disabledItemIDsRaw
         } else {
             let car = Car(
+                id: targetCarID,
                 brand: normalizedBrand,
                 modelName: normalizedModelName,
                 mileage: currentMileage,
@@ -322,7 +350,7 @@ final class AddCarViewModel: ObservableObject {
         return true
     }
 
-    func setupMaintenanceItemsForCurrentCar(modelContext: ModelContext) -> Bool {
+    func setupMaintenanceItemsForCurrentCar(carID: UUID, modelContext: ModelContext) -> Bool {
         let enabledDrafts = itemDrafts.filter(\.isEnabled)
         guard enabledDrafts.isEmpty == false else {
             validationMessage = "请至少保留一个默认项目或新增一个自定义项目。"
@@ -349,6 +377,7 @@ final class AddCarViewModel: ObservableObject {
                 MaintenanceItemOption(
                     id: draft.id,
                     name: draft.name.trimmingCharacters(in: .whitespacesAndNewlines),
+                    ownerCarID: carID,
                     isDefault: draft.isDefault,
                     catalogKey: draft.catalogKey,
                     remindByMileage: draft.remindByMileage,
@@ -369,12 +398,10 @@ final class AddCarViewModel: ObservableObject {
         return true
     }
 
-    func validateDraft(_ draft: MaintenanceItemDraft, excludingID: UUID?) -> Bool {
+    func validateDraftError(_ draft: MaintenanceItemDraft, excludingID: UUID?) -> String? {
         let normalizedName = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard normalizedName.isEmpty == false else {
-            validationMessage = "项目名称不能为空。"
-            isValidationAlertPresented = true
-            return false
+            return "项目名称不能为空。"
         }
 
         let duplicateInDrafts = itemDrafts.contains { existing in
@@ -384,35 +411,36 @@ final class AddCarViewModel: ObservableObject {
             return existing.name.trimmingCharacters(in: .whitespacesAndNewlines) == normalizedName
         }
         if duplicateInDrafts {
-            validationMessage = "项目名称已存在，请更换后再保存。"
-            isValidationAlertPresented = true
-            return false
+            return "项目名称已存在，请更换后再保存。"
         }
 
         guard draft.remindByMileage || draft.remindByTime else {
-            validationMessage = "请至少开启一种提醒方式。"
-            isValidationAlertPresented = true
-            return false
+            return "请至少开启一种提醒方式。"
         }
 
-        let thresholds = CoreConfig.normalizedProgressThresholds(
-            warning: draft.warningStartPercent,
-            danger: draft.dangerStartPercent
-        )
-        guard thresholds.danger > thresholds.warning else {
-            validationMessage = "红色阈值必须大于黄色阈值。"
+        guard (0...200).contains(draft.warningStartPercent), (0...200).contains(draft.dangerStartPercent) else {
+            return "阈值范围必须在 0%~200%。"
+        }
+
+        guard draft.dangerStartPercent > draft.warningStartPercent else {
+            return "红色阈值必须大于黄色阈值。"
+        }
+        return nil
+    }
+
+    func validateDraft(_ draft: MaintenanceItemDraft, excludingID: UUID?) -> Bool {
+        if let message = validateDraftError(draft, excludingID: excludingID) {
+            validationMessage = message
             isValidationAlertPresented = true
             return false
         }
         return true
     }
 
-    func validateExistingDraft(_ draft: MaintenanceItemDraft, excludingID: UUID?) -> Bool {
+    func validateExistingDraftError(_ draft: MaintenanceItemDraft, excludingID: UUID?) -> String? {
         let normalizedName = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard normalizedName.isEmpty == false else {
-            validationMessage = "项目名称不能为空。"
-            isValidationAlertPresented = true
-            return false
+            return "项目名称不能为空。"
         }
 
         let duplicateInDrafts = existingItemDrafts.contains { existing in
@@ -422,23 +450,26 @@ final class AddCarViewModel: ObservableObject {
             return existing.name.trimmingCharacters(in: .whitespacesAndNewlines) == normalizedName
         }
         if duplicateInDrafts {
-            validationMessage = "项目名称已存在，请更换后再保存。"
-            isValidationAlertPresented = true
-            return false
+            return "项目名称已存在，请更换后再保存。"
         }
 
         guard draft.remindByMileage || draft.remindByTime else {
-            validationMessage = "请至少开启一种提醒方式。"
-            isValidationAlertPresented = true
-            return false
+            return "请至少开启一种提醒方式。"
         }
 
-        let thresholds = CoreConfig.normalizedProgressThresholds(
-            warning: draft.warningStartPercent,
-            danger: draft.dangerStartPercent
-        )
-        guard thresholds.danger > thresholds.warning else {
-            validationMessage = "红色阈值必须大于黄色阈值。"
+        guard (0...200).contains(draft.warningStartPercent), (0...200).contains(draft.dangerStartPercent) else {
+            return "阈值范围必须在 0%~200%。"
+        }
+
+        guard draft.dangerStartPercent > draft.warningStartPercent else {
+            return "红色阈值必须大于黄色阈值。"
+        }
+        return nil
+    }
+
+    func validateExistingDraft(_ draft: MaintenanceItemDraft, excludingID: UUID?) -> Bool {
+        if let message = validateExistingDraftError(draft, excludingID: excludingID) {
+            validationMessage = message
             isValidationAlertPresented = true
             return false
         }
@@ -446,10 +477,17 @@ final class AddCarViewModel: ObservableObject {
     }
 
     func applyExistingMaintenanceItemsChanges(
+        carID: UUID,
         maintenanceItemOptions: [MaintenanceItemOption],
         modelContext: ModelContext
     ) -> Bool {
         guard existingItemDrafts.isEmpty == false else { return true }
+        let currentDraftIDs = Set(existingItemDrafts.map(\.id))
+        for option in maintenanceItemOptions where option.isDefault == false {
+            if currentDraftIDs.contains(option.id) == false {
+                modelContext.delete(option)
+            }
+        }
         let enabledDrafts = existingItemDrafts.filter(\.isEnabled)
         guard enabledDrafts.isEmpty == false else {
             validationMessage = "请至少保留一个保养项目。"
@@ -476,6 +514,7 @@ final class AddCarViewModel: ObservableObject {
                 danger: draft.dangerStartPercent
             )
             if let option = optionByID[draft.id] {
+                option.ownerCarID = carID
                 option.name = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
                 option.remindByMileage = draft.remindByMileage
                 option.mileageInterval = draft.remindByMileage ? max(1, draft.mileageInterval) : 0
@@ -488,6 +527,7 @@ final class AddCarViewModel: ObservableObject {
                     MaintenanceItemOption(
                         id: draft.id,
                         name: draft.name.trimmingCharacters(in: .whitespacesAndNewlines),
+                        ownerCarID: carID,
                         isDefault: draft.isDefault,
                         catalogKey: draft.catalogKey,
                         remindByMileage: draft.remindByMileage,
@@ -518,6 +558,42 @@ final class AddCarViewModel: ObservableObject {
             return "\(Int(years))"
         }
         return String(format: "%.1f", years)
+    }
+
+    func restoreDraftDefaults(_ draft: MaintenanceItemDraft) -> MaintenanceItemDraft {
+        var restored = draft
+        if restored.isDefault,
+           let catalogKey = restored.catalogKey {
+            let definitions = CoreConfig.defaultItemDefinitions(brand: brand, modelName: modelName)
+            if let definition = definitions.first(where: { $0.key == catalogKey }) {
+                restored.name = definition.defaultName
+                restored.remindByMileage = definition.mileageInterval != nil
+                restored.mileageInterval = definition.mileageInterval ?? 0
+                restored.remindByTime = definition.monthInterval != nil
+                restored.monthInterval = definition.monthInterval ?? 0
+            }
+        } else {
+            let fallback = MaintenanceItemDraft.defaultDraft(
+                name: restored.name,
+                warningStartPercent: currentModelConfig.defaultWarningStartPercent,
+                dangerStartPercent: currentModelConfig.defaultDangerStartPercent
+            )
+            restored.remindByMileage = fallback.remindByMileage
+            restored.mileageInterval = fallback.mileageInterval
+            restored.remindByTime = fallback.remindByTime
+            restored.monthInterval = fallback.monthInterval
+        }
+        restored.warningStartPercent = currentModelConfig.defaultWarningStartPercent
+        restored.dangerStartPercent = currentModelConfig.defaultDangerStartPercent
+        return restored
+    }
+
+    func makeDefaultCustomDraft() -> MaintenanceItemDraft {
+        MaintenanceItemDraft.defaultDraft(
+            name: "",
+            warningStartPercent: currentModelConfig.defaultWarningStartPercent,
+            dangerStartPercent: currentModelConfig.defaultDangerStartPercent
+        )
     }
 
     private static func normalizedBrand(_ brand: String) -> String {

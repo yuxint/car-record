@@ -1,21 +1,40 @@
 import Foundation
 
 extension CoreConfig {
+    /// 项目作用域过滤：所有项目都只对归属车辆可见。
+    static func scopedOptions(
+        _ options: [MaintenanceItemOption],
+        carID: UUID?
+    ) -> [MaintenanceItemOption] {
+        options.filter { option in
+            guard let carID else { return false }
+            return option.ownerCarID == carID
+        }
+    }
+
     /// 默认项目自然顺序索引：默认项返回非空，自定义项返回空。
-    static func defaultOrderIndex(for option: MaintenanceItemOption) -> Int? {
+    static func defaultOrderIndex(
+        for option: MaintenanceItemOption,
+        brand: String?,
+        modelName: String?
+    ) -> Int? {
         guard let key = option.catalogKey else { return nil }
-        return defaultOrderByKey[key]
+        return modelConfig(brand: brand, modelName: modelName).defaultOrderByKey[key]
     }
 
     /// 默认项目优先，其次按默认顺序/创建时间排序。
-    static func naturalSortedOptions(_ options: [MaintenanceItemOption]) -> [MaintenanceItemOption] {
+    static func naturalSortedOptions(
+        _ options: [MaintenanceItemOption],
+        brand: String?,
+        modelName: String?
+    ) -> [MaintenanceItemOption] {
         options.sorted { lhs, rhs in
             if lhs.isDefault != rhs.isDefault {
                 return lhs.isDefault && !rhs.isDefault
             }
             if lhs.isDefault, rhs.isDefault {
-                let lhsOrder = defaultOrderIndex(for: lhs) ?? Int.max
-                let rhsOrder = defaultOrderIndex(for: rhs) ?? Int.max
+                let lhsOrder = defaultOrderIndex(for: lhs, brand: brand, modelName: modelName) ?? Int.max
+                let rhsOrder = defaultOrderIndex(for: rhs, brand: brand, modelName: modelName) ?? Int.max
                 if lhsOrder != rhsOrder {
                     return lhsOrder < rhsOrder
                 }
@@ -39,9 +58,12 @@ extension CoreConfig {
     /// 项目选择器排序：无记录时按预设优先级；有记录时按使用频次。
     static func sortedSelectionOptions(
         options: [MaintenanceItemOption],
-        records: [MaintenanceRecord]
+        records: [MaintenanceRecord],
+        brand: String?,
+        modelName: String?
     ) -> [MaintenanceItemOption] {
-        let naturalOptions = naturalSortedOptions(options)
+        let modelConfig = modelConfig(brand: brand, modelName: modelName)
+        let naturalOptions = naturalSortedOptions(options, brand: brand, modelName: modelName)
         var naturalOrderIndexByID: [UUID: Int] = [:]
         for (index, option) in naturalOptions.enumerated() {
             naturalOrderIndexByID[option.id] = index
@@ -49,8 +71,8 @@ extension CoreConfig {
 
         if records.isEmpty {
             return naturalOptions.sorted { lhs, rhs in
-                let lhsRank = preferredKeysWhenNoLog.firstIndex(of: lhs.catalogKey ?? "") ?? Int.max
-                let rhsRank = preferredKeysWhenNoLog.firstIndex(of: rhs.catalogKey ?? "") ?? Int.max
+                let lhsRank = modelConfig.preferredKeysWhenNoLog.firstIndex(of: lhs.catalogKey ?? "") ?? Int.max
+                let rhsRank = modelConfig.preferredKeysWhenNoLog.firstIndex(of: rhs.catalogKey ?? "") ?? Int.max
                 if lhsRank != rhsRank {
                     return lhsRank < rhsRank
                 }

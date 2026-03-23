@@ -2,6 +2,10 @@ import SwiftUI
 import SwiftData
 
 extension RecordsView {
+    var scopedServiceItemOptions: [MaintenanceItemOption] {
+        CoreConfig.scopedOptions(serviceItemOptions, carID: appliedCarID)
+    }
+
     /// 分区标题：展示“按周期”统计数量（按分组条数统计）。
     var cycleSectionTitle: String {
         "按周期展示（\(filteredDateGroups.count)条）"
@@ -52,7 +56,7 @@ extension RecordsView {
                         seenItemIDs.insert(itemID)
                         return true
                     }
-                let nameByID = Dictionary(uniqueKeysWithValues: serviceItemOptions.map { ($0.id, $0.name) })
+                let nameByID = Dictionary(uniqueKeysWithValues: scopedServiceItemOptions.map { ($0.id, $0.name) })
                 let sortedItemIDs = uniqueItemIDs.sorted { lhs, rhs in
                     let lhsOrder = naturalItemOrderIndexByID[lhs, default: Int.max]
                     let rhsOrder = naturalItemOrderIndexByID[rhs, default: Int.max]
@@ -83,7 +87,7 @@ extension RecordsView {
     /// 1) 按保养时间倒序；
     /// 2) 同一保养时间时按里程倒序，确保高里程排前面。
     func buildItemRows(from records: [MaintenanceRecord]) -> [MaintenanceItemRow] {
-        let nameByID = Dictionary(uniqueKeysWithValues: serviceItemOptions.map { ($0.id, $0.name) })
+        let nameByID = Dictionary(uniqueKeysWithValues: scopedServiceItemOptions.map { ($0.id, $0.name) })
 
         return records.flatMap { record in
             let itemIDs = CoreConfig.parseItemIDs(record.itemIDsRaw)
@@ -158,15 +162,23 @@ extension RecordsView {
 
     /// 筛选弹窗项目顺序：与“新增/编辑保养”保持一致，避免同类页面排序规则不一致。
     var sortedSelectionItemOptions: [MaintenanceItemOption] {
-        CoreConfig.sortedSelectionOptions(
-            options: serviceItemOptions,
-            records: scopedMaintenanceRecords
+        let appliedCar = scopedCars.first
+        return CoreConfig.sortedSelectionOptions(
+            options: scopedServiceItemOptions,
+            records: scopedMaintenanceRecords,
+            brand: appliedCar?.brand,
+            modelName: appliedCar?.modelName
         )
     }
 
     /// 项目自然顺序索引：用于“按周期”项目摘要排序稳定且与项目管理顺序一致。
     var naturalItemOrderIndexByID: [UUID: Int] {
-        let naturalOptions = CoreConfig.naturalSortedOptions(serviceItemOptions)
+        let appliedCar = scopedCars.first
+        let naturalOptions = CoreConfig.naturalSortedOptions(
+            scopedServiceItemOptions,
+            brand: appliedCar?.brand,
+            modelName: appliedCar?.modelName
+        )
         return Dictionary(uniqueKeysWithValues: naturalOptions.enumerated().map { ($1.id, $0) })
     }
     /// 当前已应用车型ID：若历史值失效，自动回退到首辆车。

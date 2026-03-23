@@ -3,6 +3,10 @@ import SwiftData
 import UIKit
 
 extension AddMaintenanceRecordView {
+    var scopedServiceItemOptions: [MaintenanceItemOption] {
+        CoreConfig.scopedOptions(serviceItemOptions, carID: selectedCarID)
+    }
+
     /// 合并“万 + 千 + 百”三段，得到保养发生时的公里数。
     var currentMileage: Int {
         MileageSegmentFormatter.mileage(wan: mileageWan, qian: mileageQian, bai: mileageBai)
@@ -21,13 +25,18 @@ extension AddMaintenanceRecordView {
             } else {
                 disabledItemIDs = []
             }
-            visibleOptions = serviceItemOptions.filter { disabledItemIDs.contains($0.id) == false }
+            visibleOptions = scopedServiceItemOptions.filter { disabledItemIDs.contains($0.id) == false }
         } else {
-            visibleOptions = serviceItemOptions
+            visibleOptions = scopedServiceItemOptions
+        }
+        let selectedCar = selectedCarID.flatMap { id in
+            availableCars.first(where: { $0.id == id })
         }
         return CoreConfig.sortedSelectionOptions(
             options: visibleOptions,
-            records: serviceRecords
+            records: serviceRecords,
+            brand: selectedCar?.brand,
+            modelName: selectedCar?.modelName
         )
     }
     var selectedItemsText: String {
@@ -37,7 +46,7 @@ extension AddMaintenanceRecordView {
     /// 按项目入口锁定编辑时，展示当前锁定项目名称。
     var lockedItemNameText: String {
         guard let lockedItemID else { return selectedItemsText }
-        let names = CoreConfig.itemNames(from: [lockedItemID], options: serviceItemOptions)
+        let names = CoreConfig.itemNames(from: [lockedItemID], options: scopedServiceItemOptions)
         return names.first ?? ""
     }
 
@@ -71,7 +80,7 @@ extension AddMaintenanceRecordView {
     var canSave: Bool {
         guard selectedCarID != nil, !selectedItems.isEmpty else { return false }
         if let lockedItemID, isItemSelectionLocked {
-            guard serviceItemOptions.contains(where: { $0.id == lockedItemID }) else { return false }
+            guard scopedServiceItemOptions.contains(where: { $0.id == lockedItemID }) else { return false }
         }
         if isCostReadOnly { return true }
         return parsedCost != nil

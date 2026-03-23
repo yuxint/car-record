@@ -142,7 +142,7 @@ extension AddMaintenanceRecordView {
         var drafts: [MaintenanceIntervalDraft] = []
 
         for itemID in itemIDs {
-            guard let option = serviceItemOptions.first(where: { $0.id == itemID }) else {
+            guard let option = scopedServiceItemOptions.first(where: { $0.id == itemID }) else {
                 continue
             }
 
@@ -173,7 +173,7 @@ extension AddMaintenanceRecordView {
     /// 把确认结果回写为全局默认提醒间隔。
     func applyIntervalConfirmationToOptions() {
         for draft in intervalConfirmDrafts {
-            guard let option = serviceItemOptions.first(where: { $0.id == draft.id }) else {
+            guard let option = scopedServiceItemOptions.first(where: { $0.id == draft.id }) else {
                 continue
             }
 

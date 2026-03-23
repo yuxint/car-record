@@ -35,7 +35,10 @@ extension AddCarView {
         draft: Binding<MaintenanceItemDraft>,
         canEditName: Bool,
         onDelete: (() -> Void)?,
-        onSave: @escaping () -> Void
+        onRestoreDefaults: (() -> Void)?,
+        onSave: @escaping () -> Void,
+        validationMessage: String,
+        isValidationAlertPresented: Binding<Bool>
     ) -> some View {
         Form {
             Section("项目名称") {
@@ -72,11 +75,19 @@ extension AddCarView {
             }
 
             Section("进度颜色阈值（%）") {
-                Stepper(value: draft.warningStartPercent, in: 50...300, step: 5) {
+                Stepper(value: draft.warningStartPercent, in: 0...200, step: 5) {
                     Text("黄色阈值：\(draft.wrappedValue.warningStartPercent)%")
                 }
-                Stepper(value: draft.dangerStartPercent, in: 55...400, step: 5) {
+                Stepper(value: draft.dangerStartPercent, in: 0...200, step: 5) {
                     Text("红色阈值：\(draft.wrappedValue.dangerStartPercent)%")
+                }
+            }
+
+            if let onRestoreDefaults {
+                Section {
+                    Button("恢复默认值") {
+                        onRestoreDefaults()
+                    }
                 }
             }
 
@@ -99,10 +110,10 @@ extension AddCarView {
                 }
             }
         }
-        .onChange(of: draft.wrappedValue.warningStartPercent) { _, newValue in
-            if draft.wrappedValue.dangerStartPercent <= newValue {
-                draft.wrappedValue.dangerStartPercent = newValue + 5
-            }
+        .alert("提示", isPresented: isValidationAlertPresented) {
+            Button("我知道了", role: .cancel) {}
+        } message: {
+            Text(validationMessage)
         }
     }
 }
