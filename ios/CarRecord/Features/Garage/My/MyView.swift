@@ -22,8 +22,8 @@ struct MyView: View {
     @State var pendingDeleteCar: Car?
     @State var operationErrorMessage = ""
     @State var isOperationErrorAlertPresented = false
-    @State var isManualNowEnabled = AppDateContext.isManualNowEnabled()
-    @State var manualNowDate = AppDateContext.manualNowDate()
+    @AppStorage(AppDateContext.useManualNowStorageKey) var isManualNowEnabled = false
+    @AppStorage(AppDateContext.manualNowTimestampStorageKey) var manualNowTimestamp = 0.0
     @State var isManualNowPickerPresented = false
 
     var body: some View {
@@ -33,6 +33,7 @@ struct MyView: View {
                     Text("还没有车辆，点击下方“添加车辆”开始记录。")
                         .foregroundStyle(.secondary)
                 } else {
+                    let carAgeNow = isManualNowEnabled ? manualNowDate : Date()
                     ForEach(cars) { car in
                         let isApplied = isAppliedCar(car)
                         VStack(alignment: .leading, spacing: 8) {
@@ -41,7 +42,7 @@ struct MyView: View {
 
                             Text("上路日期：\(AppDateContext.formatShortDate(car.purchaseDate))")
                                 .foregroundStyle(.secondary)
-                            Text("车龄：\(CarAgeFormatter.yearsText(from: car.purchaseDate, now: AppDateContext.now())) 年")
+                            Text("车龄：\(CarAgeFormatter.yearsText(from: car.purchaseDate, now: carAgeNow)) 年")
                                 .foregroundStyle(.secondary)
                             Text("里程：\(car.mileage) km")
                                 .foregroundStyle(.secondary)
@@ -171,8 +172,8 @@ struct MyView: View {
                 label: "手动日期",
                 currentDate: manualNowDate,
                 onApply: { newValue in
-                    manualNowDate = newValue
                     AppDateContext.setManualNowDate(newValue)
+                    manualNowTimestamp = AppDateContext.calendar.startOfDay(for: newValue).timeIntervalSince1970
                     isManualNowPickerPresented = false
                 },
                 onCancel: { isManualNowPickerPresented = false }
@@ -258,11 +259,17 @@ struct MyView: View {
         }
         .onAppear {
             syncAppliedCarSelection()
-            isManualNowEnabled = AppDateContext.isManualNowEnabled()
-            manualNowDate = AppDateContext.manualNowDate()
         }
         .onChange(of: cars.map(\.id)) { _, _ in
             syncAppliedCarSelection()
         }
+    }
+
+    var manualNowDate: Date {
+        guard manualNowTimestamp > 0 else {
+            return AppDateContext.calendar.startOfDay(for: Date())
+        }
+        let storedDate = Date(timeIntervalSince1970: manualNowTimestamp)
+        return AppDateContext.calendar.startOfDay(for: storedDate)
     }
 }
