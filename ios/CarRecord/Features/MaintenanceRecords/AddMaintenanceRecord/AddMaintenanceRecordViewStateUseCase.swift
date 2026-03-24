@@ -36,7 +36,7 @@ extension AddMaintenanceRecordView {
         )
     }
     var selectedItemsText: String {
-        selectedItems.isEmpty ? "请选择" : "已选\(selectedItems.count)项"
+        selectedItems.isEmpty ? "请选择（可多选）" : "已选\(selectedItems.count)项"
     }
 
     /// 按项目入口锁定编辑时，展示当前锁定项目名称。
