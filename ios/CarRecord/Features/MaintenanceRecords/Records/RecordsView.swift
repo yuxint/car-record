@@ -23,6 +23,7 @@ struct RecordsView: View {
     @State var hasInteractedWithSelectionDraft = false
     @State var saveErrorMessage = ""
     @State var isSaveErrorAlertPresented = false
+    @State var isAddingMaintenanceRecord = false
 
     var body: some View {
         List {
@@ -106,8 +107,22 @@ struct RecordsView: View {
             }
         }
         .navigationTitle("保养记录")
-        .toolbar(editingTarget == nil ? .visible : .hidden, for: .tabBar)
-        .animation(.none, value: editingTarget != nil)
+        .toolbar((editingTarget == nil && isAddingMaintenanceRecord == false) ? .visible : .hidden, for: .tabBar)
+        .animation(.none, value: editingTarget != nil || isAddingMaintenanceRecord)
+        .toolbar {
+            if scopedCars.isEmpty == false {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isAddingMaintenanceRecord = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
+        }
+        .navigationDestination(isPresented: $isAddingMaintenanceRecord) {
+            AddMaintenanceRecordView()
+        }
         .navigationDestination(isPresented: Binding(
             get: { editingTarget != nil },
             set: { if !$0 { editingTarget = nil } }

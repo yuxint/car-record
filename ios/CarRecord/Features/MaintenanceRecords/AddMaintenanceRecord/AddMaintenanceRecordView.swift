@@ -211,7 +211,7 @@ struct AddMaintenanceRecordView: View {
                         presentPickerSheet(.serviceItems)
                     } label: {
                         HStack {
-                            Text("选择项目")
+                            Text("选择项目（可多选）")
                             Spacer()
                             Text(selectedItemsText)
                                 .foregroundStyle(.secondary)

@@ -138,7 +138,7 @@ struct DayDatePickerSheetView: View {
             }
             .scrollDisabled(true)
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.height(450)])
         .presentationDragIndicator(.visible)
         .presentationBackground(Color(.systemBackground))
     }
