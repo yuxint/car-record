@@ -2,7 +2,6 @@ import SwiftUI
 import SwiftData
 import Combine
 import UniformTypeIdentifiers
-import UIKit
 
 /// “个人中心”页：集中放置车辆管理、项目管理入口和数据重置入口。
 struct MyView: View {
@@ -323,14 +322,14 @@ struct MyView: View {
 }
 
 struct AppLogConsoleView: View {
-    @State var isCopiedAlertPresented = false
     @State var logFilePath = ""
+    @State var logFileSize = 0
     @State var logContent = ""
 
     var body: some View {
         List {
             if logFilePath.isEmpty == false {
-                Text("日志文件：\(logFilePath)")
+                Text("日志文件：\(logFilePath)（\(formattedFileSize)）")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -357,12 +356,6 @@ struct AppLogConsoleView: View {
                     }
                 }
                 .disabled(logContent.isEmpty)
-
-                Button("复制") {
-                    UIPasteboard.general.string = logContent
-                    isCopiedAlertPresented = true
-                }
-                .disabled(logContent.isEmpty)
             }
         }
         .task {
@@ -375,24 +368,29 @@ struct AppLogConsoleView: View {
                 await reloadLogFile()
             }
         }
-        .alert("已复制日志", isPresented: $isCopiedAlertPresented) {
-            Button(AppPopupText.acknowledge, role: .cancel) {}
-        } message: {
-            Text("日志内容已复制到剪贴板。")
-        }
     }
 
     var parsedLines: [String] {
-        logContent
-            .split(separator: "\n", omittingEmptySubsequences: false)
-            .map(String.init)
+        Array(
+            logContent
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .map(String.init)
+                .filter { $0.isEmpty == false }
+                .reversed()
+        )
+    }
+
+    var formattedFileSize: String {
+        ByteCountFormatter.string(fromByteCount: Int64(logFileSize), countStyle: .file)
     }
 
     func reloadLogFile() async {
         let path = await AppLogFileStore.shared.filePath()
         let content = await AppLogFileStore.shared.readAll()
+        let size = await AppLogFileStore.shared.currentFileSizeInBytes()
         await MainActor.run {
             logFilePath = path
+            logFileSize = size
             logContent = content
         }
     }
