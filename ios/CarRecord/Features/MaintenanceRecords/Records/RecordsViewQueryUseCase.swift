@@ -163,9 +163,13 @@ extension RecordsView {
     /// 筛选弹窗项目顺序：与“新增/编辑保养”保持一致，避免同类页面排序规则不一致。
     var sortedSelectionItemOptions: [MaintenanceItemOption] {
         let appliedCar = scopedCars.first
-        return CoreConfig.sortedSelectionOptions(
-            options: scopedServiceItemOptions,
-            records: scopedMaintenanceRecords,
+        let visibleOptions = CoreConfig.filterDisabledOptions(
+            scopedServiceItemOptions,
+            disabledItemIDsRaw: appliedCar?.disabledItemIDsRaw ?? "",
+            includeDisabled: false
+        )
+        return CoreConfig.sortedOptions(
+            visibleOptions,
             brand: appliedCar?.brand,
             modelName: appliedCar?.modelName
         )
@@ -174,7 +178,7 @@ extension RecordsView {
     /// 项目自然顺序索引：用于“按周期”项目摘要排序稳定且与项目管理顺序一致。
     var naturalItemOrderIndexByID: [UUID: Int] {
         let appliedCar = scopedCars.first
-        let naturalOptions = CoreConfig.naturalSortedOptions(
+        let naturalOptions = CoreConfig.sortedOptions(
             scopedServiceItemOptions,
             brand: appliedCar?.brand,
             modelName: appliedCar?.modelName

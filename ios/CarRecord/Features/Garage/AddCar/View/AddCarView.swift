@@ -6,6 +6,7 @@ struct AddCarView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     @Query(sort: \Car.purchaseDate, order: .reverse) var cars: [Car]
+    @Query(sort: \MaintenanceRecord.date, order: .reverse) var serviceRecords: [MaintenanceRecord]
     @Query(sort: \MaintenanceItemOption.createdAt, order: .forward) var maintenanceItemOptions: [MaintenanceItemOption]
 
     @StateObject var viewModel: AddCarViewModel
@@ -33,7 +34,6 @@ struct AddCarView: View {
         Form {
             vehicleSection
             mileageSection
-            onRoadSection
             maintenanceItemsSection
         }
         .navigationTitle(viewModel.navigationTitle)
@@ -44,6 +44,7 @@ struct AddCarView: View {
                     if viewModel.saveCar(
                         cars: cars,
                         maintenanceItemOptions: scopedMaintenanceItemOptions,
+                        serviceRecords: serviceRecords,
                         modelContext: modelContext
                     ) {
                         dismiss()
@@ -108,6 +109,25 @@ struct AddCarView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            HStack {
+                Text("上路日期")
+                Spacer()
+                if viewModel.editingCar == nil {
+                    Button {
+                        isOnRoadDatePickerPresented = true
+                    } label: {
+                        rowValueActionLabel(text: AppDateContext.formatShortDate(viewModel.onRoadDate))
+                    }
+                    .sheet(isPresented: $isOnRoadDatePickerPresented) {
+                        onRoadDatePickerSheet
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Text(AppDateContext.formatShortDate(viewModel.onRoadDate))
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
     }
 
@@ -129,24 +149,6 @@ struct AddCarView: View {
                 }
                 .sheet(isPresented: $isMileagePickerPresented) {
                     mileagePickerSheet
-                }
-            }
-            .buttonStyle(.plain)
-        }
-    }
-
-    private var onRoadSection: some View {
-        Section("上路信息") {
-            HStack {
-                Text("上路日期")
-                Spacer()
-                Button {
-                    isOnRoadDatePickerPresented = true
-                } label: {
-                    rowValueActionLabel(text: AppDateContext.formatShortDate(viewModel.onRoadDate))
-                }
-                .sheet(isPresented: $isOnRoadDatePickerPresented) {
-                    onRoadDatePickerSheet
                 }
             }
             .buttonStyle(.plain)
@@ -217,7 +219,7 @@ struct AddCarView: View {
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if draft.isDefault == false {
                 Button(role: .destructive) {
-                    viewModel.removeExistingCustomDraft(draft.id)
+                    viewModel.tryRemoveExistingCustomDraft(draft.id, serviceRecords: serviceRecords)
                 } label: {
                     Label("删除", systemImage: "trash")
                 }
@@ -271,6 +273,7 @@ struct AddCarView: View {
                     onRestoreDefaults: draftBinding.wrappedValue.isDefault ? {
                         draftBinding.wrappedValue = viewModel.restoreDraftDefaults(draftBinding.wrappedValue)
                     } : nil,
+                    canRestoreDefaults: viewModel.canRestoreDraftDefaults(draftBinding.wrappedValue),
                     onSave: {
                         let draft = draftBinding.wrappedValue
                         if let message = viewModel.validateDraftError(draft, excludingID: draft.id) {
@@ -291,6 +294,7 @@ struct AddCarView: View {
                 canEditName: true,
                 onDelete: nil,
                 onRestoreDefaults: nil,
+                canRestoreDefaults: false,
                 onSave: {
                     if scopedMaintenanceItemOptions.isEmpty {
                         if let message = viewModel.validateDraftError(viewModel.customDraft, excludingID: nil) {
@@ -317,11 +321,12 @@ struct AddCarView: View {
                 maintenanceDraftEditorPage(
                     title: "保养项目设置",
                     draft: draftBinding,
-                    canEditName: true,
+                    canEditName: draftBinding.wrappedValue.isDefault == false,
                     onDelete: nil,
                     onRestoreDefaults: draftBinding.wrappedValue.isDefault ? {
                         draftBinding.wrappedValue = viewModel.restoreDraftDefaults(draftBinding.wrappedValue)
                     } : nil,
+                    canRestoreDefaults: viewModel.canRestoreDraftDefaults(draftBinding.wrappedValue),
                     onSave: {
                         let draft = draftBinding.wrappedValue
                         if let message = viewModel.validateExistingDraftError(draft, excludingID: draft.id) {
@@ -343,6 +348,12 @@ private struct 下拉单选选择器: View {
     let options: [String]
     @Binding var selection: String
 
+    private var chevron: some View {
+        Image(systemName: "chevron.up.chevron.down")
+            .font(.caption2)
+            .foregroundStyle(.tertiary)
+    }
+
     var body: some View {
         Menu {
             ForEach(options, id: \.self) { option in
@@ -359,14 +370,21 @@ private struct 下拉单选选择器: View {
                 }
             }
         } label: {
-            HStack(spacing: 4) {
-                Text(selection)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .id(selection)
-                Image(systemName: "chevron.up.chevron.down")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+            ZStack(alignment: .trailing) {
+                ForEach(options, id: \.self) { option in
+                    HStack(spacing: 4) {
+                        Text(option)
+                            .lineLimit(1)
+                        chevron
+                    }
+                    .hidden()
+                }
+
+                HStack(spacing: 4) {
+                    Text(selection)
+                        .lineLimit(1)
+                    chevron
+                }
             }
         }
     }

@@ -12,29 +12,18 @@ extension AddMaintenanceRecordView {
         MileageSegmentFormatter.mileage(wan: mileageWan, qian: mileageQian, bai: mileageBai)
     }
 
-    /// 可选项目列表排序规则：
-    /// 1) 无保养记录时：机油/汽油发动机清洁剂/空调滤芯优先，其余按自然顺序。
-    /// 2) 有保养记录时：按项目被保养次数倒序，未保养项目按自然顺序。
+    /// 可选项目列表：先按车辆禁用状态过滤，再按统一规则排序。
     var availableItemOptions: [MaintenanceItemOption] {
-        let visibleOptions: [MaintenanceItemOption]
-        if editingRecord == nil {
-            let disabledItemIDs: Set<UUID>
-            if let selectedCarID,
-               let selectedCar = availableCars.first(where: { $0.id == selectedCarID }) {
-                disabledItemIDs = Set(CoreConfig.parseItemIDs(selectedCar.disabledItemIDsRaw))
-            } else {
-                disabledItemIDs = []
-            }
-            visibleOptions = scopedServiceItemOptions.filter { disabledItemIDs.contains($0.id) == false }
-        } else {
-            visibleOptions = scopedServiceItemOptions
-        }
         let selectedCar = selectedCarID.flatMap { id in
             availableCars.first(where: { $0.id == id })
         }
-        return CoreConfig.sortedSelectionOptions(
-            options: visibleOptions,
-            records: serviceRecords,
+        let visibleOptions = CoreConfig.filterDisabledOptions(
+            scopedServiceItemOptions,
+            disabledItemIDsRaw: selectedCar?.disabledItemIDsRaw ?? "",
+            includeDisabled: editingRecord != nil
+        )
+        return CoreConfig.sortedOptions(
+            visibleOptions,
             brand: selectedCar?.brand,
             modelName: selectedCar?.modelName
         )

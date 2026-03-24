@@ -53,8 +53,13 @@ extension MaintenanceReminderView {
     /// 默认项目优先，随后按创建时间排序，保持与"项目管理"页面一致。
     var sortedMaintenanceItemOptions: [MaintenanceItemOption] {
         let scopedCar = scopedCars.first
-        return CoreConfig.naturalSortedOptions(
+        let visibleOptions = CoreConfig.filterDisabledOptions(
             CoreConfig.scopedOptions(serviceItemOptions, carID: appliedCarID),
+            disabledItemIDsRaw: scopedCar?.disabledItemIDsRaw ?? "",
+            includeDisabled: false
+        )
+        return CoreConfig.sortedOptions(
+            visibleOptions,
             brand: scopedCar?.brand,
             modelName: scopedCar?.modelName
         )

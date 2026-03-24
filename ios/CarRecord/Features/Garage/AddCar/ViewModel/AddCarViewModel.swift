@@ -190,9 +190,8 @@ final class AddCarViewModel: ObservableObject {
             disabledItemIDs = []
         }
         let existingByID = Dictionary(uniqueKeysWithValues: existingItemDrafts.map { ($0.id, $0) })
-        let options = CoreConfig.sortedSelectionOptions(
-            options: maintenanceItemOptions,
-            records: [],
+        let options = CoreConfig.sortedOptions(
+            maintenanceItemOptions,
             brand: brand,
             modelName: modelName
         )
@@ -203,34 +202,26 @@ final class AddCarViewModel: ObservableObject {
             if var existing = existingByID[option.id] {
                 existing.isDefault = option.isDefault
                 existing.catalogKey = option.catalogKey
-                if let definition = definitionForOption(option, definitionsByKey: definitionsByKey) {
-                    existing.name = definition.defaultName
-                    existing.remindByMileage = definition.mileageInterval != nil
-                    existing.mileageInterval = definition.mileageInterval ?? 0
-                    existing.remindByTime = definition.monthInterval != nil
-                    existing.monthInterval = definition.monthInterval ?? 0
-                } else {
-                    existing.name = normalizedName
-                }
+                existing.name = normalizedName
+                existing.remindByMileage = option.remindByMileage
+                existing.mileageInterval = max(1, option.mileageInterval == 0 ? 5000 : option.mileageInterval)
+                existing.remindByTime = option.remindByTime
+                existing.monthInterval = max(1, option.monthInterval == 0 ? 12 : option.monthInterval)
                 existing.isEnabled = isEnabledByModel && disabledItemIDs.contains(option.id) == false
+                existing.warningStartPercent = option.warningStartPercent
+                existing.dangerStartPercent = option.dangerStartPercent
                 return existing
             }
             return MaintenanceItemDraft(
                 id: option.id,
-                name: definitionForOption(option, definitionsByKey: definitionsByKey)?.defaultName ?? normalizedName,
+                name: normalizedName,
                 isDefault: option.isDefault,
                 catalogKey: option.catalogKey,
                 isEnabled: isEnabledByModel && disabledItemIDs.contains(option.id) == false,
-                remindByMileage: definitionForOption(option, definitionsByKey: definitionsByKey)?.mileageInterval != nil
-                    ? true
-                    : option.remindByMileage,
-                mileageInterval: definitionForOption(option, definitionsByKey: definitionsByKey)?.mileageInterval
-                    ?? max(1, option.mileageInterval == 0 ? 5000 : option.mileageInterval),
-                remindByTime: definitionForOption(option, definitionsByKey: definitionsByKey)?.monthInterval != nil
-                    ? true
-                    : option.remindByTime,
-                monthInterval: definitionForOption(option, definitionsByKey: definitionsByKey)?.monthInterval
-                    ?? max(1, option.monthInterval == 0 ? 12 : option.monthInterval),
+                remindByMileage: option.remindByMileage,
+                mileageInterval: max(1, option.mileageInterval == 0 ? 5000 : option.mileageInterval),
+                remindByTime: option.remindByTime,
+                monthInterval: max(1, option.monthInterval == 0 ? 12 : option.monthInterval),
                 warningStartPercent: option.warningStartPercent,
                 dangerStartPercent: option.dangerStartPercent
             )
@@ -284,10 +275,34 @@ final class AddCarViewModel: ObservableObject {
         existingItemDrafts.removeAll { $0.id == id && $0.isDefault == false }
     }
 
-    func saveCar(cars: [Car], maintenanceItemOptions: [MaintenanceItemOption], modelContext: ModelContext) -> Bool {
+    func tryRemoveExistingCustomDraft(_ id: UUID, serviceRecords: [MaintenanceRecord]) {
+        guard let draft = existingItemDrafts.first(where: { $0.id == id && $0.isDefault == false }) else { return }
+        guard let editingCarID = editingCar?.id else {
+            removeExistingCustomDraft(id)
+            return
+        }
+        let hasHistoricalAssociation = serviceRecords.contains { record in
+            guard record.car?.id == editingCarID else { return false }
+            return CoreConfig.contains(itemID: id, in: record.itemIDsRaw)
+        }
+        guard hasHistoricalAssociation == false else {
+            validationMessage = "自定义项目“\(draft.name)”已有历史记录，不能删除。"
+            isValidationAlertPresented = true
+            return
+        }
+        removeExistingCustomDraft(id)
+    }
+
+    func saveCar(
+        cars: [Car],
+        maintenanceItemOptions: [MaintenanceItemOption],
+        serviceRecords: [MaintenanceRecord],
+        modelContext: ModelContext
+    ) -> Bool {
         let normalizedBrand = brand.trimmingCharacters(in: .whitespacesAndNewlines)
         let normalizedModelName = modelName.trimmingCharacters(in: .whitespacesAndNewlines)
         let targetCarID = editingCar?.id ?? UUID()
+        let addFlowDraftsSnapshot = itemDrafts
         if editingCar == nil {
             let targetModelKey = carModelKey(brand: normalizedBrand, modelName: normalizedModelName)
             if let conflictCar = cars.first(where: { car in
@@ -299,23 +314,9 @@ final class AddCarViewModel: ObservableObject {
             }
         }
 
-        if maintenanceItemOptions.isEmpty {
-            guard setupMaintenanceItemsForCurrentCar(carID: targetCarID, modelContext: modelContext) else {
-                return false
-            }
-        } else {
-            guard applyExistingMaintenanceItemsChanges(
-                carID: targetCarID,
-                maintenanceItemOptions: maintenanceItemOptions,
-                modelContext: modelContext
-            ) else {
-                return false
-            }
-        }
-
         let disabledItemIDsRaw: String
         if maintenanceItemOptions.isEmpty {
-            let disabledIDs = itemDrafts
+            let disabledIDs = addFlowDraftsSnapshot
                 .filter { $0.isEnabled == false }
                 .map(\.id)
             disabledItemIDsRaw = CoreConfig.joinItemIDs(disabledIDs)
@@ -327,6 +328,14 @@ final class AddCarViewModel: ObservableObject {
         }
 
         if let editingCar {
+            guard applyExistingMaintenanceItemsChanges(
+                carID: targetCarID,
+                maintenanceItemOptions: maintenanceItemOptions,
+                serviceRecords: serviceRecords,
+                modelContext: modelContext
+            ) else {
+                return false
+            }
             editingCar.mileage = currentMileage
             editingCar.purchaseDate = onRoadDate
             editingCar.disabledItemIDsRaw = disabledItemIDsRaw
@@ -340,9 +349,18 @@ final class AddCarViewModel: ObservableObject {
                 disabledItemIDsRaw: disabledItemIDsRaw
             )
             modelContext.insert(car)
+            guard setupMaintenanceItemsForCurrentCar(
+                carID: targetCarID,
+                drafts: addFlowDraftsSnapshot,
+                modelContext: modelContext
+            ) else {
+                modelContext.rollback()
+                return false
+            }
         }
 
-        if let message = modelContext.saveOrLog("保存车辆") {
+        if let message = modelContext.saveOrLog("保存车辆与保养项目") {
+            modelContext.rollback()
             saveErrorMessage = message
             isSaveErrorAlertPresented = true
             return false
@@ -350,15 +368,19 @@ final class AddCarViewModel: ObservableObject {
         return true
     }
 
-    func setupMaintenanceItemsForCurrentCar(carID: UUID, modelContext: ModelContext) -> Bool {
-        let enabledDrafts = itemDrafts.filter(\.isEnabled)
+    func setupMaintenanceItemsForCurrentCar(
+        carID: UUID,
+        drafts: [MaintenanceItemDraft],
+        modelContext: ModelContext
+    ) -> Bool {
+        let enabledDrafts = drafts.filter(\.isEnabled)
         guard enabledDrafts.isEmpty == false else {
             validationMessage = "请至少保留一个默认项目或新增一个自定义项目。"
             isValidationAlertPresented = true
             return false
         }
         var seenNames = Set<String>()
-        for draft in itemDrafts {
+        for draft in drafts {
             let normalizedName = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
             if seenNames.contains(normalizedName) {
                 validationMessage = "存在重名项目，请先调整后再保存。"
@@ -368,7 +390,7 @@ final class AddCarViewModel: ObservableObject {
             seenNames.insert(normalizedName)
         }
 
-        for draft in itemDrafts {
+        for draft in drafts {
             let thresholds = CoreConfig.normalizedProgressThresholds(
                 warning: draft.warningStartPercent,
                 danger: draft.dangerStartPercent
@@ -390,11 +412,6 @@ final class AddCarViewModel: ObservableObject {
             )
         }
 
-        if let message = modelContext.saveOrLog("初始化保养项目") {
-            saveErrorMessage = message
-            isSaveErrorAlertPresented = true
-            return false
-        }
         return true
     }
 
@@ -479,14 +496,26 @@ final class AddCarViewModel: ObservableObject {
     func applyExistingMaintenanceItemsChanges(
         carID: UUID,
         maintenanceItemOptions: [MaintenanceItemOption],
+        serviceRecords: [MaintenanceRecord],
         modelContext: ModelContext
     ) -> Bool {
         guard existingItemDrafts.isEmpty == false else { return true }
         let currentDraftIDs = Set(existingItemDrafts.map(\.id))
-        for option in maintenanceItemOptions where option.isDefault == false {
-            if currentDraftIDs.contains(option.id) == false {
-                modelContext.delete(option)
+        let removedCustomOptions = maintenanceItemOptions.filter { option in
+            option.isDefault == false && currentDraftIDs.contains(option.id) == false
+        }
+        if let blockedOption = removedCustomOptions.first(where: { option in
+            serviceRecords.contains { record in
+                guard record.car?.id == carID else { return false }
+                return CoreConfig.contains(itemID: option.id, in: record.itemIDsRaw)
             }
+        }) {
+            validationMessage = "自定义项目“\(blockedOption.name)”已有历史记录，不能删除。"
+            isValidationAlertPresented = true
+            return false
+        }
+        for option in removedCustomOptions {
+            modelContext.delete(option)
         }
         let enabledDrafts = existingItemDrafts.filter(\.isEnabled)
         guard enabledDrafts.isEmpty == false else {
@@ -495,7 +524,7 @@ final class AddCarViewModel: ObservableObject {
             return false
         }
         var seenNames = Set<String>()
-        for draft in enabledDrafts {
+        for draft in existingItemDrafts {
             guard validateExistingDraft(draft, excludingID: draft.id) else {
                 return false
             }
@@ -508,7 +537,7 @@ final class AddCarViewModel: ObservableObject {
             seenNames.insert(normalizedName)
         }
         let optionByID = Dictionary(uniqueKeysWithValues: maintenanceItemOptions.map { ($0.id, $0) })
-        for draft in enabledDrafts {
+        for draft in existingItemDrafts {
             let thresholds = CoreConfig.normalizedProgressThresholds(
                 warning: draft.warningStartPercent,
                 danger: draft.dangerStartPercent
@@ -586,6 +615,26 @@ final class AddCarViewModel: ObservableObject {
         restored.warningStartPercent = currentModelConfig.defaultWarningStartPercent
         restored.dangerStartPercent = currentModelConfig.defaultDangerStartPercent
         return restored
+    }
+
+    func canRestoreDraftDefaults(_ draft: MaintenanceItemDraft) -> Bool {
+        let restored = restoreDraftDefaults(draft)
+        return normalizedRestoreComparable(draft) != normalizedRestoreComparable(restored)
+    }
+
+    private func normalizedRestoreComparable(_ draft: MaintenanceItemDraft) -> [Int] {
+        let thresholds = CoreConfig.normalizedProgressThresholds(
+            warning: draft.warningStartPercent,
+            danger: draft.dangerStartPercent
+        )
+        return [
+            draft.remindByMileage ? 1 : 0,
+            draft.remindByMileage ? max(1, draft.mileageInterval) : 0,
+            draft.remindByTime ? 1 : 0,
+            draft.remindByTime ? max(1, draft.monthInterval) : 0,
+            thresholds.warning,
+            thresholds.danger,
+        ]
     }
 
     func makeDefaultCustomDraft() -> MaintenanceItemDraft {

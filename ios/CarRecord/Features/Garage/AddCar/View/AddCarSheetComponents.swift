@@ -36,6 +36,7 @@ extension AddCarView {
         canEditName: Bool,
         onDelete: (() -> Void)?,
         onRestoreDefaults: (() -> Void)?,
+        canRestoreDefaults: Bool,
         onSave: @escaping () -> Void,
         validationMessage: String,
         isValidationAlertPresented: Binding<Bool>
@@ -88,6 +89,7 @@ extension AddCarView {
                     Button("恢复默认值") {
                         onRestoreDefaults()
                     }
+                    .disabled(canRestoreDefaults == false)
                 }
             }
 
