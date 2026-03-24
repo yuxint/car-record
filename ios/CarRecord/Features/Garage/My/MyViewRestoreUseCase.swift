@@ -4,6 +4,10 @@ import SwiftData
 extension MyView {
     /// 应用恢复数据并返回统计结果：会在空库中重建保养项目、车辆与记录。
     func applyImportedPayload(_ payload: MyDataTransferPayload) throws -> MyDataTransferImportSummary {
+        AppLogger.info(
+            "开始写入恢复数据",
+            payload: "vehicles=\(payload.vehicles.count), modelProfiles=\(payload.modelProfiles.count)"
+        )
         var summary = MyDataTransferImportSummary()
         var profileByKey: [String: MyDataTransferModelProfilePayload] = [:]
         for profile in payload.modelProfiles {
@@ -78,7 +82,7 @@ extension MyView {
                 purchaseDate: parsedCarPurchaseDate,
                 disabledItemIDsRaw: carPayload.disabledItemIDsRaw
             )
-            modelContext.insert(car)
+            modelContext.insertWithAudit(car)
             summary.insertedCars += 1
 
             guard let profile = profileByKey[profileKey] else {
@@ -123,7 +127,7 @@ extension MyView {
                     dangerStartPercent: item.dangerStartPercent,
                     createdAt: Date(timeIntervalSince1970: item.createdAt)
                 )
-                modelContext.insert(option)
+                modelContext.insertWithAudit(option)
                 optionsByName[normalizedName] = option
                 summary.insertedItems += 1
             }
@@ -162,13 +166,13 @@ extension MyView {
                     note: logPayload.note,
                     car: car
                 )
-                modelContext.insert(newLog)
+                modelContext.insertWithAudit(newLog)
                 CoreConfig.syncCycleAndRelations(for: newLog, in: modelContext)
                 summary.insertedLogs += 1
             }
         }
 
-        try modelContext.save()
+        try modelContext.saveOrThrowAndLog("恢复数据写入数据库")
         return summary
     }
 

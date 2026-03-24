@@ -51,6 +51,11 @@ struct AddMaintenanceRecordView: View {
 
     var body: some View {
         addRecordForm
+            .safeAreaInset(edge: .bottom) {
+                Color.clear
+                    .frame(height: inputAvoidanceBottomInset)
+                    .allowsHitTesting(false)
+            }
             .navigationTitle(editingRecord == nil ? "新增保养" : "编辑保养")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -141,6 +146,11 @@ struct AddMaintenanceRecordView: View {
             } message: {
                 Text(saveErrorMessage)
             }
+    }
+
+    /// 输入“总费用/备注”时给表单底部增加占位，避免键盘遮住当前输入行。
+    private var inputAvoidanceBottomInset: CGFloat {
+        isAnyInputActive ? 120 : 0
     }
 
     private var addRecordForm: some View {

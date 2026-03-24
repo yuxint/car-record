@@ -3,6 +3,7 @@ import SwiftData
 
 extension MyView {
     func importMaintenanceData(from url: URL) {
+        AppLogger.info("开始恢复数据", payload: url.lastPathComponent)
         let shouldStopAccessing = url.startAccessingSecurityScopedResource()
         defer {
             if shouldStopAccessing {
@@ -21,6 +22,7 @@ extension MyView {
             presentTransferResult(summary.message)
         } catch {
             modelContext.rollback()
+            AppLogger.error("恢复失败", payload: error.localizedDescription)
             presentTransferResult("恢复失败：请确认备份文件完整且结构正确。")
         }
     }

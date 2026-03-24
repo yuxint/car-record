@@ -14,6 +14,11 @@ extension MyView {
 
     /// 统一弹出备份恢复处理结果，避免各入口文案风格不一致。
     func presentTransferResult(_ message: String) {
+        if message.contains("失败") {
+            AppLogger.error("数据传输失败", payload: message, includeStack: false)
+        } else {
+            AppLogger.info("数据传输结果", payload: message)
+        }
         transferResultMessage = message
         isTransferResultAlertPresented = true
     }

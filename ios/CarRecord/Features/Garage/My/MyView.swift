@@ -1,6 +1,8 @@
 import SwiftUI
 import SwiftData
+import Combine
 import UniformTypeIdentifiers
+import UIKit
 
 /// “个人中心”页：集中放置车辆管理、项目管理入口和数据重置入口。
 struct MyView: View {
@@ -24,7 +26,12 @@ struct MyView: View {
     @State var isOperationErrorAlertPresented = false
     @AppStorage(AppDateContext.useManualNowStorageKey) var isManualNowEnabled = false
     @AppStorage(AppDateContext.manualNowTimestampStorageKey) var manualNowTimestamp = 0.0
+    @AppStorage("app_debug_mode_enabled") var isDebugModeEnabled = false
     @State var isManualNowPickerPresented = false
+    @State var versionTapCount = 0
+    @State var lastVersionTapAt: Date?
+    @State var debugModeStatusMessage = ""
+    @State var isDebugModeStatusAlertPresented = false
 
     var body: some View {
         List {
@@ -123,29 +130,37 @@ struct MyView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Section("时间临时设置") {
-                Toggle("不取系统时间，改为手动日期", isOn: $isManualNowEnabled)
-                    .onChange(of: isManualNowEnabled) { _, newValue in
-                        AppDateContext.setManualNowEnabled(newValue)
-                    }
-
-                if isManualNowEnabled {
-                    Button {
-                        isManualNowPickerPresented = true
+            if isDebugModeEnabled {
+                Section("调试工具") {
+                    NavigationLink {
+                        AppLogConsoleView()
                     } label: {
-                        HStack {
-                            Text("手动日期")
-                            Spacer()
-                            Text(AppDateContext.formatShortDate(manualNowDate))
-                                .foregroundStyle(.secondary)
-                        }
+                        Label("控制台日志", systemImage: "terminal")
                     }
-                    .buttonStyle(.plain)
-                }
 
-                Text("仅影响本地“当前日期”计算（如车龄、提醒进度、今日里程同步），不会修改历史记录日期。")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    Toggle("自定义当前日期", isOn: $isManualNowEnabled)
+                        .onChange(of: isManualNowEnabled) { _, newValue in
+                            AppDateContext.setManualNowEnabled(newValue)
+                        }
+
+                    if isManualNowEnabled {
+                        Button {
+                            isManualNowPickerPresented = true
+                        } label: {
+                            HStack {
+                                Text("手动日期")
+                                Spacer()
+                                Text(AppDateContext.formatShortDate(manualNowDate))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    Text("仅影响本地“当前日期”计算（如车龄、提醒进度、今日里程同步），不会修改历史记录日期。")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Section("关于") {
@@ -154,6 +169,10 @@ struct MyView: View {
                     Spacer()
                     Text(appVersionText)
                         .foregroundStyle(.secondary)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    handleVersionTap()
                 }
             }
         }
@@ -259,6 +278,11 @@ struct MyView: View {
         } message: {
             Text(operationErrorMessage)
         }
+        .alert("调试模式状态", isPresented: $isDebugModeStatusAlertPresented) {
+            Button(AppPopupText.acknowledge, role: .cancel) {}
+        } message: {
+            Text(debugModeStatusMessage)
+        }
         .onAppear {
             syncAppliedCarSelection()
         }
@@ -273,5 +297,116 @@ struct MyView: View {
         }
         let storedDate = Date(timeIntervalSince1970: manualNowTimestamp)
         return AppDateContext.calendar.startOfDay(for: storedDate)
+    }
+
+    func handleVersionTap() {
+        let now = Date()
+        if let lastVersionTapAt, now.timeIntervalSince(lastVersionTapAt) > 1.2 {
+            versionTapCount = 0
+        }
+        versionTapCount += 1
+        lastVersionTapAt = now
+
+        if versionTapCount >= 5 {
+            versionTapCount = 0
+            isDebugModeEnabled.toggle()
+            if isDebugModeEnabled {
+                AppLogger.info("调试模式已开启")
+                debugModeStatusMessage = "调试模式已开启，现在可以使用“调试工具”中的时间临时设置和控制台日志。"
+            } else {
+                AppLogger.info("调试模式已关闭")
+                debugModeStatusMessage = "调试模式已关闭。"
+            }
+            isDebugModeStatusAlertPresented = true
+        }
+    }
+}
+
+struct AppLogConsoleView: View {
+    @State var isCopiedAlertPresented = false
+    @State var logFilePath = ""
+    @State var logContent = ""
+
+    var body: some View {
+        List {
+            if logFilePath.isEmpty == false {
+                Text("日志文件：\(logFilePath)")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            if logContent.isEmpty {
+                Text("暂无日志输出。")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(parsedLines.enumerated()), id: \.offset) { _, line in
+                    Text(line)
+                        .font(.system(.footnote, design: .monospaced))
+                        .foregroundStyle(color(for: line))
+                        .textSelection(.enabled)
+                }
+            }
+        }
+        .navigationTitle("控制台日志")
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button("清空") {
+                    Task {
+                        await AppLogFileStore.shared.clear()
+                        await reloadLogFile()
+                    }
+                }
+                .disabled(logContent.isEmpty)
+
+                Button("复制") {
+                    UIPasteboard.general.string = logContent
+                    isCopiedAlertPresented = true
+                }
+                .disabled(logContent.isEmpty)
+            }
+        }
+        .task {
+            await reloadLogFile()
+        }
+        .onReceive(
+            Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+        ) { _ in
+            Task {
+                await reloadLogFile()
+            }
+        }
+        .alert("已复制日志", isPresented: $isCopiedAlertPresented) {
+            Button(AppPopupText.acknowledge, role: .cancel) {}
+        } message: {
+            Text("日志内容已复制到剪贴板。")
+        }
+    }
+
+    var parsedLines: [String] {
+        logContent
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map(String.init)
+    }
+
+    func reloadLogFile() async {
+        let path = await AppLogFileStore.shared.filePath()
+        let content = await AppLogFileStore.shared.readAll()
+        await MainActor.run {
+            logFilePath = path
+            logContent = content
+        }
+    }
+
+    func color(for line: String) -> Color {
+        if line.contains("[ERROR]") {
+            return .red
+        }
+        if line.contains("[WARN]") {
+            return .yellow
+        }
+        if line.contains("[INFO]") {
+            return .black
+        }
+        return .primary
     }
 }

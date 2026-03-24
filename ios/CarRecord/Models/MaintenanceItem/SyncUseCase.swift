@@ -6,7 +6,7 @@ extension CoreConfig {
     static func syncCycleAndRelations(for record: MaintenanceRecord, in modelContext: ModelContext) {
         let existingRelations = Array(record.itemRelations)
         for relation in existingRelations {
-            modelContext.delete(relation)
+            modelContext.deleteWithAudit(relation)
         }
 
         guard let carID = record.car?.id else { return }
@@ -27,7 +27,7 @@ extension CoreConfig {
         }
 
         for itemID in uniqueItemIDs {
-            modelContext.insert(
+            modelContext.insertWithAudit(
                 MaintenanceRecordItem(
                     cycleItemKey: MaintenanceRecordItem.cycleItemKey(
                         cycleKey: normalizedCycleKey,

@@ -5,10 +5,10 @@ extension MyView {
     func deleteCars(at offsets: IndexSet) {
         let deletedIDs = Set(offsets.compactMap { cars.indices.contains($0) ? cars[$0].id : nil })
         for index in offsets {
-            modelContext.delete(cars[index])
+            modelContext.deleteWithAudit(cars[index])
         }
         for option in serviceItemOptions where option.ownerCarID.flatMap({ deletedIDs.contains($0) }) == true {
-            modelContext.delete(option)
+            modelContext.deleteWithAudit(option)
         }
         if let message = modelContext.saveOrLog("删除车辆") {
             operationErrorMessage = message
@@ -49,9 +49,15 @@ extension MyView {
 
     /// 清空所有业务数据，重置为初始状态。
     func resetAllData() {
+        AppLogger.info(
+            "开始重置全部数据",
+            payload: "cars=\(cars.count), records=\(serviceRecords.count), items=\(serviceItemOptions.count)"
+        )
         do {
             try clearAllBusinessData()
+            AppLogger.info("重置全部数据成功")
         } catch {
+            AppLogger.error("重置数据失败", payload: error.localizedDescription)
             operationErrorMessage = "重置数据失败，请稍后重试。"
             isOperationErrorAlertPresented = true
         }

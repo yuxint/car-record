@@ -81,7 +81,7 @@ extension RecordsView {
     func deleteRecords(_ records: [MaintenanceRecord]) {
         let recordIDs = Set(records.map(\MaintenanceRecord.id))
         for record in records {
-            modelContext.delete(record)
+            modelContext.deleteWithAudit(record)
         }
         if let editingTarget, recordIDs.contains(editingTarget.record.id) {
             self.editingTarget = nil
@@ -117,8 +117,14 @@ extension RecordsView {
             return
         }
 
+        let recordBefore = AppDatabaseSnapshot.maintenanceRecord(row.record)
         row.record.itemIDsRaw = CoreConfig.joinItemIDs(updatedItemIDs)
         CoreConfig.syncCycleAndRelations(for: row.record, in: modelContext)
+        AppDatabaseAuditLogger.logUpdate(
+            entity: "MaintenanceRecord",
+            before: recordBefore,
+            after: AppDatabaseSnapshot.maintenanceRecord(row.record)
+        )
         if let message = modelContext.saveOrLog("删除项目维度保养记录") {
             saveErrorMessage = message
             isSaveErrorAlertPresented = true

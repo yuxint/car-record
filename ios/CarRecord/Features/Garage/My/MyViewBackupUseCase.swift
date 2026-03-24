@@ -3,6 +3,10 @@ import SwiftData
 
 extension MyView {
     func startBackupData() {
+        AppLogger.info(
+            "开始备份数据",
+            payload: "cars=\(cars.count), records=\(serviceRecords.count), items=\(serviceItemOptions.count)"
+        )
         var logsByCarID: [UUID: [MaintenanceRecord]] = [:]
         for log in serviceRecords {
             guard let carID = log.car?.id else { continue }
@@ -79,6 +83,11 @@ extension MyView {
             vehicles: vehicles
         )
         guard let encodedData = try? MyDataTransferCodec.encoder.encode(payload) else {
+            AppLogger.error(
+                "备份失败：数据编码失败",
+                payload: "vehicles=\(vehicles.count), modelProfiles=\(modelProfiles.count)",
+                includeStack: false
+            )
             presentTransferResult("备份失败：数据编码失败。")
             return
         }
@@ -86,6 +95,10 @@ extension MyView {
         exportDocument = MyDataTransferDocument(data: encodedData)
         exportFilename = "car-record-backup-\(timestampForFilename(Date()))"
         isExportingMaintenanceData = true
+        AppLogger.info(
+            "备份数据编码完成",
+            payload: "vehicles=\(vehicles.count), modelProfiles=\(modelProfiles.count)"
+        )
     }
     func timestampForFilename(_ date: Date) -> String {
         let formatter = DateFormatter()

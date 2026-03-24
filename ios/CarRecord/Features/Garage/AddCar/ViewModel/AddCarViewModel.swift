@@ -326,6 +326,7 @@ final class AddCarViewModel: ObservableObject {
         }
 
         if let editingCar {
+            let editingCarBefore = AppDatabaseSnapshot.car(editingCar)
             guard applyExistingMaintenanceItemsChanges(
                 carID: targetCarID,
                 maintenanceItemOptions: maintenanceItemOptions,
@@ -337,6 +338,11 @@ final class AddCarViewModel: ObservableObject {
             editingCar.mileage = currentMileage
             editingCar.purchaseDate = onRoadDate
             editingCar.disabledItemIDsRaw = disabledItemIDsRaw
+            AppDatabaseAuditLogger.logUpdate(
+                entity: "Car",
+                before: editingCarBefore,
+                after: AppDatabaseSnapshot.car(editingCar)
+            )
         } else {
             let car = Car(
                 id: targetCarID,
@@ -346,7 +352,7 @@ final class AddCarViewModel: ObservableObject {
                 purchaseDate: onRoadDate,
                 disabledItemIDsRaw: disabledItemIDsRaw
             )
-            modelContext.insert(car)
+            modelContext.insertWithAudit(car)
             guard setupMaintenanceItemsForCurrentCar(
                 carID: targetCarID,
                 drafts: addFlowDraftsSnapshot,
@@ -389,7 +395,7 @@ final class AddCarViewModel: ObservableObject {
         }
 
         for draft in drafts {
-            modelContext.insert(
+            modelContext.insertWithAudit(
                 MaintenanceItemOption(
                     id: draft.id,
                     name: draft.name.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -495,7 +501,7 @@ final class AddCarViewModel: ObservableObject {
             return false
         }
         for option in removedCustomOptions {
-            modelContext.delete(option)
+            modelContext.deleteWithAudit(option)
         }
         let enabledDrafts = existingItemDrafts.filter(\.isEnabled)
         guard enabledDrafts.isEmpty == false else {
@@ -519,6 +525,7 @@ final class AddCarViewModel: ObservableObject {
         let optionByID = Dictionary(uniqueKeysWithValues: maintenanceItemOptions.map { ($0.id, $0) })
         for draft in existingItemDrafts {
             if let option = optionByID[draft.id] {
+                let optionBefore = AppDatabaseSnapshot.maintenanceItemOption(option)
                 option.ownerCarID = carID
                 option.name = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
                 option.remindByMileage = draft.remindByMileage
@@ -527,8 +534,13 @@ final class AddCarViewModel: ObservableObject {
                 option.monthInterval = draft.remindByTime ? max(1, draft.monthInterval) : 0
                 option.warningStartPercent = currentModelConfig.defaultWarningStartPercent
                 option.dangerStartPercent = currentModelConfig.defaultDangerStartPercent
+                AppDatabaseAuditLogger.logUpdate(
+                    entity: "MaintenanceItemOption",
+                    before: optionBefore,
+                    after: AppDatabaseSnapshot.maintenanceItemOption(option)
+                )
             } else {
-                modelContext.insert(
+                modelContext.insertWithAudit(
                     MaintenanceItemOption(
                         id: draft.id,
                         name: draft.name.trimmingCharacters(in: .whitespacesAndNewlines),

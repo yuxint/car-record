@@ -31,6 +31,7 @@ extension AddMaintenanceRecordView {
         }
 
         if let editingRecord {
+            let recordBefore = AppDatabaseSnapshot.maintenanceRecord(editingRecord)
             if let existingCycleRecord {
                 duplicateCycleAlertMessage = "“\(AppDateContext.formatShortDate(existingCycleRecord.date))”已存在保养记录，请到保养页编辑该日期记录。"
                 if applyIntervalChanges {
@@ -61,6 +62,11 @@ extension AddMaintenanceRecordView {
                 editingRecord.cycleKey = targetCycleKey
                 CoreConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
             }
+            AppDatabaseAuditLogger.logUpdate(
+                entity: "MaintenanceRecord",
+                before: recordBefore,
+                after: AppDatabaseSnapshot.maintenanceRecord(editingRecord)
+            )
         } else {
             if let existingCycleRecord {
                 duplicateCycleAlertMessage = "“\(AppDateContext.formatShortDate(existingCycleRecord.date))”已存在保养记录，请到记录页编辑该日期记录。"
@@ -79,7 +85,7 @@ extension AddMaintenanceRecordView {
                     note: normalizedNote,
                     car: selectedCar
                 )
-                modelContext.insert(record)
+                modelContext.insertWithAudit(record)
                 CoreConfig.syncCycleAndRelations(for: record, in: modelContext)
             }
             if isDuplicateCycleAlertPresented || isIntervalConfirmDuplicateCycleAlertPresented {
@@ -93,7 +99,13 @@ extension AddMaintenanceRecordView {
 
         /// 当保养日期是今天时，自动同步车辆当前里程。
         if Calendar.current.isDate(maintenanceDate, inSameDayAs: AppDateContext.now()) {
+            let carBefore = AppDatabaseSnapshot.car(selectedCar)
             selectedCar.mileage = currentMileage
+            AppDatabaseAuditLogger.logUpdate(
+                entity: "Car",
+                before: carBefore,
+                after: AppDatabaseSnapshot.car(selectedCar)
+            )
         }
 
         if let message = modelContext.saveOrLog("保存保养记录") {
@@ -120,6 +132,7 @@ extension AddMaintenanceRecordView {
         splitCost: Double,
         splitNote: String
     ) -> Bool {
+        let recordBefore = AppDatabaseSnapshot.maintenanceRecord(editingRecord)
         let originalItemIDs = CoreConfig.parseItemIDs(editingRecord.itemIDsRaw)
         guard let lockedIndex = originalItemIDs.firstIndex(of: lockedItemID) else { return false }
 
@@ -132,6 +145,11 @@ extension AddMaintenanceRecordView {
             editingRecord.cycleKey = targetCycleKey
             editingRecord.itemIDsRaw = CoreConfig.joinItemIDs(originalItemIDs)
             CoreConfig.syncCycleAndRelations(for: editingRecord, in: modelContext)
+            AppDatabaseAuditLogger.logUpdate(
+                entity: "MaintenanceRecord",
+                before: recordBefore,
+                after: AppDatabaseSnapshot.maintenanceRecord(editingRecord)
+            )
             return true
         }
 
@@ -149,8 +167,13 @@ extension AddMaintenanceRecordView {
             note: splitNote,
             car: selectedCar
         )
-        modelContext.insert(splitRecord)
+        modelContext.insertWithAudit(splitRecord)
         CoreConfig.syncCycleAndRelations(for: splitRecord, in: modelContext)
+        AppDatabaseAuditLogger.logUpdate(
+            entity: "MaintenanceRecord",
+            before: recordBefore,
+            after: AppDatabaseSnapshot.maintenanceRecord(editingRecord)
+        )
         return true
     }
     /// 构建“下次间隔确认”草稿：仅针对本次选择的保养项目。
