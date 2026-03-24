@@ -158,6 +158,8 @@ struct MyView: View {
             }
         }
         .navigationTitle("个人中心")
+        .toolbar(activeCarForm == nil ? .visible : .hidden, for: .tabBar)
+        .animation(.none, value: activeCarForm == nil)
         .navigationDestination(item: $activeCarForm) { target in
             switch target {
             case .add:
