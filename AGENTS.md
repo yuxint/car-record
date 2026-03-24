@@ -54,6 +54,11 @@ scripts/sim_data_backup.sh [bundle_id] [backup_root]
 scripts/sim_data_restore.sh <backup_dir> [bundle_id]
 ```
 
+## 测试流程
+
+- `tmp/test/车辆管理手测清单.md` 包含车辆管理相关的模拟器验收用例；执行前填写执行人/日期/版本/设备，按状态框打勾并在失败/阻塞项写明实际结果、截图编号与复现步骤。
+- 将测试结论写入文档末尾的"测试结论"字段以便后续回归参考。
+
 ## 辅助脚本
 
 - `scripts/sim_data_backup.sh [bundle_id] [backup_root]` 会校验 `xcrun` 与 `sqlite3` 命令，默认从 `com.tx.app.CarRecord` 读取正在运行的模拟器容器，再把 `Library/Application Support/default.store{,-wal,-shm}` 拷贝到 `tmp/data-backup/<timestamp>`，并导出 SQL 文本、`row-counts.txt`（包含 `ZCAR/ZMAINTENANCELOG/ZMAINTENANCEITEMOPTION/ZFUELLOG/ZMAINTENANCELOGITEM` 行数）以及 `maintenance-export-v1.json`（后续导入可用的 JSON 结构）。执行结束会打印备份路径并列出目录内容。
@@ -70,13 +75,13 @@ scripts/sim_data_restore.sh <backup_dir> [bundle_id]
 ## 关键业务约束
 
 - `Car.id`、`MaintenanceRecord.id`、`MaintenanceRecordItem.id`、`MaintenanceItemOption.id` 均要求唯一。
-- `MaintenanceRecord.cycleKey` 用于约束“同车同日唯一”。
-- `MaintenanceRecordItem.cycleItemKey` 用于约束“同车同日同项目唯一”。
+- `MaintenanceRecord.cycleKey` 用于约束"同车同日唯一"。
+- `MaintenanceRecordItem.cycleItemKey` 用于约束"同车同日同项目唯一"。
 - 删除车辆会级联删除其保养记录。
 - 保养项目通过 `itemIDsRaw` 持久化 UUID 列表，名称展示依赖 `MaintenanceItemOption` 映射，不要把名称当作稳定主键。
 - 默认保养项目由 `MaintenanceItemCatalog` 基于品牌派生，当前至少覆盖 `本田`、`日产`。
-- 提醒进度按“时间/里程谁先到就采用谁”的规则计算。
-- 应用支持“手动日期”调试模式；涉及今天、车龄、提醒进度的逻辑时，优先使用 `AppDateContext.now()`，不要直接写 `Date()`。
+- 提醒进度按"时间/里程谁先到就采用谁"的规则计算。
+- 应用支持"手动日期"调试模式；涉及今天、车龄、提醒进度的逻辑时，优先使用 `AppDateContext.now()`，不要直接写 `Date()`。
 - 当前应用车辆通过 `AppliedCarContext` 和 `@AppStorage("applied_car_id")` 维护；涉及车辆选择时要保留失效回退逻辑。
 
 ## 修改约定
@@ -90,7 +95,7 @@ scripts/sim_data_restore.sh <backup_dir> [bundle_id]
 
 ## Xcode 项目文件更新规则
 
-当“文件清单或路径”变化时，需要检查并更新 `CarRecord/CarRecord.xcodeproj/project.pbxproj`。
+当"文件清单或路径"变化时，需要检查并更新 `CarRecord/CarRecord.xcodeproj/project.pbxproj`。
 
 ### 需要检查/更新的场景
 
