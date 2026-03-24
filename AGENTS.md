@@ -1,123 +1,16 @@
 # AGENTS.md
 
-## 项目概况
+本文件保留最小导航信息；详细规则已拆分到 `docs/agents/`，按需查阅。
 
-- 本仓库是纯 iOS 客户端项目，技术栈为 `SwiftUI + SwiftData`。
-- 当前没有网络层，业务数据默认只保存在设备本地。
-- 主工程文件是 `CarRecord/CarRecord.xcodeproj`，主要源码位于 `ios/CarRecord`。
-- 当前唯一已确认的 Scheme 是 `CarRecord`。
+## 快速入口
 
-## 目录说明
+- 项目概况、目录结构、代码事实：`docs/agents/project-overview.md`
+- 本地开发、构建与测试流程：`docs/agents/dev-workflow.md`
+- 脚本说明：`docs/agents/scripts-reference.md`
+- 关键业务约束与修改约定：`docs/agents/business-constraints.md`
+- `project.pbxproj` 更新规则：`docs/agents/pbxproj-rules.md`
 
-- `ios/CarRecord/App`：应用入口与根导航。
-- `ios/CarRecord/Core`：共享基础能力（日期上下文、格式化、当前应用车辆、通用弹窗等）。
-- `ios/CarRecord/Models`：数据模型与模型工具。
-  - `Entities`：SwiftData `@Model` 实体（`Car`、`MaintenanceRecord`、`MaintenanceRecordItem`、`MaintenanceItemOption`）。
-  - `MaintenanceItem`：保养项目目录相关能力（序列化、展示、排序、关系同步等）。
-- `ios/CarRecord/Persistence`：`ModelContainer` 构建与 `ModelContext` 保存封装。
-- `ios/CarRecord/Features/MaintenanceReminder`：保养提醒页。
-  - `View`：页面与展示逻辑。
-  - `UseCase`：提醒计算等业务规则。
-  - `State`：页面展示模型。
-- `ios/CarRecord/Features/MaintenanceRecords`：保养记录域。
-  - `AddMaintenanceRecord`：新增/编辑记录页面、状态与用例。
-  - `Records`：列表、筛选、分组、删除等页面与用例。
-- `ios/CarRecord/Features/Garage`：个人中心/车库域。
-  - `AddCar`：新增/编辑车辆页面、状态与用例。
-  - `My`：个人中心页入口与数据操作用例。
-  - `MaintenanceItems`：保养项目管理相关页面。
-  - `DataTransfer`：备份/恢复编解码与导入导出支持。
-- `scripts`：开发辅助脚本（模拟器数据备份/回灌、`pbxproj` 映射检查与修复）。
-- `tmp/data-backup`：脚本生成的本地备份产物，不属于业务源码。
+## 使用约定
 
-## 本地开发
-
-- 用 Xcode 打开 `CarRecord/CarRecord.xcodeproj`。
-- 运行前确认 `Signing & Capabilities` 已绑定本机开发者账号。
-- 命令行构建可优先尝试：
-
-```sh
-xcodebuild -project CarRecord/CarRecord.xcodeproj -scheme CarRecord build
-```
-
-- 若要查看模拟器里的本地数据库并生成可导入快照，先启动模拟器并安装 CarRecord，再运行：
-
-```sh
-scripts/sim_data_backup.sh [bundle_id] [backup_root]
-```
-
-默认 `bundle_id=com.tx.app.CarRecord`、`backup_root=tmp/data-backup`。
-
-- 想把快照回灌到已运行模拟器，使用：
-
-```sh
-scripts/sim_data_restore.sh <backup_dir> [bundle_id]
-```
-
-## 测试流程
-
-- `tmp/test/车辆管理手测清单.md` 包含车辆管理相关的模拟器验收用例；执行前填写执行人/日期/版本/设备，按状态框打勾并在失败/阻塞项写明实际结果、截图编号与复现步骤。
-- 将测试结论写入文档末尾的"测试结论"字段以便后续回归参考。
-
-## 辅助脚本
-
-- `scripts/sim_data_backup.sh [bundle_id] [backup_root]` 会校验 `xcrun` 与 `sqlite3` 命令，默认从 `com.tx.app.CarRecord` 读取正在运行的模拟器容器，再把 `Library/Application Support/default.store{,-wal,-shm}` 拷贝到 `tmp/data-backup/<timestamp>`，并导出 SQL 文本、`row-counts.txt`（包含 `ZCAR/ZMAINTENANCELOG/ZMAINTENANCEITEMOPTION/ZFUELLOG/ZMAINTENANCELOGITEM` 行数）以及 `maintenance-export-v1.json`（后续导入可用的 JSON 结构）。执行结束会打印备份路径并列出目录内容。
-- `scripts/sim_data_restore.sh <backup_dir> [bundle_id]` 需要传入包含 `default.store` 的备份目录，默认用 `com.tx.app.CarRecord`。脚本会定位已启动模拟器的容器，清理旧库及 WAL/SHM，再把备份文件覆盖过去，最后 `ls -lah` 并过滤 `default.store*` 以确认回灌结果。
-- `scripts/check_pbxproj_mapping.py [--fix] [--project <path>] [--source-root <dir>]` 检查 `ios/CarRecord` 下的 Swift 文件是否都出现在 `CarRecord/CarRecord.xcodeproj/project.pbxproj` 的引用与 Sources phase，`--fix` 会自动新增缺失引用并删除失效映射。默认在仓库根运行，若工程路径或源码根不同可通过 `--project`/`--source-root` 指定，执行前确保 `python3` 可用。
-
-## 代码事实
-
-- 应用入口在 `ios/CarRecord/App/CarRecordApp.swift`，全局注入默认 SwiftData 容器。
-- 根 Tab 固定为 3 个入口：`保养提醒`、`保养记录`、`个人中心`。
-- UI 文案当前以中文为主，格式化区域使用 `zh_Hans_CN`。
-- 项目大量依赖 `@Query`、`@AppStorage` 与页面本地 `@State` 协作，不存在独立的 service/repository 层。
-
-## 关键业务约束
-
-- `Car.id`、`MaintenanceRecord.id`、`MaintenanceRecordItem.id`、`MaintenanceItemOption.id` 均要求唯一。
-- `MaintenanceRecord.cycleKey` 用于约束"同车同日唯一"。
-- `MaintenanceRecordItem.cycleItemKey` 用于约束"同车同日同项目唯一"。
-- 删除车辆会级联删除其保养记录。
-- 保养项目通过 `itemIDsRaw` 持久化 UUID 列表，名称展示依赖 `MaintenanceItemOption` 映射，不要把名称当作稳定主键。
-- 默认保养项目由 `MaintenanceItemCatalog` 基于品牌派生，当前至少覆盖 `本田`、`日产`。
-- 提醒进度按"时间/里程谁先到就采用谁"的规则计算。
-- 应用支持"手动日期"调试模式；涉及今天、车龄、提醒进度的逻辑时，优先使用 `AppDateContext.now()`，不要直接写 `Date()`。
-- 当前应用车辆通过 `AppliedCarContext` 和 `@AppStorage("applied_car_id")` 维护；涉及车辆选择时要保留失效回退逻辑。
-
-## 修改约定
-
-- 优先保持现有架构，不要无必要引入网络层、状态管理框架或额外抽象层。
-- 目录组织遵循 `Feature + UseCase + State + View/Components`，页面文件只承载 UI 编排与事件转发。
-- 新增持久化字段或模型时，先检查 `ModelContainerProvider` 的 `Schema` 是否需要同步更新。
-- 涉及保存操作时，优先复用 `ModelContext.saveOrLog(_:)`，保持错误提示风格一致。
-- 涉及日期展示、金额展示、里程拆分时，优先复用 `ios/CarRecord/Core/Formatters.swift` 与 `ios/CarRecord/Core/AppDateContext.swift`。
-- UI 文案、注释与命名以中文语义为主，新增内容应与现有风格一致。
-
-## Xcode 项目文件更新规则
-
-当"文件清单或路径"变化时，需要检查并更新 `CarRecord/CarRecord.xcodeproj/project.pbxproj`。
-
-### 需要检查/更新的场景
-
-- 新增 Swift 文件且要参与编译。
-- 删除 Swift 文件，避免残留引用。
-- 移动或重命名 Swift 文件（尤其跨目录）。
-- 调整目录结构（如 Feature 从平铺改为分层目录）。
-- 新增/删除需要进 Build Phases 的资源文件。
-
-### 一般不需要更新的场景
-
-- 仅修改现有 Swift 文件内容，不改路径与文件名。
-- 仅修改业务逻辑或 UI 文案，不涉及文件增删改名。
-
-### 建议检查命令
-
-```sh
-scripts/check_pbxproj_mapping.py
-```
-
-自动修复可用：
-
-```sh
-scripts/check_pbxproj_mapping.py --fix
-```
+- 变更前先阅读与当前任务直接相关的文档，不必一次性通读全部内容。
+- 若 `docs/agents/` 下文档与仓库内更近层级规则冲突，以更近规则优先。

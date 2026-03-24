@@ -107,10 +107,12 @@ struct RecordsView: View {
         }
         .navigationTitle("保养记录")
         .sheet(item: $editingTarget) { target in
-            AddMaintenanceRecordView(
-                editingRecord: target.record,
-                lockedItemID: target.lockedItemID
-            )
+            NavigationStack {
+                AddMaintenanceRecordView(
+                    editingRecord: target.record,
+                    lockedItemID: target.lockedItemID
+                )
+            }
         }
         .sheet(item: $selectionSheetTarget) { target in
             selectionSheet(target)

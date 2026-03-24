@@ -29,6 +29,8 @@ struct MaintenanceReminderView: View {
             }
         }
         .navigationTitle("保养提醒")
+        .toolbar(isAddingMaintenanceRecord ? .hidden : .visible, for: .tabBar)
+        .animation(.none, value: isAddingMaintenanceRecord)
         .toolbar {
             /// 无车辆时隐藏新增入口，避免进入无效新增流程。
             if scopedCars.isEmpty == false {
@@ -41,7 +43,7 @@ struct MaintenanceReminderView: View {
                 }
             }
         }
-        .sheet(isPresented: $isAddingMaintenanceRecord) {
+        .navigationDestination(isPresented: $isAddingMaintenanceRecord) {
             AddMaintenanceRecordView()
         }
         .onAppear {

@@ -47,105 +47,9 @@ struct AddMaintenanceRecordView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section("车辆信息") {
-                    if availableCars.isEmpty {
-                        Text("请先添加车辆，再记录保养。")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Picker("车辆", selection: $selectedCarID) {
-                            ForEach(availableCars) { car in
-                                Text("\(CarDisplayFormatter.name(car))（\(AppDateContext.formatShortDate(car.purchaseDate))）")
-                                    .tag(Optional(car.id))
-                            }
-                        }
-                    }
-
-                    Button {
-                        presentPickerSheet(.serviceDate)
-                    } label: {
-                        HStack {
-                            Text("保养时间")
-                            Spacer()
-                            Text(AppDateContext.formatShortDate(maintenanceDate))
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-
-                    Button {
-                        presentPickerSheet(.mileage)
-                    } label: {
-                        HStack {
-                            Text("当前里程")
-                            Spacer()
-                            Text(MileageSegmentFormatter.text(wan: mileageWan, qian: mileageQian, bai: mileageBai))
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                Section("保养项目") {
-                    if isItemSelectionLocked {
-                        HStack {
-                            Text("选择项目")
-                            Spacer()
-                            Text(lockedItemNameText)
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    } else {
-                        Button {
-                            presentPickerSheet(.serviceItems)
-                        } label: {
-                            HStack {
-                                Text("选择项目")
-                                Spacer()
-                                Text(selectedItemsText)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-
-                if !isCostReadOnly {
-                    Section("保养费用") {
-                        HStack {
-                            Text("总费用")
-                            Spacer()
-                            TextField("请输入", text: $cost)
-                                .keyboardType(.decimalPad)
-                                .multilineTextAlignment(.trailing)
-                                .focused($focusedField, equals: .cost)
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            focusedField = .cost
-                        }
-
-                        TextField("备注（选填）", text: $note)
-                            .focused($focusedField, equals: .note)
-                            .submitLabel(.done)
-                            .onSubmit {
-                                closeInputEditors()
-                            }
-                    }
-                }
-            }
+        addRecordForm
             .navigationTitle(editingRecord == nil ? "新增保养" : "编辑保养")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") {
-                        dismiss()
-                    }
-                }
                 ToolbarItem(placement: .confirmationAction) {
                     if !isAnyInputActive {
                         Button(editingRecord == nil ? "下一步" : "保存") {
@@ -227,6 +131,99 @@ struct AddMaintenanceRecordView: View {
                 Button("我知道了", role: .cancel) {}
             } message: {
                 Text(saveErrorMessage)
+            }
+    }
+
+    private var addRecordForm: some View {
+        Form {
+            Section("车辆信息") {
+                if availableCars.isEmpty {
+                    Text("请先添加车辆，再记录保养。")
+                        .foregroundStyle(.secondary)
+                } else {
+                    Picker("车辆", selection: $selectedCarID) {
+                        ForEach(availableCars) { car in
+                            Text("\(CarDisplayFormatter.name(car))（\(AppDateContext.formatShortDate(car.purchaseDate))）")
+                                .tag(Optional(car.id))
+                        }
+                    }
+                }
+
+                Button {
+                    presentPickerSheet(.serviceDate)
+                } label: {
+                    HStack {
+                        Text("保养时间")
+                        Spacer()
+                        Text(AppDateContext.formatShortDate(maintenanceDate))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    presentPickerSheet(.mileage)
+                } label: {
+                    HStack {
+                        Text("当前里程")
+                        Spacer()
+                        Text(MileageSegmentFormatter.text(wan: mileageWan, qian: mileageQian, bai: mileageBai))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            Section("保养项目") {
+                if isItemSelectionLocked {
+                    HStack {
+                        Text("选择项目")
+                        Spacer()
+                        Text(lockedItemNameText)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    Button {
+                        presentPickerSheet(.serviceItems)
+                    } label: {
+                        HStack {
+                            Text("选择项目")
+                            Spacer()
+                            Text(selectedItemsText)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if !isCostReadOnly {
+                Section("保养费用") {
+                    HStack {
+                        Text("总费用")
+                        Spacer()
+                        TextField("请输入", text: $cost)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .focused($focusedField, equals: .cost)
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        focusedField = .cost
+                    }
+
+                    TextField("备注（选填）", text: $note)
+                        .focused($focusedField, equals: .note)
+                        .submitLabel(.done)
+                        .onSubmit {
+                            closeInputEditors()
+                    }
+                }
             }
         }
     }
