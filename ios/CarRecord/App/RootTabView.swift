@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 根导航：按"保养提醒-记录-我的"拆分主流程，"我的"固定在第 3 个标签。
+/// 根导航：按"保养提醒-保养记录-个人中心"拆分主流程，"个人中心"固定在第 3 个标签。
 struct RootTabView: View {
     var body: some View {
         TabView {
@@ -15,14 +15,14 @@ struct RootTabView: View {
                 RecordsView()
             }
             .tabItem {
-                Label("记录", systemImage: "list.bullet.clipboard")
+                Label("保养记录", systemImage: "list.bullet.clipboard")
             }
 
             NavigationStack {
                 MyView()
             }
             .tabItem {
-                Label("我的", systemImage: "person.circle.fill")
+                Label("个人中心", systemImage: "person.circle.fill")
             }
         }
     }

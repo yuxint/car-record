@@ -37,7 +37,7 @@ extension MyView {
         deleteCars(at: IndexSet(integer: index))
     }
 
-    /// 应用车型：保养提醒页与记录页会按该车型隔离读取/写入数据。
+    /// 应用车型：保养提醒页与保养记录页会按该车型隔离读取/写入数据。
     func applyCar(_ car: Car) {
         appliedCarIDRaw = AppliedCarContext.encodeCarID(car.id)
     }

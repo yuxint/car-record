@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
 
-/// “我的”页：集中放置车辆管理、项目管理入口和数据重置入口。
+/// “个人中心”页：集中放置车辆管理、项目管理入口和数据重置入口。
 struct MyView: View {
     @Environment(\.modelContext) var modelContext 
     @Query(sort: \Car.purchaseDate, order: .reverse) var cars: [Car] 
@@ -157,7 +157,7 @@ struct MyView: View {
                 }
             }
         }
-        .navigationTitle("我的")
+        .navigationTitle("个人中心")
         .navigationDestination(item: $activeCarForm) { target in
             switch target {
             case .add:

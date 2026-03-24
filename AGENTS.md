@@ -22,9 +22,9 @@
 - `ios/CarRecord/Features/MaintenanceRecords`：保养记录域。
   - `AddMaintenanceRecord`：新增/编辑记录页面、状态与用例。
   - `Records`：列表、筛选、分组、删除等页面与用例。
-- `ios/CarRecord/Features/Garage`：我的/车库域。
+- `ios/CarRecord/Features/Garage`：个人中心/车库域。
   - `AddCar`：新增/编辑车辆页面、状态与用例。
-  - `My`：我的页入口与数据操作用例。
+  - `My`：个人中心页入口与数据操作用例。
   - `MaintenanceItems`：保养项目管理相关页面。
   - `DataTransfer`：备份/恢复编解码与导入导出支持。
 - `scripts`：开发辅助脚本（模拟器数据备份/回灌、`pbxproj` 映射检查与修复）。
@@ -63,7 +63,7 @@ scripts/sim_data_restore.sh <backup_dir> [bundle_id]
 ## 代码事实
 
 - 应用入口在 `ios/CarRecord/App/CarRecordApp.swift`，全局注入默认 SwiftData 容器。
-- 根 Tab 固定为 3 个入口：`保养提醒`、`记录`、`我的`。
+- 根 Tab 固定为 3 个入口：`保养提醒`、`保养记录`、`个人中心`。
 - UI 文案当前以中文为主，格式化区域使用 `zh_Hans_CN`。
 - 项目大量依赖 `@Query`、`@AppStorage` 与页面本地 `@State` 协作，不存在独立的 service/repository 层。
 

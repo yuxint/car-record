@@ -32,7 +32,7 @@ extension AddMaintenanceRecordView {
 
         if let editingRecord {
             if let existingCycleRecord {
-                duplicateCycleAlertMessage = "“\(AppDateContext.formatShortDate(existingCycleRecord.date))”已存在保养记录，请到记录页编辑该日期记录。"
+                duplicateCycleAlertMessage = "“\(AppDateContext.formatShortDate(existingCycleRecord.date))”已存在保养记录，请到保养页编辑该日期记录。"
                 isDuplicateCycleAlertPresented = true
                 return
             }
