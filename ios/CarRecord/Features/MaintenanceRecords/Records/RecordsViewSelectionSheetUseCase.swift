@@ -7,6 +7,9 @@ extension RecordsView {
         let options = selectionOptions(for: target.kind)
         let allIDs = Set(options.map(\.id))
         let effectiveSelection = effectiveDraftSelection(target: target, allIDs: allIDs)
+        let currentSelection = currentSelectedIDs(mode: target.mode, kind: target.kind)
+        let normalizedDraftSelection = effectiveSelection == allIDs ? Set<UUID>() : effectiveSelection
+        let hasSelectionDraftChanges = normalizedDraftSelection != currentSelection
 
         NavigationStack {
             List {
@@ -57,7 +60,7 @@ extension RecordsView {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") {
+                    Button(AppPopupText.cancel) {
                         selectionSheetTarget = nil
                     }
                 }
@@ -65,7 +68,7 @@ extension RecordsView {
                     Button("应用") {
                         applySelectionDraft(target: target, allIDs: allIDs)
                     }
-                    .disabled(effectiveSelection.isEmpty)
+                    .disabled(effectiveSelection.isEmpty || hasSelectionDraftChanges == false)
                 }
             }
         }

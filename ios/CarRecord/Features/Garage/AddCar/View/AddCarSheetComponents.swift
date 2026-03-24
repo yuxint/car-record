@@ -28,7 +28,7 @@ extension AddCarView {
         )
     }
 
-    /// 项目设置页：统一编辑名称、提醒方式和阈值。
+    /// 项目设置页：统一编辑名称与提醒方式。
     @ViewBuilder
     func maintenanceDraftEditorPage(
         title: String,
@@ -37,6 +37,8 @@ extension AddCarView {
         onDelete: (() -> Void)?,
         onRestoreDefaults: (() -> Void)?,
         canRestoreDefaults: Bool,
+        confirmButtonTitle: String,
+        isConfirmButtonEnabled: Bool,
         onSave: @escaping () -> Void,
         validationMessage: String,
         isValidationAlertPresented: Binding<Bool>
@@ -75,15 +77,6 @@ extension AddCarView {
                 }
             }
 
-            Section("进度颜色阈值（%）") {
-                Stepper(value: draft.warningStartPercent, in: 0...200, step: 5) {
-                    Text("黄色阈值：\(draft.wrappedValue.warningStartPercent)%")
-                }
-                Stepper(value: draft.dangerStartPercent, in: 0...200, step: 5) {
-                    Text("红色阈值：\(draft.wrappedValue.dangerStartPercent)%")
-                }
-            }
-
             if let onRestoreDefaults {
                 Section {
                     Button("恢复默认值") {
@@ -107,13 +100,14 @@ extension AddCarView {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("保存") {
+                Button(confirmButtonTitle) {
                     onSave()
                 }
+                .disabled(isConfirmButtonEnabled == false)
             }
         }
-        .alert("提示", isPresented: isValidationAlertPresented) {
-            Button("我知道了", role: .cancel) {}
+        .alert(AppAlertText.promptTitle, isPresented: isValidationAlertPresented) {
+            Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
             Text(validationMessage)
         }

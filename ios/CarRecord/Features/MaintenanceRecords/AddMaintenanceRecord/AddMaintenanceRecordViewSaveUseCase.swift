@@ -33,7 +33,11 @@ extension AddMaintenanceRecordView {
         if let editingRecord {
             if let existingCycleRecord {
                 duplicateCycleAlertMessage = "“\(AppDateContext.formatShortDate(existingCycleRecord.date))”已存在保养记录，请到保养页编辑该日期记录。"
-                isDuplicateCycleAlertPresented = true
+                if applyIntervalChanges {
+                    isIntervalConfirmDuplicateCycleAlertPresented = true
+                } else {
+                    isDuplicateCycleAlertPresented = true
+                }
                 return
             }
             if let lockedItemID, isItemSelectionLocked {
@@ -60,7 +64,11 @@ extension AddMaintenanceRecordView {
         } else {
             if let existingCycleRecord {
                 duplicateCycleAlertMessage = "“\(AppDateContext.formatShortDate(existingCycleRecord.date))”已存在保养记录，请到记录页编辑该日期记录。"
-                isDuplicateCycleAlertPresented = true
+                if applyIntervalChanges {
+                    isIntervalConfirmDuplicateCycleAlertPresented = true
+                } else {
+                    isDuplicateCycleAlertPresented = true
+                }
             } else {
                 let itemIDsRaw = CoreConfig.joinItemIDs(orderedSelectedItemIDs)
                 let record = MaintenanceRecord(
@@ -74,7 +82,7 @@ extension AddMaintenanceRecordView {
                 modelContext.insert(record)
                 CoreConfig.syncCycleAndRelations(for: record, in: modelContext)
             }
-            if isDuplicateCycleAlertPresented {
+            if isDuplicateCycleAlertPresented || isIntervalConfirmDuplicateCycleAlertPresented {
                 return
             }
         }
@@ -90,7 +98,15 @@ extension AddMaintenanceRecordView {
 
         if let message = modelContext.saveOrLog("保存保养记录") {
             saveErrorMessage = message
-            isSaveErrorAlertPresented = true
+            if applyIntervalChanges {
+                isIntervalConfirmSaveErrorAlertPresented = true
+            } else {
+                isSaveErrorAlertPresented = true
+            }
+            return
+        }
+        if applyIntervalChanges {
+            AppNavigationContext.requestNavigation(to: .reminder)
             return
         }
         dismiss()
@@ -191,6 +207,11 @@ extension AddMaintenanceRecordView {
     /// 在确认页点击“保存”后，一次性保存保养记录和提醒默认值。
     func applyIntervalConfirmationAndDismiss() {
         saveRecord(applyIntervalChanges: true)
+    }
+
+    /// 重复周期时直接跳转到“保养记录”页。
+    func openDuplicateCycleRecordEditor() {
+        AppNavigationContext.requestNavigation(to: .records)
     }
 
 }

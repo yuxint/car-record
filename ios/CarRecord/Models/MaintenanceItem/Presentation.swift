@@ -19,17 +19,11 @@ extension CoreConfig {
         }
 
         let reminderText = parts.isEmpty ? "未设置" : parts.joined(separator: " / ")
-        let thresholds = normalizedProgressThresholds(
-            warning: option.warningStartPercent,
-            danger: option.dangerStartPercent
-        )
-        return "\(reminderText) · 阈值\(thresholds.warning)%/\(thresholds.danger)%"
+        return reminderText
     }
 
-    /// 统一校正颜色阈值，保证“黄色阈值 < 红色阈值”。
+    /// 统一返回阈值：黄色区间 [100, 125)，红色起点 125。
     static func normalizedProgressThresholds(warning: Int, danger: Int) -> (warning: Int, danger: Int) {
-        let safeWarning = max(1, warning)
-        let safeDanger = max(safeWarning + 1, danger)
-        return (safeWarning, safeDanger)
+        (warningRangeStartPercent, dangerStartPercent)
     }
 }

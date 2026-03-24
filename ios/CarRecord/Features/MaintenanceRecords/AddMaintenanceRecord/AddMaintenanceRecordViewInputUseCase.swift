@@ -106,7 +106,7 @@ extension AddMaintenanceRecordView {
         }
     }
 
-    /// 统一收起当前输入态：用于弹窗切换和键盘右上角“保存”按钮。
+    /// 统一收起当前输入态：用于弹窗切换和键盘右上角“完成”按钮。
     func closeInputEditors() {
         focusedField = nil
         hideKeyboard()

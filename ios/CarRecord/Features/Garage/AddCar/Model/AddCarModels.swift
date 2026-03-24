@@ -47,21 +47,23 @@ struct MaintenanceItemDraft: Identifiable, Equatable {
     var dangerStartPercent: Int
 
     static func defaultDraft(
-        from definition: CoreConfig.DefaultItemDefinition,
-        warningStartPercent: Int,
-        dangerStartPercent: Int
+        from definition: CoreConfig.DefaultItemDefinition
     ) -> MaintenanceItemDraft {
-        MaintenanceItemDraft(
+        let thresholds = CoreConfig.normalizedProgressThresholds(
+            warning: definition.warningStartPercent,
+            danger: definition.dangerStartPercent
+        )
+        return MaintenanceItemDraft(
             name: definition.defaultName,
             isDefault: true,
             catalogKey: definition.key,
             isEnabled: true,
-            remindByMileage: definition.mileageInterval != nil,
+            remindByMileage: definition.remindByMileage,
             mileageInterval: definition.mileageInterval ?? 0,
-            remindByTime: definition.monthInterval != nil,
+            remindByTime: definition.remindByTime,
             monthInterval: definition.monthInterval ?? 0,
-            warningStartPercent: warningStartPercent,
-            dangerStartPercent: dangerStartPercent
+            warningStartPercent: thresholds.warning,
+            dangerStartPercent: thresholds.danger
         )
     }
 
@@ -102,6 +104,6 @@ struct MaintenanceItemDraft: Identifiable, Equatable {
         if parts.isEmpty {
             parts.append("未设置")
         }
-        return "\(parts.joined(separator: " / ")) · 阈值\(draft.warningStartPercent)%/\(draft.dangerStartPercent)%"
+        return parts.joined(separator: " / ")
     }
 }

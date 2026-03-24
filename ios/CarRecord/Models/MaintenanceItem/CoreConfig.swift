@@ -10,6 +10,10 @@ enum CoreConfig {
         let defaultName: String
         let mileageInterval: Int?
         let monthInterval: Int?
+        let remindByMileage: Bool
+        let remindByTime: Bool
+        let warningStartPercent: Int
+        let dangerStartPercent: Int
     }
 
     /// 车型配置：默认项目、默认阈值与排序优先级都按车型定义。
@@ -30,6 +34,9 @@ enum CoreConfig {
     static let airFilterKey = "air_filter"
     static let transmissionOilKey = "transmission_oil"
     static let brakeFluidKey = "brake_fluid"
+    static var warningRangeStartPercent: Int { civic2022WarningStartPercent }
+    static var warningRangeEndExclusivePercent: Int { civic2022DangerStartPercent }
+    static var dangerStartPercent: Int { civic2022DangerStartPercent }
 
     /// 兜底车型配置：用于无车辆上下文时的默认行为。
     static let fallbackModelConfig = ModelConfig(
@@ -39,8 +46,8 @@ enum CoreConfig {
             fuelCleanerKey,
             acFilterKey,
         ],
-        defaultWarningStartPercent: 100,
-        defaultDangerStartPercent: 125
+        defaultWarningStartPercent: civic2022WarningStartPercent,
+        defaultDangerStartPercent: civic2022DangerStartPercent
     )
 
     /// 按车型返回配置。
@@ -53,15 +60,15 @@ enum CoreConfig {
             return ModelConfig(
                 defaultItemDefinitions: civic2022DefaultItemDefinitions,
                 preferredKeysWhenNoLog: [engineOilKey, fuelCleanerKey, acFilterKey],
-                defaultWarningStartPercent: 100,
-                defaultDangerStartPercent: 125
+                defaultWarningStartPercent: civic2022WarningStartPercent,
+                defaultDangerStartPercent: civic2022DangerStartPercent
             )
         case ("日产", "22款轩逸"):
             return ModelConfig(
                 defaultItemDefinitions: sylphy2022DefaultItemDefinitions,
                 preferredKeysWhenNoLog: [engineOilKey, acFilterKey, airFilterKey],
-                defaultWarningStartPercent: 100,
-                defaultDangerStartPercent: 125
+                defaultWarningStartPercent: sylphy2022WarningStartPercent,
+                defaultDangerStartPercent: sylphy2022DangerStartPercent
             )
         default:
             return fallbackModelConfig

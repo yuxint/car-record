@@ -103,7 +103,7 @@ enum ReminderStrategy {
     }
 }
 
-/// 保养提醒页进度颜色等级：默认绿色，100%~阈值黄色，超过上限红色。
+/// 保养提醒页进度颜色等级：黄色区间 (100,125)，红色从 125 起。
 enum ReminderProgressColorLevel {
     case normal
     case warning

@@ -25,14 +25,17 @@ struct AddMaintenanceRecordView: View {
     @State var mileageQian = 0
     @State var mileageBai = 0
     @State var note = ""
+    @State var initialEditDraftSnapshot: MaintenanceEditDraftSnapshot?
     @State var hasLoadedInitialValues = false
     @State var activePickerSheet: MaintenancePickerSheet?
     @State var intervalConfirmDrafts: [MaintenanceIntervalDraft] = []
     @State var isIntervalConfirmPresented = false
     @State var isDuplicateCycleAlertPresented = false
+    @State var isIntervalConfirmDuplicateCycleAlertPresented = false
     @State var duplicateCycleAlertMessage = ""
     @State var saveErrorMessage = ""
     @State var isSaveErrorAlertPresented = false
+    @State var isIntervalConfirmSaveErrorAlertPresented = false
     @State var hasInitializedSplitDraft = false
     @FocusState var focusedField: FocusField?
 
@@ -59,13 +62,13 @@ struct AddMaintenanceRecordView: View {
                                 saveRecord()
                             }
                         }
-                        .disabled(!canSave)
+                        .disabled(!canSubmit)
                     }
                 }
                 ToolbarItemGroup(placement: .keyboard) {
                     if focusedField == .cost, !isCostReadOnly {
                         Spacer()
-                        Button("保存") {
+                        Button("完成") {
                             closeInputEditors()
                         }
                     }
@@ -75,6 +78,9 @@ struct AddMaintenanceRecordView: View {
                 syncAppliedCarSelectionIfNeeded()
                 loadInitialValuesIfNeeded()
                 ensureSelectedCarIsValid()
+                DispatchQueue.main.async {
+                    captureInitialEditDraftSnapshotIfNeeded()
+                }
             }
             .onChange(of: cars.map(\.id)) { _, _ in
                 syncAppliedCarSelectionIfNeeded()
@@ -119,16 +125,19 @@ struct AddMaintenanceRecordView: View {
             .navigationDestination(isPresented: $isIntervalConfirmPresented) {
                 intervalConfirmSheet
             }
-            .alert("已存在同日记录", isPresented: $isDuplicateCycleAlertPresented) {
-                Button("去编辑") {
-                    dismiss()
+            .alert(AppAlertText.duplicateCycleTitle, isPresented: $isDuplicateCycleAlertPresented) {
+                Button(AppPopupText.goEdit) {
+                    openDuplicateCycleRecordEditor()
                 }
-                Button("取消", role: .cancel) {}
+                Button(AppPopupText.cancel, role: .cancel) {}
             } message: {
                 Text(duplicateCycleAlertMessage)
             }
-            .alert("保存失败", isPresented: $isSaveErrorAlertPresented) {
-                Button("我知道了", role: .cancel) {}
+            .alert(AppAlertText.saveFailedTitle, isPresented: Binding(
+                get: { editingRecord != nil && isSaveErrorAlertPresented },
+                set: { isSaveErrorAlertPresented = $0 }
+            )) {
+                Button(AppPopupText.acknowledge, role: .cancel) {}
             } message: {
                 Text(saveErrorMessage)
             }
@@ -141,39 +150,41 @@ struct AddMaintenanceRecordView: View {
                     Text("请先添加车辆，再记录保养。")
                         .foregroundStyle(.secondary)
                 } else {
-                    Picker("车辆", selection: $selectedCarID) {
-                        ForEach(availableCars) { car in
-                            Text("\(CarDisplayFormatter.name(car))（\(AppDateContext.formatShortDate(car.purchaseDate))）")
-                                .tag(Optional(car.id))
-                        }
+                    HStack {
+                        Text("车辆")
+                        Spacer()
+                        Text(selectedCarDisplayText)
+                            .foregroundStyle(.secondary)
                     }
-                }
 
-                Button {
-                    presentPickerSheet(.serviceDate)
-                } label: {
                     HStack {
                         Text("保养时间")
                         Spacer()
-                        Text(AppDateContext.formatShortDate(maintenanceDate))
+                        Button {
+                            presentPickerSheet(.serviceDate)
+                        } label: {
+                            rowValueActionLabel(text: AppDateContext.formatShortDate(maintenanceDate))
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
 
-                Button {
-                    presentPickerSheet(.mileage)
-                } label: {
                     HStack {
                         Text("当前里程")
                         Spacer()
-                        Text(MileageSegmentFormatter.text(wan: mileageWan, qian: mileageQian, bai: mileageBai))
+                        Button {
+                            presentPickerSheet(.mileage)
+                        } label: {
+                            rowValueActionLabel(
+                                text: MileageSegmentFormatter.text(
+                                    wan: mileageWan,
+                                    qian: mileageQian,
+                                    bai: mileageBai
+                                )
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
             }
 
             Section("保养项目") {
@@ -225,6 +236,20 @@ struct AddMaintenanceRecordView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+extension AddMaintenanceRecordView {
+    private func rowValueActionLabel(text: String) -> some View {
+        HStack(spacing: 4) {
+            Text(text)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+                .id(text)
+            Image(systemName: "chevron.up.chevron.down")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
     }
 }

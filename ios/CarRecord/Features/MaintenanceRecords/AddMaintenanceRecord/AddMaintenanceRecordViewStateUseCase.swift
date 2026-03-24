@@ -3,6 +3,16 @@ import SwiftData
 import UIKit
 
 extension AddMaintenanceRecordView {
+    var selectedCar: Car? {
+        guard let selectedCarID else { return nil }
+        return availableCars.first(where: { $0.id == selectedCarID })
+    }
+
+    var selectedCarDisplayText: String {
+        guard let selectedCar else { return "未选择" }
+        return "\(CarDisplayFormatter.name(selectedCar))（\(AppDateContext.formatShortDate(selectedCar.purchaseDate))）"
+    }
+
     var scopedServiceItemOptions: [MaintenanceItemOption] {
         CoreConfig.scopedOptions(serviceItemOptions, carID: selectedCarID)
     }
@@ -14,9 +24,6 @@ extension AddMaintenanceRecordView {
 
     /// 可选项目列表：先按车辆禁用状态过滤，再按统一规则排序。
     var availableItemOptions: [MaintenanceItemOption] {
-        let selectedCar = selectedCarID.flatMap { id in
-            availableCars.first(where: { $0.id == id })
-        }
         let visibleOptions = CoreConfig.filterDisabledOptions(
             scopedServiceItemOptions,
             disabledItemIDsRaw: selectedCar?.disabledItemIDsRaw ?? "",
@@ -75,6 +82,30 @@ extension AddMaintenanceRecordView {
         return parsedCost != nil
     }
 
+    /// 编辑场景下，只有草稿发生变更才允许保存。
+    var canSubmit: Bool {
+        guard canSave else { return false }
+        guard editingRecord != nil else { return true }
+        return hasDraftChanges
+    }
+
+    var hasDraftChanges: Bool {
+        guard let initialEditDraftSnapshot else { return false }
+        return initialEditDraftSnapshot != currentEditDraftSnapshot
+    }
+
+    var currentEditDraftSnapshot: MaintenanceEditDraftSnapshot {
+        let normalizedDate = Calendar.current.startOfDay(for: maintenanceDate)
+        return MaintenanceEditDraftSnapshot(
+            selectedCarID: selectedCarID,
+            selectedItems: selectedItems,
+            maintenanceDate: normalizedDate,
+            mileage: currentMileage,
+            cost: parsedCost ?? editingRecord?.cost ?? 0,
+            note: note.trimmingCharacters(in: .whitespacesAndNewlines)
+        )
+    }
+
     /// 当前是否处于任意输入态：用于避免导航栏“保存”与键盘操作冲突。
     var isAnyInputActive: Bool {
         focusedField != nil
@@ -97,6 +128,12 @@ extension AddMaintenanceRecordView {
     func ensureSelectedCarIsValid() {
         guard availableCars.contains(where: { $0.id == selectedCarID }) == false else { return }
         selectedCarID = availableCars.first?.id
+    }
+
+    func captureInitialEditDraftSnapshotIfNeeded() {
+        guard editingRecord != nil else { return }
+        guard initialEditDraftSnapshot == nil else { return }
+        initialEditDraftSnapshot = currentEditDraftSnapshot
     }
 
 }

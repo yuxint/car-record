@@ -15,7 +15,7 @@ final class MaintenanceItemOption {
     var mileageInterval: Int
     var remindByTime: Bool
     var monthInterval: Int
-    /// 进度颜色阈值：达到黄色阈值进入黄色，超过红色阈值进入红色。
+    /// 进度颜色阈值：黄色区间 (100,125)，红色从 125 起。
     var warningStartPercent: Int
     var dangerStartPercent: Int
     var createdAt: Date

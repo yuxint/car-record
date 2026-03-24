@@ -210,23 +210,23 @@ struct MyView: View {
                 presentTransferResult("恢复失败：\(error.localizedDescription)")
             }
         }
-        .alert("确认重置数据？", isPresented: $isResetAlertPresented) {
-            Button("取消", role: .cancel) {}
-            Button("确认重置", role: .destructive) {
+        .alert(AppAlertText.resetDataConfirmTitle, isPresented: $isResetAlertPresented) {
+            Button(AppPopupText.cancel, role: .cancel) {}
+            Button(AppAlertText.confirmResetAction, role: .destructive) {
                 resetAllData()
             }
         } message: {
-            Text("将清空车辆、保养记录和全部保养项目，且无法恢复。")
+            Text(AppAlertText.resetDataMessage)
         }
-        .alert("确认恢复数据？", isPresented: $isRestoreConfirmAlertPresented) {
-            Button("取消", role: .cancel) {}
-            Button("确认恢复", role: .destructive) {
+        .alert(AppAlertText.restoreDataConfirmTitle, isPresented: $isRestoreConfirmAlertPresented) {
+            Button(AppPopupText.cancel, role: .cancel) {}
+            Button(AppAlertText.confirmRestoreAction, role: .destructive) {
                 isImportingMaintenanceData = true
             }
         } message: {
-            Text("恢复会先清空当前全部数据，再导入备份文件。")
+            Text(AppAlertText.restoreDataMessage)
         }
-        .alert("确认删除车辆？", isPresented: Binding(
+        .alert(AppAlertText.deleteCarConfirmTitle, isPresented: Binding(
             get: { pendingDeleteCar != nil },
             set: { newValue in
                 if !newValue {
@@ -234,28 +234,28 @@ struct MyView: View {
                 }
             }
         )) {
-            Button("取消", role: .cancel) {
+            Button(AppPopupText.cancel, role: .cancel) {
                 pendingDeleteCar = nil
             }
-            Button("确认删除", role: .destructive) {
+            Button(AppAlertText.confirmDeleteAction, role: .destructive) {
                 guard let car = pendingDeleteCar else { return }
                 pendingDeleteCar = nil
                 deleteCar(car)
             }
         } message: {
             if let car = pendingDeleteCar {
-                Text("将删除“\(CarDisplayFormatter.name(car))”及其关联的保养记录、保养项目设置等全部数据，且无法恢复。")
+                Text(AppAlertText.deleteCarMessage(carName: CarDisplayFormatter.name(car)))
             } else {
-                Text("将删除该车辆及其关联的保养记录、保养项目设置等全部数据，且无法恢复。")
+                Text(AppAlertText.deleteCarFallbackMessage)
             }
         }
-        .alert("备份恢复结果", isPresented: $isTransferResultAlertPresented) {
-            Button("我知道了", role: .cancel) {}
+        .alert(AppAlertText.transferResultTitle, isPresented: $isTransferResultAlertPresented) {
+            Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
             Text(transferResultMessage)
         }
-        .alert("操作失败", isPresented: $isOperationErrorAlertPresented) {
-            Button("我知道了", role: .cancel) {}
+        .alert(AppAlertText.operationFailedTitle, isPresented: $isOperationErrorAlertPresented) {
+            Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
             Text(operationErrorMessage)
         }

@@ -15,7 +15,7 @@ struct MaintenanceReminderView: View {
             if let appliedCar = scopedCars.first {
                 Section(CarDisplayFormatter.name(appliedCar)) {
                     if carSection == nil {
-                        Text("暂无保养记录，完成首次保养后开始提醒。")
+                        Text("暂无保养记录，完成保养后开始提醒。")
                             .foregroundStyle(.secondary)
                     } else if let section = carSection {
                         ForEach(section.rows) { row in

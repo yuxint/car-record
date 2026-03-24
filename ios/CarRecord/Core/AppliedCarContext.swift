@@ -32,3 +32,21 @@ enum AppliedCarContext {
         return encodeCarID(resolvedID)
     }
 }
+
+/// 根 Tab 导航目标。
+enum RootTabRoute: String {
+    case reminder
+    case records
+    case my
+}
+
+/// 跨页面导航上下文：用于发起显式 Tab 跳转，避免依赖当前导航层级。
+enum AppNavigationContext {
+    static let targetStorageKey = "root_tab_navigation_target"
+    static let nonceStorageKey = "root_tab_navigation_nonce"
+
+    static func requestNavigation(to route: RootTabRoute) {
+        UserDefaults.standard.set(route.rawValue, forKey: targetStorageKey)
+        UserDefaults.standard.set(UUID().uuidString, forKey: nonceStorageKey)
+    }
+}

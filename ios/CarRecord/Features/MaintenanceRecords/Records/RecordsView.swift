@@ -106,8 +106,13 @@ struct RecordsView: View {
             }
         }
         .navigationTitle("保养记录")
-        .sheet(item: $editingTarget) { target in
-            NavigationStack {
+        .toolbar(editingTarget == nil ? .visible : .hidden, for: .tabBar)
+        .animation(.none, value: editingTarget != nil)
+        .navigationDestination(isPresented: Binding(
+            get: { editingTarget != nil },
+            set: { if !$0 { editingTarget = nil } }
+        )) {
+            if let target = editingTarget {
                 AddMaintenanceRecordView(
                     editingRecord: target.record,
                     lockedItemID: target.lockedItemID
@@ -117,8 +122,8 @@ struct RecordsView: View {
         .sheet(item: $selectionSheetTarget) { target in
             selectionSheet(target)
         }
-        .alert("操作失败", isPresented: $isSaveErrorAlertPresented) {
-            Button("我知道了", role: .cancel) {}
+        .alert(AppAlertText.operationFailedTitle, isPresented: $isSaveErrorAlertPresented) {
+            Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
             Text(saveErrorMessage)
         }

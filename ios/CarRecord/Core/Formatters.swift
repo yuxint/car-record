@@ -48,3 +48,36 @@ enum CarDisplayFormatter {
         return "\(car.brand) \(car.modelName)"
     }
 }
+
+/// 统一弹窗按钮文案，避免页面散落硬编码。
+enum AppPopupText {
+    static let cancel = "取消"
+    static let confirm = "确认"
+    static let done = "完成"
+    static let acknowledge = "我知道了"
+    static let goEdit = "去编辑"
+}
+
+/// 统一弹窗标题与提示文案，便于集中维护。
+enum AppAlertText {
+    static let promptTitle = "提示"
+    static let saveFailedTitle = "保存失败"
+    static let operationFailedTitle = "操作失败"
+    static let duplicateCycleTitle = "已存在同日记录"
+    static let resetDataConfirmTitle = "确认重置数据？"
+    static let restoreDataConfirmTitle = "确认恢复数据？"
+    static let deleteCarConfirmTitle = "确认删除车辆？"
+    static let transferResultTitle = "备份恢复结果"
+
+    static let confirmResetAction = "确认重置"
+    static let confirmRestoreAction = "确认恢复"
+    static let confirmDeleteAction = "确认删除"
+
+    static let resetDataMessage = "将清空车辆、保养记录和全部保养项目，且无法恢复。"
+    static let restoreDataMessage = "恢复会先清空当前全部数据，再导入备份文件。"
+    static let deleteCarFallbackMessage = "将删除该车辆及其关联的保养记录、保养项目设置等全部数据，且无法恢复。"
+
+    static func deleteCarMessage(carName: String) -> String {
+        "将删除“\(carName)”及其关联的保养记录、保养项目设置等全部数据，且无法恢复。"
+    }
+}

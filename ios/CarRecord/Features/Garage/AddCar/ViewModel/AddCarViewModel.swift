@@ -162,9 +162,7 @@ final class AddCarViewModel: ObservableObject {
                 return existing
             }
             return MaintenanceItemDraft.defaultDraft(
-                from: definition,
-                warningStartPercent: currentModelConfig.defaultWarningStartPercent,
-                dangerStartPercent: currentModelConfig.defaultDangerStartPercent
+                from: definition
             )
         }
 
@@ -391,10 +389,6 @@ final class AddCarViewModel: ObservableObject {
         }
 
         for draft in drafts {
-            let thresholds = CoreConfig.normalizedProgressThresholds(
-                warning: draft.warningStartPercent,
-                danger: draft.dangerStartPercent
-            )
             modelContext.insert(
                 MaintenanceItemOption(
                     id: draft.id,
@@ -406,8 +400,8 @@ final class AddCarViewModel: ObservableObject {
                     mileageInterval: draft.remindByMileage ? max(1, draft.mileageInterval) : 0,
                     remindByTime: draft.remindByTime,
                     monthInterval: draft.remindByTime ? max(1, draft.monthInterval) : 0,
-                    warningStartPercent: thresholds.warning,
-                    dangerStartPercent: thresholds.danger
+                    warningStartPercent: currentModelConfig.defaultWarningStartPercent,
+                    dangerStartPercent: currentModelConfig.defaultDangerStartPercent
                 )
             )
         }
@@ -435,13 +429,6 @@ final class AddCarViewModel: ObservableObject {
             return "请至少开启一种提醒方式。"
         }
 
-        guard (0...200).contains(draft.warningStartPercent), (0...200).contains(draft.dangerStartPercent) else {
-            return "阈值范围必须在 0%~200%。"
-        }
-
-        guard draft.dangerStartPercent > draft.warningStartPercent else {
-            return "红色阈值必须大于黄色阈值。"
-        }
         return nil
     }
 
@@ -474,13 +461,6 @@ final class AddCarViewModel: ObservableObject {
             return "请至少开启一种提醒方式。"
         }
 
-        guard (0...200).contains(draft.warningStartPercent), (0...200).contains(draft.dangerStartPercent) else {
-            return "阈值范围必须在 0%~200%。"
-        }
-
-        guard draft.dangerStartPercent > draft.warningStartPercent else {
-            return "红色阈值必须大于黄色阈值。"
-        }
         return nil
     }
 
@@ -538,10 +518,6 @@ final class AddCarViewModel: ObservableObject {
         }
         let optionByID = Dictionary(uniqueKeysWithValues: maintenanceItemOptions.map { ($0.id, $0) })
         for draft in existingItemDrafts {
-            let thresholds = CoreConfig.normalizedProgressThresholds(
-                warning: draft.warningStartPercent,
-                danger: draft.dangerStartPercent
-            )
             if let option = optionByID[draft.id] {
                 option.ownerCarID = carID
                 option.name = draft.name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -549,8 +525,8 @@ final class AddCarViewModel: ObservableObject {
                 option.mileageInterval = draft.remindByMileage ? max(1, draft.mileageInterval) : 0
                 option.remindByTime = draft.remindByTime
                 option.monthInterval = draft.remindByTime ? max(1, draft.monthInterval) : 0
-                option.warningStartPercent = thresholds.warning
-                option.dangerStartPercent = thresholds.danger
+                option.warningStartPercent = currentModelConfig.defaultWarningStartPercent
+                option.dangerStartPercent = currentModelConfig.defaultDangerStartPercent
             } else {
                 modelContext.insert(
                     MaintenanceItemOption(
@@ -563,8 +539,8 @@ final class AddCarViewModel: ObservableObject {
                         mileageInterval: draft.remindByMileage ? max(1, draft.mileageInterval) : 0,
                         remindByTime: draft.remindByTime,
                         monthInterval: draft.remindByTime ? max(1, draft.monthInterval) : 0,
-                        warningStartPercent: thresholds.warning,
-                        dangerStartPercent: thresholds.danger
+                        warningStartPercent: currentModelConfig.defaultWarningStartPercent,
+                        dangerStartPercent: currentModelConfig.defaultDangerStartPercent
                     )
                 )
             }
@@ -596,9 +572,9 @@ final class AddCarViewModel: ObservableObject {
             let definitions = CoreConfig.defaultItemDefinitions(brand: brand, modelName: modelName)
             if let definition = definitions.first(where: { $0.key == catalogKey }) {
                 restored.name = definition.defaultName
-                restored.remindByMileage = definition.mileageInterval != nil
+                restored.remindByMileage = definition.remindByMileage
                 restored.mileageInterval = definition.mileageInterval ?? 0
-                restored.remindByTime = definition.monthInterval != nil
+                restored.remindByTime = definition.remindByTime
                 restored.monthInterval = definition.monthInterval ?? 0
             }
         } else {
@@ -612,8 +588,6 @@ final class AddCarViewModel: ObservableObject {
             restored.remindByTime = fallback.remindByTime
             restored.monthInterval = fallback.monthInterval
         }
-        restored.warningStartPercent = currentModelConfig.defaultWarningStartPercent
-        restored.dangerStartPercent = currentModelConfig.defaultDangerStartPercent
         return restored
     }
 
@@ -623,17 +597,11 @@ final class AddCarViewModel: ObservableObject {
     }
 
     private func normalizedRestoreComparable(_ draft: MaintenanceItemDraft) -> [Int] {
-        let thresholds = CoreConfig.normalizedProgressThresholds(
-            warning: draft.warningStartPercent,
-            danger: draft.dangerStartPercent
-        )
         return [
             draft.remindByMileage ? 1 : 0,
             draft.remindByMileage ? max(1, draft.mileageInterval) : 0,
             draft.remindByTime ? 1 : 0,
             draft.remindByTime ? max(1, draft.monthInterval) : 0,
-            thresholds.warning,
-            thresholds.danger,
         ]
     }
 
@@ -643,6 +611,29 @@ final class AddCarViewModel: ObservableObject {
             warningStartPercent: currentModelConfig.defaultWarningStartPercent,
             dangerStartPercent: currentModelConfig.defaultDangerStartPercent
         )
+    }
+
+    func hasDraftChanges(current: MaintenanceItemDraft, initial: MaintenanceItemDraft?) -> Bool {
+        guard let initial else { return false }
+        return normalizedDraftComparable(current) != normalizedDraftComparable(initial)
+    }
+
+    private func normalizedDraftComparable(_ draft: MaintenanceItemDraft) -> DraftComparable {
+        return DraftComparable(
+            name: draft.name.trimmingCharacters(in: .whitespacesAndNewlines),
+            remindByMileage: draft.remindByMileage,
+            mileageInterval: draft.remindByMileage ? max(1, draft.mileageInterval) : 0,
+            remindByTime: draft.remindByTime,
+            monthInterval: draft.remindByTime ? max(1, draft.monthInterval) : 0
+        )
+    }
+
+    private struct DraftComparable: Equatable {
+        let name: String
+        let remindByMileage: Bool
+        let mileageInterval: Int
+        let remindByTime: Bool
+        let monthInterval: Int
     }
 
     private static func normalizedBrand(_ brand: String) -> String {

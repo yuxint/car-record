@@ -97,17 +97,14 @@ enum MaintenanceReminderUseCase {
         let clampedProgress = min(max(rawProgress, 0), 1)
         let rawPercent = max(0, rawProgress * 100)
         let percent = Int(rawPercent.rounded())
-        let thresholds = CoreConfig.normalizedProgressThresholds(
-            warning: option.warningStartPercent,
-            danger: option.dangerStartPercent
-        )
         let progressColorLevel: ReminderProgressColorLevel
-        if rawPercent < Double(thresholds.warning) {
-            progressColorLevel = .normal
-        } else if rawPercent <= Double(thresholds.danger) {
+        if rawPercent >= Double(CoreConfig.warningRangeStartPercent),
+           rawPercent < Double(CoreConfig.warningRangeEndExclusivePercent) {
             progressColorLevel = .warning
-        } else {
+        } else if rawPercent >= Double(CoreConfig.dangerStartPercent) {
             progressColorLevel = .danger
+        } else {
+            progressColorLevel = .normal
         }
 
         return MaintenanceReminderRow(

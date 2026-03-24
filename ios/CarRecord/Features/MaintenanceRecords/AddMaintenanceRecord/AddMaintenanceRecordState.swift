@@ -32,3 +32,13 @@ struct MaintenanceIntervalDraft: Identifiable {
     let remindByTime: Bool
     var yearInterval: Double
 }
+
+/// 编辑态草稿快照：用于判断是否有实际改动。
+struct MaintenanceEditDraftSnapshot: Equatable {
+    let selectedCarID: UUID?
+    let selectedItems: Set<UUID>
+    let maintenanceDate: Date
+    let mileage: Int
+    let cost: Double
+    let note: String
+}

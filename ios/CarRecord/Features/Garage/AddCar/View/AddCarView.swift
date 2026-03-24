@@ -14,6 +14,7 @@ struct AddCarView: View {
     @State var isOnRoadDatePickerPresented = false
     @State var draftValidationMessage = ""
     @State var isDraftValidationAlertPresented = false
+    @State var draftEditorInitialSnapshot: MaintenanceItemDraft?
 
     init(editingCar: Car? = nil) {
         _viewModel = StateObject(wrappedValue: AddCarViewModel(editingCar: editingCar))
@@ -64,18 +65,21 @@ struct AddCarView: View {
         .onChange(of: maintenanceItemOptions.map(\.id)) { _, _ in
             viewModel.handleMaintenanceOptionsChanged(maintenanceItemOptions: scopedMaintenanceItemOptions)
         }
-        .alert("保存失败", isPresented: $viewModel.isSaveErrorAlertPresented) {
-            Button("我知道了", role: .cancel) {}
+        .alert(AppAlertText.saveFailedTitle, isPresented: $viewModel.isSaveErrorAlertPresented) {
+            Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
             Text(viewModel.saveErrorMessage)
         }
-        .alert("提示", isPresented: $viewModel.isValidationAlertPresented) {
-            Button("我知道了", role: .cancel) {}
+        .alert(AppAlertText.promptTitle, isPresented: $viewModel.isValidationAlertPresented) {
+            Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
             Text(viewModel.validationMessage)
         }
         .navigationDestination(item: $viewModel.draftSheetTarget) { target in
             draftEditorPage(target: target)
+        }
+        .onChange(of: viewModel.draftSheetTarget) { _, newTarget in
+            cacheDraftEditorInitialSnapshot(for: newTarget)
         }
     }
 
@@ -112,20 +116,15 @@ struct AddCarView: View {
             HStack {
                 Text("上路日期")
                 Spacer()
-                if viewModel.editingCar == nil {
-                    Button {
-                        isOnRoadDatePickerPresented = true
-                    } label: {
-                        rowValueActionLabel(text: AppDateContext.formatShortDate(viewModel.onRoadDate))
-                    }
-                    .sheet(isPresented: $isOnRoadDatePickerPresented) {
-                        onRoadDatePickerSheet
-                    }
-                    .buttonStyle(.plain)
-                } else {
-                    Text(AppDateContext.formatShortDate(viewModel.onRoadDate))
-                        .foregroundStyle(.secondary)
+                Button {
+                    isOnRoadDatePickerPresented = true
+                } label: {
+                    rowValueActionLabel(text: AppDateContext.formatShortDate(viewModel.onRoadDate))
                 }
+                .sheet(isPresented: $isOnRoadDatePickerPresented) {
+                    onRoadDatePickerSheet
+                }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -176,7 +175,7 @@ struct AddCarView: View {
         } header: {
             Text("保养项目设置")
         } footer: {
-            Text("可按需关闭项目，也可点项目进入设置里程/时间提醒规则与阈值。")
+            Text("可按需关闭项目，也可点项目进入设置里程/时间提醒规则。")
         }
     }
 
@@ -273,6 +272,11 @@ struct AddCarView: View {
                         draftBinding.wrappedValue = viewModel.restoreDraftDefaults(draftBinding.wrappedValue)
                     } : nil,
                     canRestoreDefaults: viewModel.canRestoreDraftDefaults(draftBinding.wrappedValue),
+                    confirmButtonTitle: "完成",
+                    isConfirmButtonEnabled: viewModel.hasDraftChanges(
+                        current: draftBinding.wrappedValue,
+                        initial: draftEditorInitialSnapshot
+                    ),
                     onSave: {
                         let draft = draftBinding.wrappedValue
                         if let message = viewModel.validateDraftError(draft, excludingID: draft.id) {
@@ -294,6 +298,8 @@ struct AddCarView: View {
                 onDelete: nil,
                 onRestoreDefaults: nil,
                 canRestoreDefaults: false,
+                confirmButtonTitle: "添加",
+                isConfirmButtonEnabled: true,
                 onSave: {
                     if scopedMaintenanceItemOptions.isEmpty {
                         if let message = viewModel.validateDraftError(viewModel.customDraft, excludingID: nil) {
@@ -326,6 +332,11 @@ struct AddCarView: View {
                         draftBinding.wrappedValue = viewModel.restoreDraftDefaults(draftBinding.wrappedValue)
                     } : nil,
                     canRestoreDefaults: viewModel.canRestoreDraftDefaults(draftBinding.wrappedValue),
+                    confirmButtonTitle: "完成",
+                    isConfirmButtonEnabled: viewModel.hasDraftChanges(
+                        current: draftBinding.wrappedValue,
+                        initial: draftEditorInitialSnapshot
+                    ),
                     onSave: {
                         let draft = draftBinding.wrappedValue
                         if let message = viewModel.validateExistingDraftError(draft, excludingID: draft.id) {
@@ -339,6 +350,21 @@ struct AddCarView: View {
                     isValidationAlertPresented: $isDraftValidationAlertPresented
                 )
             }
+        }
+    }
+
+    private func cacheDraftEditorInitialSnapshot(for target: MaintenanceDraftSheetTarget?) {
+        guard let target else {
+            draftEditorInitialSnapshot = nil
+            return
+        }
+        switch target {
+        case .edit(let id):
+            draftEditorInitialSnapshot = viewModel.itemDrafts.first(where: { $0.id == id })
+        case .editExisting(let id):
+            draftEditorInitialSnapshot = viewModel.existingItemDrafts.first(where: { $0.id == id })
+        case .addCustom:
+            draftEditorInitialSnapshot = nil
         }
     }
 }

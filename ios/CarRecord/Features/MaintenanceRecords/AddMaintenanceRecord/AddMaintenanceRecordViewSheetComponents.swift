@@ -55,7 +55,7 @@ extension AddMaintenanceRecordView {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("完成") {
+                    Button(AppPopupText.done) {
                         activePickerSheet = nil
                     }
                 }
@@ -108,6 +108,19 @@ extension AddMaintenanceRecordView {
                     applyIntervalConfirmationAndDismiss()
                 }
             }
+        }
+        .alert(AppAlertText.duplicateCycleTitle, isPresented: $isIntervalConfirmDuplicateCycleAlertPresented) {
+            Button(AppPopupText.goEdit) {
+                openDuplicateCycleRecordEditor()
+            }
+            Button(AppPopupText.cancel, role: .cancel) {}
+        } message: {
+            Text(duplicateCycleAlertMessage)
+        }
+        .alert(AppAlertText.saveFailedTitle, isPresented: $isIntervalConfirmSaveErrorAlertPresented) {
+            Button(AppPopupText.acknowledge, role: .cancel) {}
+        } message: {
+            Text(saveErrorMessage)
         }
     }
 
