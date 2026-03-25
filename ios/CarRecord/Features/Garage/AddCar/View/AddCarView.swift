@@ -279,7 +279,7 @@ struct AddCarView: View {
                     ),
                     onSave: {
                         let draft = draftBinding.wrappedValue
-                        if let message = viewModel.validateDraftError(draft, excludingID: draft.id) {
+                        if let message = viewModel.validateEditorDraftMessage(draft, target: target) {
                             draftValidationMessage = message
                             isDraftValidationAlertPresented = true
                             return
@@ -301,20 +301,12 @@ struct AddCarView: View {
                 confirmButtonTitle: "添加",
                 isConfirmButtonEnabled: true,
                 onSave: {
-                    if scopedMaintenanceItemOptions.isEmpty {
-                        if let message = viewModel.validateDraftError(viewModel.customDraft, excludingID: nil) {
-                            draftValidationMessage = message
-                            isDraftValidationAlertPresented = true
-                            return
-                        }
-                        viewModel.itemDrafts.append(viewModel.customDraft)
-                    } else {
-                        if let message = viewModel.validateExistingDraftError(viewModel.customDraft, excludingID: nil) {
-                            draftValidationMessage = message
-                            isDraftValidationAlertPresented = true
-                            return
-                        }
-                        viewModel.existingItemDrafts.append(viewModel.customDraft)
+                    if let message = viewModel.addCustomDraftMessage(
+                        usingExistingOptions: scopedMaintenanceItemOptions.isEmpty == false
+                    ) {
+                        draftValidationMessage = message
+                        isDraftValidationAlertPresented = true
+                        return
                     }
                     viewModel.draftSheetTarget = nil
                 },
@@ -339,7 +331,7 @@ struct AddCarView: View {
                     ),
                     onSave: {
                         let draft = draftBinding.wrappedValue
-                        if let message = viewModel.validateExistingDraftError(draft, excludingID: draft.id) {
+                        if let message = viewModel.validateEditorDraftMessage(draft, target: target) {
                             draftValidationMessage = message
                             isDraftValidationAlertPresented = true
                             return

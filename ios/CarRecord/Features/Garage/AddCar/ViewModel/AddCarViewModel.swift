@@ -515,6 +515,35 @@ final class AddCarViewModel: ObservableObject {
         return true
     }
 
+    func validateEditorDraftMessage(
+        _ draft: MaintenanceItemDraft,
+        target: MaintenanceDraftSheetTarget
+    ) -> String? {
+        switch target {
+        case .edit(let id):
+            return validateDraftError(draft, excludingID: id)
+        case .editExisting(let id):
+            return validateExistingDraftError(draft, excludingID: id)
+        case .addCustom:
+            return nil
+        }
+    }
+
+    func addCustomDraftMessage(usingExistingOptions: Bool) -> String? {
+        if usingExistingOptions {
+            if let message = validateExistingDraftError(customDraft, excludingID: nil) {
+                return message
+            }
+            existingItemDrafts.append(customDraft)
+            return nil
+        }
+        if let message = validateDraftError(customDraft, excludingID: nil) {
+            return message
+        }
+        itemDrafts.append(customDraft)
+        return nil
+    }
+
     func applyExistingMaintenanceItemsChanges(
         carID: UUID,
         maintenanceItemOptions: [MaintenanceItemOption],
