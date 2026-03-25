@@ -13,14 +13,15 @@
 
 - `ios/CarRecord`: SwiftUI + SwiftData 源码
   - `App`: 应用入口与根导航
-  - `Features`: 按功能拆分（`Dashboard` / `MaintenanceRecords` / `Garage`）
-    - `Dashboard`: `View` / `UseCase` / `State`
+  - `Core`: 通用上下文与格式化工具（如 `AppDateContext`、`AppliedCarContext`）
+  - `Features`: 按功能拆分（`MaintenanceReminder` / `MaintenanceRecords` / `Garage`）
+    - `MaintenanceReminder`: 保养提醒页（Model / View / ViewModel）
     - `MaintenanceRecords`: `AddMaintenanceRecord` / `Records`
-    - `Garage`: `AddCar` / `My` / `MaintenanceItems` / `DataTransfer`
-  - `Models`: `Entities` / `Catalog`
+    - `Garage`: `AddCar` / `My` / `DataTransfer`
+  - `Models`: `Entities` / `MaintenanceItem`
   - `Persistence`: SwiftData 容器与保存封装
-  - `Shared`: 公共格式化与上下文工具
 - `CarRecord/CarRecord.xcodeproj`: iOS 工程文件
+- `scripts`: 模拟器数据备份/恢复、`pbxproj` 文件映射检查脚本
 
 ## 本地运行（Xcode）
 
@@ -32,14 +33,36 @@
 ## 构建说明
 
 ```sh
-xcodebuild -project CarRecord/CarRecord.xcodeproj -scheme CarRecord build
+xcodebuild -project CarRecord/CarRecord.xcodeproj -scheme CarRecord -destination 'generic/platform=iOS' build
+```
+
+如需验证模拟器编译：
+
+```sh
+xcodebuild -project CarRecord/CarRecord.xcodeproj -scheme CarRecord -destination 'generic/platform=iOS Simulator' build
 ```
 
 ## 项目特点
 
-- 应用设计上没有网络层
-- 所有记录存储在设备上
-- 数据存储架构支持未来迁移到 CloudKit 或后端服务，无需修改功能 UI 代码
+- 应用无网络层，业务数据默认保存在设备本地。
+- 根导航固定三大入口：`保养提醒`、`保养记录`、`个人中心`。
+- 数据模型包含 `Car`、`MaintenanceRecord`、`MaintenanceRecordItem`、`MaintenanceItemOption`。
+- 支持“手动日期”调试模式，涉及“今天/车龄/提醒进度”的逻辑统一走 `AppDateContext.now()`。
+- 支持应用内 JSON 备份/恢复，结构由 `MyDataTransferPayload` 定义（`modelProfiles` + `vehicles`）。
+
+## 备份与恢复（可选）
+
+- 导出模拟器数据：
+
+```sh
+scripts/sim_data_backup.sh [bundle_id] [backup_root]
+```
+
+- 恢复备份目录或 JSON：
+
+```sh
+scripts/sim_data_restore.sh <backup_dir_or_json> [bundle_id]
+```
 
 ## 说明
 

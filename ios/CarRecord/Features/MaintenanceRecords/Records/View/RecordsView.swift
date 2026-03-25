@@ -72,14 +72,6 @@ struct RecordsView: View {
                     .foregroundStyle(.secondary)
             } else {
                 if viewModel.displayMode == .byDate {
-                    Section {
-                        filterPanel(
-                            filters: $viewModel.cycleFilters,
-                            mode: .byDate,
-                            isExpanded: $viewModel.isCycleFilterExpanded
-                        )
-                    }
-
                     Section(cycleSectionTitle) {
                         if filteredDateGroups.isEmpty {
                             Text("暂无符合筛选条件的记录。")
@@ -98,14 +90,6 @@ struct RecordsView: View {
                         }
                     }
                 } else {
-                    Section {
-                        filterPanel(
-                            filters: $viewModel.itemFilters,
-                            mode: .byItem,
-                            isExpanded: $viewModel.isItemFilterExpanded
-                        )
-                    }
-
                     Section(itemSectionTitle) {
                         if filteredItemRows.isEmpty {
                             Text("暂无符合筛选条件的记录。")

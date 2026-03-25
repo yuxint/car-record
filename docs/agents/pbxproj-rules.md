@@ -27,3 +27,7 @@ scripts/check_pbxproj_mapping.py
 scripts/check_pbxproj_mapping.py --fix
 ```
 
+## 执行建议
+
+- 优先在仓库根目录执行脚本，避免相对路径误判。
+- 执行 `--fix` 后，至少复查新增/删除文件对应的 `PBXFileReference` 与 `PBXSourcesBuildPhase` 结果是否符合预期。
