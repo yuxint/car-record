@@ -2,6 +2,24 @@ import SwiftUI
 import Combine
 import SwiftData
 
+/// 保养项目设置页面路由：区分“编辑项目”与“新增自定义项目”。
+enum MaintenanceDraftSheetTarget: Identifiable, Hashable {
+    case edit(UUID)
+    case addCustom
+    case editExisting(UUID)
+
+    var id: String {
+        switch self {
+        case .edit(let id):
+            return "edit-\(id.uuidString)"
+        case .addCustom:
+            return "add-custom"
+        case .editExisting(let id):
+            return "edit-existing-\(id.uuidString)"
+        }
+    }
+}
+
 @MainActor
 final class AddCarViewModel: ObservableObject {
     let editingCar: Car?
@@ -13,7 +31,6 @@ final class AddCarViewModel: ObservableObject {
     @Published var mileageQian: Int
     @Published var mileageBai: Int
     @Published var onRoadDate: Date
-    @Published var activePickerSheet: CarPickerSheet?
     @Published var itemDrafts: [MaintenanceItemDraft] = []
     @Published var existingItemDrafts: [MaintenanceItemDraft] = []
     @Published private(set) var visibleDefaultCatalogKeys = Set<String>()
@@ -78,6 +95,10 @@ final class AddCarViewModel: ObservableObject {
         CoreConfig.modelConfig(brand: brand, modelName: modelName)
     }
 
+    func scopedMaintenanceItemOptions(from options: [MaintenanceItemOption]) -> [MaintenanceItemOption] {
+        CoreConfig.scopedOptions(options, carID: editingCar?.id)
+    }
+
     init(editingCar: Car? = nil) {
         self.editingCar = editingCar
 
@@ -110,12 +131,6 @@ final class AddCarViewModel: ObservableObject {
         let normalizedBrand = brand.trimmingCharacters(in: .whitespacesAndNewlines)
         let normalizedModel = modelName.trimmingCharacters(in: .whitespacesAndNewlines)
         return "\(normalizedBrand)|\(normalizedModel)"
-    }
-
-    func presentPickerSheet(_ sheet: CarPickerSheet) {
-        DispatchQueue.main.async {
-            self.activePickerSheet = sheet
-        }
     }
 
     func handleBrandChanged(maintenanceItemOptions: [MaintenanceItemOption]) {
@@ -623,23 +638,6 @@ final class AddCarViewModel: ObservableObject {
             }
         }
         return true
-    }
-
-    func monthIntervalYearBinding(for draft: Binding<MaintenanceItemDraft>) -> Binding<Double> {
-        Binding(
-            get: { max(0.5, Double(max(1, draft.wrappedValue.monthInterval)) / 12.0) },
-            set: { newValue in
-                draft.wrappedValue.monthInterval = max(1, Int((newValue * 12).rounded()))
-            }
-        )
-    }
-
-    func yearIntervalText(from monthInterval: Int) -> String {
-        let years = Double(max(1, monthInterval)) / 12.0
-        if years.truncatingRemainder(dividingBy: 1) == 0 {
-            return "\(Int(years))"
-        }
-        return String(format: "%.1f", years)
     }
 
     func restoreDraftDefaults(_ draft: MaintenanceItemDraft) -> MaintenanceItemDraft {

@@ -1,8 +1,9 @@
 import Foundation
 import SwiftData
 
-extension MyView {
+extension MyViewModel {
     func importMaintenanceData(from url: URL) {
+        guard let modelContext = requiredModelContext() else { return }
         AppLogger.info("开始恢复数据", payload: url.lastPathComponent)
         let shouldStopAccessing = url.startAccessingSecurityScopedResource()
         defer {

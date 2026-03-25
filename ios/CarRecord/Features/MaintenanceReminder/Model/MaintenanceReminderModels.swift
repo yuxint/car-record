@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation
 
 /// 保养提醒页车辆分组模型。
 struct MaintenanceReminderCarSection: Identifiable {
@@ -76,44 +76,4 @@ enum ReminderProgressColorLevel {
     case normal
     case warning
     case danger
-
-    var color: Color {
-        switch self {
-        case .normal:
-            return .green
-        case .warning:
-            return .yellow
-        case .danger:
-            return .red
-        }
-    }
-
-    var secondaryColor: Color {
-        .secondary
-    }
-}
-
-/// 自绘进度条：在 0% 时只显示背景，不渲染前景色填充。
-struct LinearProgressBar: View {
-    let value: Double
-    let color: Color
-
-    var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.secondary.opacity(0.2))
-                if clampedValue > 0 {
-                    Capsule()
-                        .fill(color)
-                        .frame(width: proxy.size.width * clampedValue)
-                }
-            }
-        }
-        .frame(height: 8)
-    }
-
-    var clampedValue: Double {
-        min(max(value, 0), 1)
-    }
 }

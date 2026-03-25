@@ -1,45 +1,141 @@
+import Foundation
+import Combine
 import SwiftUI
 import SwiftData
 
-extension RecordsView {
-    var scopedServiceItemOptions: [MaintenanceItemOption] {
-        CoreConfig.scopedOptions(serviceItemOptions, carID: appliedCarID)
+@MainActor
+final class RecordsViewModel: ObservableObject {
+    @Published var displayMode: LogDisplayMode = .byDate
+    @Published var editingTarget: MaintenanceRecordEditTarget?
+    @Published var cycleFilters = LogFilterState()
+    @Published var itemFilters = LogFilterState()
+    @Published var isCycleFilterExpanded = false
+    @Published var isItemFilterExpanded = false
+    @Published var selectionSheetTarget: FilterSelectionSheetTarget?
+    @Published var selectionDraftIDs: Set<UUID> = []
+    @Published var hasInteractedWithSelectionDraft = false
+    @Published var saveErrorMessage = ""
+    @Published var isSaveErrorAlertPresented = false
+    @Published var isAddingMaintenanceRecord = false
+
+    @Published private(set) var appliedCarIDRaw: String {
+        didSet {
+            UserDefaults.standard.set(appliedCarIDRaw, forKey: AppliedCarContext.storageKey)
+        }
     }
 
-    /// 分区标题：展示“按周期”统计数量（按分组条数统计）。
-    var cycleSectionTitle: String {
+    init() {
+        appliedCarIDRaw = UserDefaults.standard.string(forKey: AppliedCarContext.storageKey) ?? ""
+    }
+
+    func openEditRecord(_ record: MaintenanceRecord, lockedItemID: UUID? = nil) {
+        editingTarget = MaintenanceRecordEditTarget(record: record, lockedItemID: lockedItemID)
+    }
+
+    func cycleSectionTitle(filteredDateGroups: [MaintenanceDateGroup]) -> String {
         "按周期展示（\(filteredDateGroups.count)条）"
     }
 
-    /// 分区标题：展示“按项目”统计数量（按项目行数统计）。
-    var itemSectionTitle: String {
+    func itemSectionTitle(filteredItemRows: [MaintenanceItemRow]) -> String {
         "按保养项目展示（\(filteredItemRows.count)条）"
     }
 
-    /// “按周期”视图使用的过滤结果：先按记录过滤，再按天聚合。
-    var filteredDateGroups: [MaintenanceDateGroup] {
-        let recordsForGrouping = scopedMaintenanceRecords.filter { record in
+    func yearFilterSummary(selectedYear: Int?) -> String {
+        guard let selectedYear else { return "全部年份" }
+        return "\(selectedYear)年"
+    }
+
+    func carFilterSummary(selectedIDs: Set<UUID>) -> String {
+        if selectedIDs.isEmpty { return "全部车辆" }
+        return "已选\(selectedIDs.count)辆"
+    }
+
+    func itemFilterSummary(selectedIDs: Set<UUID>) -> String {
+        if selectedIDs.isEmpty { return "全部项目" }
+        return "已选\(selectedIDs.count)项"
+    }
+
+    func filterSummary(filters: LogFilterState, mode: LogDisplayMode) -> String {
+        var activeCount = 0
+        if filters.selectedItemIDs.isEmpty == false {
+            activeCount += 1
+        }
+        if mode == .byDate {
+            if filters.selectedCarIDs.isEmpty == false {
+                activeCount += 1
+            }
+            if filters.selectedYear != nil {
+                activeCount += 1
+            }
+        }
+        if activeCount == 0 {
+            return "未设置"
+        }
+        return "已设置\(activeCount)项"
+    }
+}
+
+extension RecordsViewModel {
+    func appliedCarID(cars: [Car]) -> UUID? {
+        AppliedCarContext.resolveAppliedCarID(rawID: appliedCarIDRaw, cars: cars)
+    }
+
+    func scopedCars(cars: [Car]) -> [Car] {
+        guard let appliedCarID = appliedCarID(cars: cars) else { return [] }
+        return cars.filter { $0.id == appliedCarID }
+    }
+
+    func scopedMaintenanceRecords(cars: [Car], serviceRecords: [MaintenanceRecord]) -> [MaintenanceRecord] {
+        guard let appliedCarID = appliedCarID(cars: cars) else { return [] }
+        return serviceRecords.filter { $0.car?.id == appliedCarID }
+    }
+
+    func scopedServiceItemOptions(cars: [Car], serviceItemOptions: [MaintenanceItemOption]) -> [MaintenanceItemOption] {
+        CoreConfig.scopedOptions(serviceItemOptions, carID: appliedCarID(cars: cars))
+    }
+
+    func filteredDateGroups(
+        cars: [Car],
+        serviceRecords: [MaintenanceRecord],
+        serviceItemOptions: [MaintenanceItemOption]
+    ) -> [MaintenanceDateGroup] {
+        let scopedRecords = scopedMaintenanceRecords(cars: cars, serviceRecords: serviceRecords)
+        let recordsForGrouping = scopedRecords.filter { record in
             guard record.car != nil else { return false }
             return matchesCycleFilters(record: record, filters: cycleFilters)
         }
-        let grouped = buildDateGroups(from: recordsForGrouping)
+        let grouped = buildDateGroups(
+            from: recordsForGrouping,
+            cars: cars,
+            serviceItemOptions: serviceItemOptions
+        )
         return grouped.filter { group in
             matchesCycleItemFilter(group: group, selectedItemIDs: cycleFilters.selectedItemIDs)
         }
     }
 
-    /// “按项目”视图使用的过滤结果：先按通用条件过滤记录，再按项目展开并做项目筛选。
-    var filteredItemRows: [MaintenanceItemRow] {
-        buildItemRows(
-            from: scopedMaintenanceRecords.filter { $0.car != nil }
+    func filteredItemRows(
+        cars: [Car],
+        serviceRecords: [MaintenanceRecord],
+        serviceItemOptions: [MaintenanceItemOption]
+    ) -> [MaintenanceItemRow] {
+        let scopedRecords = scopedMaintenanceRecords(cars: cars, serviceRecords: serviceRecords)
+            .filter { $0.car != nil }
+        return buildItemRows(
+            from: scopedRecords,
+            cars: cars,
+            serviceItemOptions: serviceItemOptions
         )
-            .filter { row in
-                matchesItemSelection(rowItemID: row.itemID, selectedItemIDs: itemFilters.selectedItemIDs)
-            }
+        .filter { row in
+            matchesItemSelection(rowItemID: row.itemID, selectedItemIDs: itemFilters.selectedItemIDs)
+        }
     }
 
-    /// 按日期分组并倒序，自动合并同一天的保养记录。
-    func buildDateGroups(from records: [MaintenanceRecord]) -> [MaintenanceDateGroup] {
+    func buildDateGroups(
+        from records: [MaintenanceRecord],
+        cars: [Car],
+        serviceItemOptions: [MaintenanceItemOption]
+    ) -> [MaintenanceDateGroup] {
         let grouped = Dictionary(grouping: records) { record in
             Calendar.current.startOfDay(for: record.date)
         }
@@ -56,10 +152,12 @@ extension RecordsView {
                         seenItemIDs.insert(itemID)
                         return true
                     }
-                let nameByID = Dictionary(uniqueKeysWithValues: scopedServiceItemOptions.map { ($0.id, $0.name) })
+                let scopedOptions = scopedServiceItemOptions(cars: cars, serviceItemOptions: serviceItemOptions)
+                let nameByID = Dictionary(uniqueKeysWithValues: scopedOptions.map { ($0.id, $0.name) })
+                let orderByID = naturalItemOrderIndexByID(cars: cars, serviceItemOptions: serviceItemOptions)
                 let sortedItemIDs = uniqueItemIDs.sorted { lhs, rhs in
-                    let lhsOrder = naturalItemOrderIndexByID[lhs, default: Int.max]
-                    let rhsOrder = naturalItemOrderIndexByID[rhs, default: Int.max]
+                    let lhsOrder = orderByID[lhs, default: Int.max]
+                    let rhsOrder = orderByID[rhs, default: Int.max]
                     if lhsOrder != rhsOrder {
                         return lhsOrder < rhsOrder
                     }
@@ -80,14 +178,16 @@ extension RecordsView {
                     itemSummary: sortedItemNames.isEmpty ? "未标注项目" : sortedItemNames.joined(separator: "、")
                 )
             }
-            .sorted { $0.date > $1.date } 
+            .sorted { $0.date > $1.date }
     }
 
-    /// 展开“按项目展示”时使用的行数据：
-    /// 1) 按保养时间倒序；
-    /// 2) 同一保养时间时按里程倒序，确保高里程排前面。
-    func buildItemRows(from records: [MaintenanceRecord]) -> [MaintenanceItemRow] {
-        let nameByID = Dictionary(uniqueKeysWithValues: scopedServiceItemOptions.map { ($0.id, $0.name) })
+    func buildItemRows(
+        from records: [MaintenanceRecord],
+        cars: [Car],
+        serviceItemOptions: [MaintenanceItemOption]
+    ) -> [MaintenanceItemRow] {
+        let scopedOptions = scopedServiceItemOptions(cars: cars, serviceItemOptions: serviceItemOptions)
+        let nameByID = Dictionary(uniqueKeysWithValues: scopedOptions.map { ($0.id, $0.name) })
 
         return records.flatMap { record in
             let itemIDs = CoreConfig.parseItemIDs(record.itemIDsRaw)
@@ -117,8 +217,6 @@ extension RecordsView {
         }
     }
 
-
-    /// 打开多选弹窗：读取当前筛选为草稿，改动在点击“应用”前不会影响列表结果。
     func presentSelectionSheet(mode: LogDisplayMode, kind: FilterSelectionKind) {
         let current = currentSelectedIDs(mode: mode, kind: kind)
         hasInteractedWithSelectionDraft = false
@@ -126,7 +224,6 @@ extension RecordsView {
         selectionSheetTarget = FilterSelectionSheetTarget(mode: mode, kind: kind)
     }
 
-    /// 当前筛选集合读取：按展示模式和筛选类型定位到对应的状态字段。
     func currentSelectedIDs(mode: LogDisplayMode, kind: FilterSelectionKind) -> Set<UUID> {
         switch (mode, kind) {
         case (.byDate, .car):
@@ -140,18 +237,21 @@ extension RecordsView {
         }
     }
 
-    /// 可选项列表：车辆/项目复用同一套多选弹窗。
-    func selectionOptions(for kind: FilterSelectionKind) -> [FilterSelectionOption] {
+    func selectionOptions(
+        for kind: FilterSelectionKind,
+        cars: [Car],
+        serviceItemOptions: [MaintenanceItemOption]
+    ) -> [FilterSelectionOption] {
         switch kind {
         case .car:
-            return scopedCars.map { car in
+            return scopedCars(cars: cars).map { car in
                 FilterSelectionOption(
                     id: car.id,
                     name: CarDisplayFormatter.name(car)
                 )
             }
         case .item:
-            return sortedSelectionItemOptions.map { option in
+            return sortedSelectionItemOptions(cars: cars, serviceItemOptions: serviceItemOptions).map { option in
                 FilterSelectionOption(
                     id: option.id,
                     name: option.name
@@ -160,11 +260,10 @@ extension RecordsView {
         }
     }
 
-    /// 筛选弹窗项目顺序：与“新增/编辑保养”保持一致，避免同类页面排序规则不一致。
-    var sortedSelectionItemOptions: [MaintenanceItemOption] {
-        let appliedCar = scopedCars.first
+    func sortedSelectionItemOptions(cars: [Car], serviceItemOptions: [MaintenanceItemOption]) -> [MaintenanceItemOption] {
+        let appliedCar = scopedCars(cars: cars).first
         let visibleOptions = CoreConfig.filterDisabledOptions(
-            scopedServiceItemOptions,
+            scopedServiceItemOptions(cars: cars, serviceItemOptions: serviceItemOptions),
             disabledItemIDsRaw: appliedCar?.disabledItemIDsRaw ?? "",
             includeDisabled: false
         )
@@ -175,41 +274,22 @@ extension RecordsView {
         )
     }
 
-    /// 项目自然顺序索引：用于“按周期”项目摘要排序稳定且与项目管理顺序一致。
-    var naturalItemOrderIndexByID: [UUID: Int] {
-        let appliedCar = scopedCars.first
+    func naturalItemOrderIndexByID(cars: [Car], serviceItemOptions: [MaintenanceItemOption]) -> [UUID: Int] {
+        let appliedCar = scopedCars(cars: cars).first
         let naturalOptions = CoreConfig.sortedOptions(
-            scopedServiceItemOptions,
+            scopedServiceItemOptions(cars: cars, serviceItemOptions: serviceItemOptions),
             brand: appliedCar?.brand,
             modelName: appliedCar?.modelName
         )
         return Dictionary(uniqueKeysWithValues: naturalOptions.enumerated().map { ($1.id, $0) })
     }
-    /// 当前已应用车型ID：若历史值失效，自动回退到首辆车。
-    var appliedCarID: UUID? {
-        AppliedCarContext.resolveAppliedCarID(rawID: appliedCarIDRaw, cars: cars)
-    }
 
-    /// 记录页可见车辆集合：仅保留当前已应用车型。
-    var scopedCars: [Car] {
-        guard let appliedCarID else { return [] }
-        return cars.filter { $0.id == appliedCarID }
-    }
-
-    /// 记录页可见记录集合：按当前已应用车型隔离。
-    var scopedMaintenanceRecords: [MaintenanceRecord] {
-        guard let appliedCarID else { return [] }
-        return serviceRecords.filter { $0.car?.id == appliedCarID }
-    }
-
-    /// 同步修正应用车型持久化值，避免删除车辆后指向失效。
-    func syncAppliedCarSelection() {
+    func syncAppliedCarSelection(cars: [Car]) {
         appliedCarIDRaw = AppliedCarContext.normalizedRawID(rawID: appliedCarIDRaw, cars: cars)
     }
 
-    /// 车型切换后清理旧筛选，避免残留“已选其他车辆”导致列表误空。
-    func normalizeFilterSelectionsForAppliedCar() {
-        let validCarIDs = Set(scopedCars.map(\.id))
+    func normalizeFilterSelectionsForAppliedCar(cars: [Car]) {
+        let validCarIDs = Set(scopedCars(cars: cars).map(\.id))
         guard validCarIDs.isEmpty == false else {
             cycleFilters.selectedCarIDs = []
             itemFilters.selectedCarIDs = []
@@ -224,5 +304,9 @@ extension RecordsView {
         }
     }
 
-
+    func cycleYearOptions(cars: [Car], serviceRecords: [MaintenanceRecord]) -> [Int] {
+        let years = scopedMaintenanceRecords(cars: cars, serviceRecords: serviceRecords)
+            .map { Calendar.current.component(.year, from: $0.date) }
+        return Array(Set(years)).sorted(by: >)
+    }
 }

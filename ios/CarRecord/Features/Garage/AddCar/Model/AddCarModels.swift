@@ -1,37 +1,5 @@
 import Foundation
 
-enum CarPickerSheet: Identifiable {
-    case mileage
-    case onRoadDate
-
-    var id: String {
-        switch self {
-        case .mileage:
-            return "mileage"
-        case .onRoadDate:
-            return "onRoadDate"
-        }
-    }
-}
-
-/// 保养项目设置页面路由：区分“编辑项目”与“新增自定义项目”。
-enum MaintenanceDraftSheetTarget: Identifiable, Hashable {
-    case edit(UUID)
-    case addCustom
-    case editExisting(UUID)
-
-    var id: String {
-        switch self {
-        case .edit(let id):
-            return "edit-\(id.uuidString)"
-        case .addCustom:
-            return "add-custom"
-        case .editExisting(let id):
-            return "edit-existing-\(id.uuidString)"
-        }
-    }
-}
-
 /// 添加车辆页的保养项目草稿模型：承载首次设置时的全部可编辑配置。
 struct MaintenanceItemDraft: Identifiable, Equatable {
     var id = UUID()
@@ -84,26 +52,5 @@ struct MaintenanceItemDraft: Identifiable, Equatable {
             warningStartPercent: warningStartPercent,
             dangerStartPercent: dangerStartPercent
         )
-    }
-
-    static func reminderSummary(for draft: MaintenanceItemDraft) -> String {
-        var parts: [String] = []
-        if draft.remindByMileage {
-            parts.append(MileageDisplayFormatter.reminderDistanceText(for: max(1, draft.mileageInterval)))
-        }
-        if draft.remindByTime {
-            let years = Double(max(1, draft.monthInterval)) / 12.0
-            let yearText: String
-            if years.truncatingRemainder(dividingBy: 1) == 0 {
-                yearText = "\(Int(years))年"
-            } else {
-                yearText = "\(String(format: "%.1f", years))年"
-            }
-            parts.append(yearText)
-        }
-        if parts.isEmpty {
-            parts.append("未设置")
-        }
-        return parts.joined(separator: " / ")
     }
 }

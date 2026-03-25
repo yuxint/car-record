@@ -1,6 +1,4 @@
 import SwiftUI
-import SwiftData
-import UIKit
 
 extension AddMaintenanceRecordView {
     @ViewBuilder
@@ -8,9 +6,9 @@ extension AddMaintenanceRecordView {
         DayDatePickerSheetView(
             title: "选择保养时间",
             label: "保养时间",
-            currentDate: maintenanceDate,
+            currentDate: viewModel.maintenanceDate,
             onApply: { newValue in
-                maintenanceDate = newValue
+                viewModel.maintenanceDate = newValue
                 activePickerSheet = nil
             },
             onCancel: { activePickerSheet = nil }
@@ -21,9 +19,9 @@ extension AddMaintenanceRecordView {
     var mileagePickerSheet: some View {
         MileagePickerSheetView(
             title: "选择当前里程",
-            wan: $mileageWan,
-            qian: $mileageQian,
-            bai: $mileageBai,
+            wan: $viewModel.mileageWan,
+            qian: $viewModel.mileageQian,
+            bai: $viewModel.mileageBai,
             onCancel: { activePickerSheet = nil },
             onConfirm: { activePickerSheet = nil }
         )
@@ -33,14 +31,14 @@ extension AddMaintenanceRecordView {
     var maintenanceItemsPickerSheet: some View {
         NavigationStack {
             List {
-                ForEach(availableItemOptions) { option in
+                ForEach(viewModel.availableItemOptions) { option in
                     Button {
-                        toggleItem(option.id)
+                        viewModel.toggleItem(option.id)
                     } label: {
                         HStack {
                             Text(option.name)
                             Spacer()
-                            if selectedItems.contains(option.id) {
+                            if viewModel.selectedItems.contains(option.id) {
                                 Image(systemName: "checkmark.circle.fill")
                                     .foregroundStyle(.tint)
                             }
@@ -67,27 +65,27 @@ extension AddMaintenanceRecordView {
     var intervalConfirmSheet: some View {
         Form {
             Section {
-                Text("请确认本次保养项目的下次提醒间隔，点击保存后会同时保存保养记录与默认提醒值。")
+                Text(viewModel.intervalConfirmIntroductionText)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
 
-            ForEach(intervalConfirmDrafts.indices, id: \.self) { index in
-                Section(intervalConfirmDrafts[index].name) {
-                    if intervalConfirmDrafts[index].remindByMileage {
-                        Stepper(value: $intervalConfirmDrafts[index].mileageInterval, in: 1_000...100_000, step: 500) {
-                            Text("下次里程间隔：\(intervalConfirmDrafts[index].mileageInterval) km")
+            ForEach(viewModel.intervalConfirmDrafts.indices, id: \.self) { index in
+                Section(viewModel.intervalConfirmDrafts[index].name) {
+                    if viewModel.intervalConfirmDrafts[index].remindByMileage {
+                        Stepper(value: $viewModel.intervalConfirmDrafts[index].mileageInterval, in: 1_000...100_000, step: 500) {
+                            Text("下次里程间隔：\(viewModel.intervalConfirmDrafts[index].mileageInterval) km")
                         }
                     }
 
-                    if intervalConfirmDrafts[index].remindByTime {
-                        Stepper(value: $intervalConfirmDrafts[index].yearInterval, in: 0.5...10, step: 0.5) {
-                            Text("下次时间间隔：\(formattedYearInterval(intervalConfirmDrafts[index].yearInterval))年")
+                    if viewModel.intervalConfirmDrafts[index].remindByTime {
+                        Stepper(value: $viewModel.intervalConfirmDrafts[index].yearInterval, in: 0.5...10, step: 0.5) {
+                            Text("下次时间间隔：\(viewModel.formattedYearInterval(viewModel.intervalConfirmDrafts[index].yearInterval))年")
                         }
                     }
 
-                    if intervalConfirmDrafts[index].remindByMileage == false &&
-                        intervalConfirmDrafts[index].remindByTime == false {
+                    if viewModel.intervalConfirmDrafts[index].remindByMileage == false &&
+                        viewModel.intervalConfirmDrafts[index].remindByTime == false {
                         Text("该项目未开启提醒方式。")
                             .foregroundStyle(.secondary)
                     }
@@ -100,28 +98,31 @@ extension AddMaintenanceRecordView {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("返回") {
-                    isIntervalConfirmPresented = false
+                    viewModel.isIntervalConfirmPresented = false
                 }
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("保存") {
-                    applyIntervalConfirmationAndDismiss()
+                    closeInputEditors()
+                    viewModel.applyIntervalConfirmationAndDismiss(
+                        modelContext: modelContext,
+                        dismiss: dismiss.callAsFunction
+                    )
                 }
             }
         }
-        .alert(AppAlertText.duplicateCycleTitle, isPresented: $isIntervalConfirmDuplicateCycleAlertPresented) {
+        .alert(AppAlertText.duplicateCycleTitle, isPresented: $viewModel.isIntervalConfirmDuplicateCycleAlertPresented) {
             Button(AppPopupText.goEdit) {
-                openDuplicateCycleRecordEditor()
+                viewModel.openDuplicateCycleRecordEditor()
             }
             Button(AppPopupText.cancel, role: .cancel) {}
         } message: {
-            Text(duplicateCycleAlertMessage)
+            Text(viewModel.duplicateCycleAlertMessage)
         }
-        .alert(AppAlertText.saveFailedTitle, isPresented: $isIntervalConfirmSaveErrorAlertPresented) {
+        .alert(AppAlertText.saveFailedTitle, isPresented: $viewModel.isIntervalConfirmSaveErrorAlertPresented) {
             Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
-            Text(saveErrorMessage)
+            Text(viewModel.saveErrorMessage)
         }
     }
-
 }

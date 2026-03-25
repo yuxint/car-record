@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Foundation
 
 /// 新增/编辑车辆页：全部使用选择器，避免唤醒系统输入法。
 struct AddCarView: View {
@@ -25,10 +26,7 @@ struct AddCarView: View {
     }
 
     private var scopedMaintenanceItemOptions: [MaintenanceItemOption] {
-        CoreConfig.scopedOptions(
-            maintenanceItemOptions,
-            carID: viewModel.editingCar?.id
-        )
+        viewModel.scopedMaintenanceItemOptions(from: maintenanceItemOptions)
     }
 
     private var addCarForm: some View {
@@ -248,7 +246,7 @@ struct AddCarView: View {
                     .padding(.vertical, 2)
                     .background(Color(.tertiarySystemFill), in: Capsule())
             }
-            Text("提醒：\(MaintenanceItemDraft.reminderSummary(for: draft))")
+            Text("提醒：\(reminderSummaryText(for: draft))")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -358,6 +356,27 @@ struct AddCarView: View {
         case .addCustom:
             draftEditorInitialSnapshot = nil
         }
+    }
+
+    private func reminderSummaryText(for draft: MaintenanceItemDraft) -> String {
+        var parts: [String] = []
+        if draft.remindByMileage {
+            parts.append(MileageDisplayFormatter.reminderDistanceText(for: max(1, draft.mileageInterval)))
+        }
+        if draft.remindByTime {
+            let years = Double(max(1, draft.monthInterval)) / 12.0
+            let yearText: String
+            if years.truncatingRemainder(dividingBy: 1) == 0 {
+                yearText = "\(Int(years))年"
+            } else {
+                yearText = "\(String(format: "%.1f", years))年"
+            }
+            parts.append(yearText)
+        }
+        if parts.isEmpty {
+            parts.append("未设置")
+        }
+        return parts.joined(separator: " / ")
     }
 }
 

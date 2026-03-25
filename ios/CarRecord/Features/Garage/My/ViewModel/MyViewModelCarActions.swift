@@ -1,8 +1,11 @@
 import SwiftUI
 import SwiftData
 
-extension MyView {
+extension MyViewModel {
     func deleteCars(at offsets: IndexSet) {
+        guard let modelContext = requiredModelContext() else { return }
+        let cars = dataSnapshot.cars
+        let serviceItemOptions = dataSnapshot.serviceItemOptions
         let deletedIDs = Set(offsets.compactMap { cars.indices.contains($0) ? cars[$0].id : nil })
         for index in offsets {
             modelContext.deleteWithAudit(cars[index])
@@ -33,6 +36,7 @@ extension MyView {
 
     /// 左滑删除单车：与批量删除逻辑保持一致的保存与报错处理。
     func deleteCar(_ car: Car) {
+        let cars = dataSnapshot.cars
         guard let index = cars.firstIndex(where: { $0.id == car.id }) else { return }
         deleteCars(at: IndexSet(integer: index))
     }
@@ -49,6 +53,9 @@ extension MyView {
 
     /// 清空所有业务数据，重置为初始状态。
     func resetAllData() {
+        let cars = dataSnapshot.cars
+        let serviceRecords = dataSnapshot.serviceRecords
+        let serviceItemOptions = dataSnapshot.serviceItemOptions
         AppLogger.info(
             "开始重置全部数据",
             payload: "cars=\(cars.count), records=\(serviceRecords.count), items=\(serviceItemOptions.count)"

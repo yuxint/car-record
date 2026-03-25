@@ -7,7 +7,13 @@
 - 命令行构建可优先尝试：
 
 ```sh
-xcodebuild -project CarRecord/CarRecord.xcodeproj -scheme CarRecord build
+xcodebuild -project CarRecord/CarRecord.xcodeproj -scheme CarRecord -destination 'generic/platform=iOS' build
+```
+
+- 若需验证模拟器编译，可使用：
+
+```sh
+xcodebuild -project CarRecord/CarRecord.xcodeproj -scheme CarRecord -destination 'generic/platform=iOS Simulator' build
 ```
 
 - 若要查看模拟器里的本地数据库并生成可导入快照，先启动模拟器并安装 CarRecord，再运行：

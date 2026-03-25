@@ -1,6 +1,6 @@
 # Xcode 项目文件更新规则
 
-当“文件清单或路径”变化时，需要检查并更新 `CarRecord/CarRecord.xcodeproj/project.pbxproj`。
+当“文件清单或路径”变化时，需要检查并更新 `CarRecord/CarRecord.xcodeproj/project.pbxproj`，运行前请与用户确认代码是否调整完成。
 
 ## 需要检查/更新的场景
 
@@ -26,3 +26,4 @@ scripts/check_pbxproj_mapping.py
 ```sh
 scripts/check_pbxproj_mapping.py --fix
 ```
+

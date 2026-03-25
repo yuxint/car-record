@@ -28,25 +28,26 @@
 		F1D68A792F640E6D00CFD30D /* MaintenanceReminderViewLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A6D2F640E6D00CFD30D /* MaintenanceReminderViewLogic.swift */; };
 		F1D68A7A2F640E6D00CFD30D /* MaintenanceReminderModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A6E2F640E6D00CFD30D /* MaintenanceReminderModels.swift */; };
 		F1D68A7B2F640E6D00CFD30D /* MaintenanceReminderUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A6F2F640E6D00CFD30D /* MaintenanceReminderUseCase.swift */; };
-		F1D68A7C2F640E6D00CFD30D /* RecordsViewQueryUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A702F640E6D00CFD30D /* RecordsViewQueryUseCase.swift */; };
-		F1D68A7D2F640E6D00CFD30D /* RecordsState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A712F640E6D00CFD30D /* RecordsState.swift */; };
-		F1D68A7E2F640E6D00CFD30D /* AddMaintenanceRecordViewSaveUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A722F640E6D00CFD30D /* AddMaintenanceRecordViewSaveUseCase.swift */; };
-		F1D68A7F2F640E6D00CFD30D /* AddMaintenanceRecordState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A732F640E6D00CFD30D /* AddMaintenanceRecordState.swift */; };
+		F1D68A7C2F640E6D00CFD30D /* ViewModel/RecordsViewModelQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A702F640E6D00CFD30D /* ViewModel/RecordsViewModelQuery.swift */; };
+		F1D68A7D2F640E6D00CFD30D /* Model/RecordsState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A712F640E6D00CFD30D /* Model/RecordsState.swift */; };
+		F1D68A7E2F640E6D00CFD30D /* AddMaintenanceRecordViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A722F640E6D00CFD30D /* AddMaintenanceRecordViewModel.swift */; };
+		F1D68A7F2F640E6D00CFD30D /* AddMaintenanceRecordModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A732F640E6D00CFD30D /* AddMaintenanceRecordModel.swift */; };
 		F1D68A802F640E6D00CFD30D /* AddCarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A742F640E6D00CFD30D /* AddCarViewModel.swift */; };
 		F1D68A812F640E6D00CFD30D /* AddCarModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A752F640E6D00CFD30D /* AddCarModels.swift */; };
 		F1D68A822F640E6D00CFD30D /* MyViewBackupUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A762F640E6D00CFD30D /* MyViewBackupUseCase.swift */; };
 		F1D68A832F640E6D00CFD30D /* MyDataTransfer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A772F640E6D00CFD30D /* MyDataTransfer.swift */; };
-		F1D68A852F640E6D00CFD30D /* RecordsViewFilterPanelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7A2F640E6D00CFD31D /* RecordsViewFilterPanelComponents.swift */; };
-		F1D68A862F640E6D00CFD30D /* RecordsViewActionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7B2F640E6D00CFD31D /* RecordsViewActionUseCase.swift */; };
+		F1D68A852F640E6D00CFD30D /* View/RecordsViewFilterPanelComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7A2F640E6D00CFD31D /* View/RecordsViewFilterPanelComponents.swift */; };
+		F1D68A862F640E6D00CFD30D /* View/RecordsViewActionComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7B2F640E6D00CFD31D /* View/RecordsViewActionComponents.swift */; };
 		F1D68A872F640E6D00CFD30D /* AddMaintenanceRecordViewSheetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7C2F640E6D00CFD31D /* AddMaintenanceRecordViewSheetComponents.swift */; };
 		F1D68A882F640E6D00CFD30D /* AddCarSheetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7D2F640E6D00CFD31D /* AddCarSheetComponents.swift */; };
 		F1D68A892F640E6D00CFD30D /* MyViewCarActionUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A7E2F640E6D00CFD31D /* MyViewCarActionUseCase.swift */; };
-		F1D68A8A2F640E6D00CFD30D /* AddMaintenanceRecordViewStateUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A8F2F640E6D00CFD30D /* AddMaintenanceRecordViewStateUseCase.swift */; };
-		F1D68A8B2F640E6D00CFD30D /* AddMaintenanceRecordViewInputUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A902F640E6D00CFD30D /* AddMaintenanceRecordViewInputUseCase.swift */; };
+		F1D68A8A2F640E6D00CFD30D /* AppLogConsoleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A8F2F640E6D00CFD30D /* AppLogConsoleViewModel.swift */; };
+		F1D68A8B2F640E6D00CFD30D /* MyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A902F640E6D00CFD30D /* MyViewModel.swift */; };
 		F1D68A8C2F640E6D00CFD30D /* MyViewRestoreUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A912F640E6D00CFD30D /* MyViewRestoreUseCase.swift */; };
 		F1D68A8D2F640E6D00CFD30D /* MyViewDataTransferSupportUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A922F640E6D00CFD30D /* MyViewDataTransferSupportUseCase.swift */; };
-		F1D68A952F640E6D00CFD30D /* RecordsViewSelectionSheetUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A982F640E6D00CFD30D /* RecordsViewSelectionSheetUseCase.swift */; };
-		F1D68A9A2F640E6D00CFD30D /* RecordsViewFilterRulesUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A992F640E6D00CFD30D /* RecordsViewFilterRulesUseCase.swift */; };
+		F1D68A952F640E6D00CFD30D /* View/RecordsViewSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A982F640E6D00CFD30D /* View/RecordsViewSelectionSheet.swift */; };
+		F1D68A9A2F640E6D00CFD30D /* ViewModel/RecordsViewModelFilterRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68A992F640E6D00CFD30D /* ViewModel/RecordsViewModelFilterRules.swift */; };
+		E33792A525A547079A3578CB /* MyViewModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C37BCFD0B3CD45F2B9D4A94E /* MyViewModels.swift */; };
 		F1D68A9F2F640E6D00CFD30D /* MaintenanceRecordItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68AA02F640E6D00CFD30D /* MaintenanceRecordItem.swift */; };
 		F1D68AA12F640E6D00CFD30D /* MaintenanceItemOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68AA22F640E6D00CFD30D /* MaintenanceItemOption.swift */; };
 		F1D68AA32F640E6D00CFD30D /* CoreConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D68AA42F640E6D00CFD30D /* CoreConfig.swift */; };
@@ -67,39 +68,39 @@
 		F1D68A492F640E6D00CFD30D /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		F1D68A4B2F640E6D00CFD30D /* MaintenanceReminderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceReminderView.swift; sourceTree = "<group>"; };
 		F1D68A4D2F640E6D00CFD30D /* AddCarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarView.swift; sourceTree = "<group>"; };
-		F1D68A4E2F640E6D00CFD30D /* MyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyView.swift; sourceTree = "<group>"; };
-		F1D68A502F640E6D00CFD30D /* AddMaintenanceRecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordView.swift; sourceTree = "<group>"; };
-		F1D68A512F640E6D00CFD30D /* RecordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsView.swift; sourceTree = "<group>"; };
+		F1D68A4E2F640E6D00CFD30D /* MyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View/MyView.swift; sourceTree = "<group>"; };
+		F1D68A502F640E6D00CFD30D /* AddMaintenanceRecordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View/AddMaintenanceRecordView.swift; sourceTree = "<group>"; };
+		F1D68A512F640E6D00CFD30D /* View/RecordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View/RecordsView.swift; sourceTree = "<group>"; };
 		F1D68A542F640E6D00CFD30D /* Car.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Car.swift; sourceTree = "<group>"; };
 		F1D68A562F640E6D00CFD30D /* MaintenanceRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceRecord.swift; sourceTree = "<group>"; };
 		F1D68A582F640E6D00CFD30D /* ModelContainerProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerProvider.swift; sourceTree = "<group>"; };
 		F1D68A5A2F640E6D00CFD30D /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
 		F1D68A692F64123400CFD30D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F1D68A6B2F64123400CFD30D /* AppliedCarContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppliedCarContext.swift; sourceTree = "<group>"; };
-		F1D68A6D2F640E6D00CFD30D /* MaintenanceReminderViewLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceReminderViewLogic.swift; sourceTree = "<group>"; };
+		F1D68A6D2F640E6D00CFD30D /* MaintenanceReminderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../ViewModel/MaintenanceReminderViewModel.swift; sourceTree = "<group>"; };
 		F1D68A6D2F64123500CFD30D /* AppDateContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDateContext.swift; sourceTree = "<group>"; };
-		F1D68A6E2F640E6D00CFD30D /* MaintenanceReminderModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceReminderModels.swift; sourceTree = "<group>"; };
-		F1D68A6F2F640E6D00CFD30D /* MaintenanceReminderUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceReminderUseCase.swift; sourceTree = "<group>"; };
+		F1D68A6E2F640E6D00CFD30D /* MaintenanceReminderModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../Model/MaintenanceReminderModels.swift; sourceTree = "<group>"; };
+		F1D68A6F2F640E6D00CFD30D /* MaintenanceReminderRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../ViewModel/MaintenanceReminderRules.swift; sourceTree = "<group>"; };
 		F1D68A6F2F64123500CFD30D /* SheetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetViews.swift; sourceTree = "<group>"; };
-		F1D68A702F640E6D00CFD30D /* RecordsViewQueryUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewQueryUseCase.swift; sourceTree = "<group>"; };
-		F1D68A712F640E6D00CFD30D /* RecordsState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsState.swift; sourceTree = "<group>"; };
-		F1D68A722F640E6D00CFD30D /* AddMaintenanceRecordViewSaveUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordViewSaveUseCase.swift; sourceTree = "<group>"; };
-		F1D68A732F640E6D00CFD30D /* AddMaintenanceRecordState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordState.swift; sourceTree = "<group>"; };
+		F1D68A702F640E6D00CFD30D /* ViewModel/RecordsViewModelQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/RecordsViewModelQuery.swift; sourceTree = "<group>"; };
+		F1D68A712F640E6D00CFD30D /* Model/RecordsState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model/RecordsState.swift; sourceTree = "<group>"; };
+		F1D68A722F640E6D00CFD30D /* AddMaintenanceRecordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/AddMaintenanceRecordViewModel.swift; sourceTree = "<group>"; };
+		F1D68A732F640E6D00CFD30D /* AddMaintenanceRecordModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model/AddMaintenanceRecordModel.swift; sourceTree = "<group>"; };
 		F1D68A742F640E6D00CFD30D /* AddCarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarViewModel.swift; sourceTree = "<group>"; };
 		F1D68A752F640E6D00CFD30D /* AddCarModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarModels.swift; sourceTree = "<group>"; };
-		F1D68A762F640E6D00CFD30D /* MyViewBackupUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewBackupUseCase.swift; sourceTree = "<group>"; };
+		F1D68A762F640E6D00CFD30D /* MyViewBackupUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/MyViewModelBackup.swift; sourceTree = "<group>"; };
 		F1D68A772F640E6D00CFD30D /* MyDataTransfer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyDataTransfer.swift; sourceTree = "<group>"; };
-		F1D68A7A2F640E6D00CFD31D /* RecordsViewFilterPanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewFilterPanelComponents.swift; sourceTree = "<group>"; };
-		F1D68A7B2F640E6D00CFD31D /* RecordsViewActionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewActionUseCase.swift; sourceTree = "<group>"; };
-		F1D68A7C2F640E6D00CFD31D /* AddMaintenanceRecordViewSheetComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordViewSheetComponents.swift; sourceTree = "<group>"; };
+		F1D68A7A2F640E6D00CFD31D /* View/RecordsViewFilterPanelComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View/RecordsViewFilterPanelComponents.swift; sourceTree = "<group>"; };
+		F1D68A7B2F640E6D00CFD31D /* View/RecordsViewActionComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View/RecordsViewActionComponents.swift; sourceTree = "<group>"; };
+		F1D68A7C2F640E6D00CFD31D /* AddMaintenanceRecordViewSheetComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View/AddMaintenanceRecordViewSheetComponents.swift; sourceTree = "<group>"; };
 		F1D68A7D2F640E6D00CFD31D /* AddCarSheetComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCarSheetComponents.swift; sourceTree = "<group>"; };
-		F1D68A7E2F640E6D00CFD31D /* MyViewCarActionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewCarActionUseCase.swift; sourceTree = "<group>"; };
-		F1D68A8F2F640E6D00CFD30D /* AddMaintenanceRecordViewStateUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordViewStateUseCase.swift; sourceTree = "<group>"; };
-		F1D68A902F640E6D00CFD30D /* AddMaintenanceRecordViewInputUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddMaintenanceRecordViewInputUseCase.swift; sourceTree = "<group>"; };
-		F1D68A912F640E6D00CFD30D /* MyViewRestoreUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewRestoreUseCase.swift; sourceTree = "<group>"; };
-		F1D68A922F640E6D00CFD30D /* MyViewDataTransferSupportUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewDataTransferSupportUseCase.swift; sourceTree = "<group>"; };
-		F1D68A982F640E6D00CFD30D /* RecordsViewSelectionSheetUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewSelectionSheetUseCase.swift; sourceTree = "<group>"; };
-		F1D68A992F640E6D00CFD30D /* RecordsViewFilterRulesUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordsViewFilterRulesUseCase.swift; sourceTree = "<group>"; };
+		F1D68A7E2F640E6D00CFD31D /* MyViewCarActionUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/MyViewModelCarActions.swift; sourceTree = "<group>"; };
+		F1D68A8F2F640E6D00CFD30D /* AppLogConsoleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/AppLogConsoleViewModel.swift; sourceTree = "<group>"; };
+		F1D68A902F640E6D00CFD30D /* MyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/MyViewModel.swift; sourceTree = "<group>"; };
+		F1D68A912F640E6D00CFD30D /* MyViewRestoreUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/MyViewModelRestore.swift; sourceTree = "<group>"; };
+		F1D68A922F640E6D00CFD30D /* MyViewDataTransferSupportUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/MyViewModelDataTransferSupport.swift; sourceTree = "<group>"; };
+		F1D68A982F640E6D00CFD30D /* View/RecordsViewSelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = View/RecordsViewSelectionSheet.swift; sourceTree = "<group>"; };
+		F1D68A992F640E6D00CFD30D /* ViewModel/RecordsViewModelFilterRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/RecordsViewModelFilterRules.swift; sourceTree = "<group>"; };
 		F1D68AA02F640E6D00CFD30D /* MaintenanceRecordItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceRecordItem.swift; sourceTree = "<group>"; };
 		F1D68AA22F640E6D00CFD30D /* MaintenanceItemOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaintenanceItemOption.swift; sourceTree = "<group>"; };
 		F1D68AA42F640E6D00CFD30D /* CoreConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreConfig.swift; sourceTree = "<group>"; };
@@ -107,8 +108,9 @@
 		F1D68AA82F640E6D00CFD30D /* Presentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Presentation.swift; sourceTree = "<group>"; };
 		F1D68AAA2F640E6D00CFD30D /* Sorting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sorting.swift; sourceTree = "<group>"; };
 		F1D68AAC2F640E6D00CFD30D /* SyncUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncUseCase.swift; sourceTree = "<group>"; };
-		F1D68AAE2F640E6D00CFD30D /* MyViewRestoreEntryUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewRestoreEntryUseCase.swift; sourceTree = "<group>"; };
-		F1D68AB02F640E6D00CFD30D /* MyViewRestoreCleanupUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyViewRestoreCleanupUseCase.swift; sourceTree = "<group>"; };
+		F1D68AAE2F640E6D00CFD30D /* MyViewRestoreEntryUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/MyViewModelRestoreEntry.swift; sourceTree = "<group>"; };
+		F1D68AB02F640E6D00CFD30D /* MyViewRestoreCleanupUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel/MyViewModelRestoreCleanup.swift; sourceTree = "<group>"; };
+		C37BCFD0B3CD45F2B9D4A94E /* MyViewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model/MyViewModels.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -241,7 +243,10 @@
 		F1D68AB22F640E6D00CFD30D /* My */ = {
 			isa = PBXGroup;
 			children = (
+				C37BCFD0B3CD45F2B9D4A94E /* MyViewModels.swift */,
 				F1D68A4E2F640E6D00CFD30D /* MyView.swift */,
+				F1D68A902F640E6D00CFD30D /* MyViewModel.swift */,
+				F1D68A8F2F640E6D00CFD30D /* AppLogConsoleViewModel.swift */,
 				F1D68A762F640E6D00CFD30D /* MyViewBackupUseCase.swift */,
 				F1D68A912F640E6D00CFD30D /* MyViewRestoreUseCase.swift */,
 				F1D68AAE2F640E6D00CFD30D /* MyViewRestoreEntryUseCase.swift */,
@@ -264,11 +269,9 @@
 			isa = PBXGroup;
 			children = (
 				F1D68A502F640E6D00CFD30D /* AddMaintenanceRecordView.swift */,
-				F1D68A722F640E6D00CFD30D /* AddMaintenanceRecordViewSaveUseCase.swift */,
-				F1D68A8F2F640E6D00CFD30D /* AddMaintenanceRecordViewStateUseCase.swift */,
-				F1D68A902F640E6D00CFD30D /* AddMaintenanceRecordViewInputUseCase.swift */,
+				F1D68A722F640E6D00CFD30D /* AddMaintenanceRecordViewModel.swift */,
 				F1D68A7C2F640E6D00CFD31D /* AddMaintenanceRecordViewSheetComponents.swift */,
-				F1D68A732F640E6D00CFD30D /* AddMaintenanceRecordState.swift */,
+				F1D68A732F640E6D00CFD30D /* AddMaintenanceRecordModel.swift */,
 			);
 			path = AddMaintenanceRecord;
 			sourceTree = "<group>";
@@ -276,13 +279,13 @@
 		F1D68AB62F640E6D00CFD30D /* Records */ = {
 			isa = PBXGroup;
 			children = (
-				F1D68A512F640E6D00CFD30D /* RecordsView.swift */,
-				F1D68A702F640E6D00CFD30D /* RecordsViewQueryUseCase.swift */,
-				F1D68A7A2F640E6D00CFD31D /* RecordsViewFilterPanelComponents.swift */,
-				F1D68A982F640E6D00CFD30D /* RecordsViewSelectionSheetUseCase.swift */,
-				F1D68A992F640E6D00CFD30D /* RecordsViewFilterRulesUseCase.swift */,
-				F1D68A7B2F640E6D00CFD31D /* RecordsViewActionUseCase.swift */,
-				F1D68A712F640E6D00CFD30D /* RecordsState.swift */,
+				F1D68A512F640E6D00CFD30D /* View/RecordsView.swift */,
+				F1D68A702F640E6D00CFD30D /* ViewModel/RecordsViewModelQuery.swift */,
+				F1D68A7A2F640E6D00CFD31D /* View/RecordsViewFilterPanelComponents.swift */,
+				F1D68A982F640E6D00CFD30D /* View/RecordsViewSelectionSheet.swift */,
+				F1D68A992F640E6D00CFD30D /* ViewModel/RecordsViewModelFilterRules.swift */,
+				F1D68A7B2F640E6D00CFD31D /* View/RecordsViewActionComponents.swift */,
+				F1D68A712F640E6D00CFD30D /* Model/RecordsState.swift */,
 			);
 			path = Records;
 			sourceTree = "<group>";
@@ -470,6 +473,7 @@
 				F1D68AAB2F640E6D00CFD30D /* SyncUseCase.swift in Sources */,
 				F1D68A632F640E6D00CFD30D /* ModelContainerProvider.swift in Sources */,
 				F1D68A642F640E6D00CFD30D /* MyView.swift in Sources */,
+				E33792A525A547079A3578CB /* MyViewModels.swift in Sources */,
 				F1D68A822F640E6D00CFD30D /* MyViewBackupUseCase.swift in Sources */,
 				F1D68A8C2F640E6D00CFD30D /* MyViewRestoreUseCase.swift in Sources */,
 				F1D68AAD2F640E6D00CFD30D /* MyViewRestoreEntryUseCase.swift in Sources */,

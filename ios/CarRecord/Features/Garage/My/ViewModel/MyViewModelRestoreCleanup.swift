@@ -1,7 +1,8 @@
 import SwiftData
 
-extension MyView {
+extension MyViewModel {
     func clearAllBusinessData() throws {
+        guard let modelContext = requiredModelContext() else { return }
         AppLogger.info("开始清空业务数据")
         let allCars = try modelContext.fetch(FetchDescriptor<Car>())
         let allCarIDs = allCars.map(\.id.uuidString)

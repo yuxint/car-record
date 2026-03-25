@@ -1,14 +1,18 @@
 import SwiftUI
 import SwiftData
 
-extension MyView {
+extension MyViewModel {
     /// 当前是否存在任一业务数据：用于决定恢复是否需要二次确认。
     var hasAnyBusinessData: Bool {
-        !cars.isEmpty || !serviceRecords.isEmpty || !serviceItemOptions.isEmpty
+        let cars = dataSnapshot.cars
+        let serviceRecords = dataSnapshot.serviceRecords
+        let serviceItemOptions = dataSnapshot.serviceItemOptions
+        return !cars.isEmpty || !serviceRecords.isEmpty || !serviceItemOptions.isEmpty
     }
 
     /// 清空业务数据：用于重置和恢复前准备。
     func syncAppliedCarSelection() {
+        let cars = dataSnapshot.cars
         appliedCarIDRaw = AppliedCarContext.normalizedRawID(rawID: appliedCarIDRaw, cars: cars)
     }
 

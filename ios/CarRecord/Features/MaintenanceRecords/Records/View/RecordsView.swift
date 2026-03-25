@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// 保养记录列表页：读取本地保养记录并支持新增。
+/// 保养记录列表页：负责 UI 展示与交互绑定。
 struct RecordsView: View {
     @Environment(\.modelContext) var modelContext
     @Query(sort: \Car.purchaseDate, order: .reverse)
@@ -10,26 +10,46 @@ struct RecordsView: View {
     var serviceRecords: [MaintenanceRecord]
     @Query(sort: \MaintenanceItemOption.createdAt, order: .forward)
     var serviceItemOptions: [MaintenanceItemOption]
-    @AppStorage(AppliedCarContext.storageKey) var appliedCarIDRaw = ""
 
-    @State var displayMode: LogDisplayMode = .byDate
-    @State var editingTarget: MaintenanceRecordEditTarget?
-    @State var cycleFilters = LogFilterState()
-    @State var itemFilters = LogFilterState()
-    @State var isCycleFilterExpanded = false
-    @State var isItemFilterExpanded = false
-    @State var selectionSheetTarget: FilterSelectionSheetTarget?
-    @State var selectionDraftIDs: Set<UUID> = []
-    @State var hasInteractedWithSelectionDraft = false
-    @State var saveErrorMessage = ""
-    @State var isSaveErrorAlertPresented = false
-    @State var isAddingMaintenanceRecord = false
+    @StateObject var viewModel = RecordsViewModel()
+
+    private var scopedCars: [Car] {
+        viewModel.scopedCars(cars: cars)
+    }
+
+    private var scopedMaintenanceRecords: [MaintenanceRecord] {
+        viewModel.scopedMaintenanceRecords(cars: cars, serviceRecords: serviceRecords)
+    }
+
+    private var filteredDateGroups: [MaintenanceDateGroup] {
+        viewModel.filteredDateGroups(
+            cars: cars,
+            serviceRecords: serviceRecords,
+            serviceItemOptions: serviceItemOptions
+        )
+    }
+
+    private var filteredItemRows: [MaintenanceItemRow] {
+        viewModel.filteredItemRows(
+            cars: cars,
+            serviceRecords: serviceRecords,
+            serviceItemOptions: serviceItemOptions
+        )
+    }
+
+    private var cycleSectionTitle: String {
+        viewModel.cycleSectionTitle(filteredDateGroups: filteredDateGroups)
+    }
+
+    private var itemSectionTitle: String {
+        viewModel.itemSectionTitle(filteredItemRows: filteredItemRows)
+    }
 
     var body: some View {
         List {
             if let appliedCar = scopedCars.first {
                 Section(CarDisplayFormatter.name(appliedCar)) {
-                    Picker("展示方式", selection: $displayMode) {
+                    Picker("展示方式", selection: $viewModel.displayMode) {
                         ForEach(LogDisplayMode.allCases) { mode in
                             Text(mode.title).tag(mode)
                         }
@@ -38,7 +58,7 @@ struct RecordsView: View {
                 }
             } else {
                 Section {
-                    Picker("展示方式", selection: $displayMode) {
+                    Picker("展示方式", selection: $viewModel.displayMode) {
                         ForEach(LogDisplayMode.allCases) { mode in
                             Text(mode.title).tag(mode)
                         }
@@ -51,12 +71,12 @@ struct RecordsView: View {
                 Text("还没有保养记录。")
                     .foregroundStyle(.secondary)
             } else {
-                if displayMode == .byDate {
+                if viewModel.displayMode == .byDate {
                     Section {
                         filterPanel(
-                            filters: $cycleFilters,
+                            filters: $viewModel.cycleFilters,
                             mode: .byDate,
-                            isExpanded: $isCycleFilterExpanded
+                            isExpanded: $viewModel.isCycleFilterExpanded
                         )
                     }
 
@@ -69,7 +89,7 @@ struct RecordsView: View {
                                 dateGroupRow(group)
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                         Button(role: .destructive) {
-                                            deleteRecords(group.records)
+                                            viewModel.deleteRecords(group.records, modelContext: modelContext)
                                         } label: {
                                             Label("删除", systemImage: "trash")
                                         }
@@ -80,9 +100,9 @@ struct RecordsView: View {
                 } else {
                     Section {
                         filterPanel(
-                            filters: $itemFilters,
+                            filters: $viewModel.itemFilters,
                             mode: .byItem,
-                            isExpanded: $isItemFilterExpanded
+                            isExpanded: $viewModel.isItemFilterExpanded
                         )
                     }
 
@@ -95,7 +115,7 @@ struct RecordsView: View {
                                 itemRow(row)
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                         Button(role: .destructive) {
-                                            deleteItemRow(row)
+                                            viewModel.deleteItemRow(row, modelContext: modelContext)
                                         } label: {
                                             Label("删除", systemImage: "trash")
                                         }
@@ -107,51 +127,48 @@ struct RecordsView: View {
             }
         }
         .navigationTitle("保养记录")
-        .toolbar((editingTarget == nil && isAddingMaintenanceRecord == false) ? .visible : .hidden, for: .tabBar)
-        .animation(.none, value: editingTarget != nil || isAddingMaintenanceRecord)
+        .toolbar((viewModel.editingTarget == nil && viewModel.isAddingMaintenanceRecord == false) ? .visible : .hidden, for: .tabBar)
+        .animation(.none, value: viewModel.editingTarget != nil || viewModel.isAddingMaintenanceRecord)
         .toolbar {
             if scopedCars.isEmpty == false {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        isAddingMaintenanceRecord = true
+                        viewModel.isAddingMaintenanceRecord = true
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
         }
-        .navigationDestination(isPresented: $isAddingMaintenanceRecord) {
+        .navigationDestination(isPresented: $viewModel.isAddingMaintenanceRecord) {
             AddMaintenanceRecordView()
         }
         .navigationDestination(isPresented: Binding(
-            get: { editingTarget != nil },
-            set: { if !$0 { editingTarget = nil } }
+            get: { viewModel.editingTarget != nil },
+            set: { if !$0 { viewModel.editingTarget = nil } }
         )) {
-            if let target = editingTarget {
+            if let target = viewModel.editingTarget {
                 AddMaintenanceRecordView(
                     editingRecord: target.record,
                     lockedItemID: target.lockedItemID
                 )
             }
         }
-        .sheet(item: $selectionSheetTarget) { target in
+        .sheet(item: $viewModel.selectionSheetTarget) { target in
             selectionSheet(target)
         }
-        .alert(AppAlertText.operationFailedTitle, isPresented: $isSaveErrorAlertPresented) {
+        .alert(AppAlertText.operationFailedTitle, isPresented: $viewModel.isSaveErrorAlertPresented) {
             Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
-            Text(saveErrorMessage)
+            Text(viewModel.saveErrorMessage)
         }
         .onAppear {
-            syncAppliedCarSelection()
-            normalizeFilterSelectionsForAppliedCar()
+            viewModel.syncAppliedCarSelection(cars: cars)
+            viewModel.normalizeFilterSelectionsForAppliedCar(cars: cars)
         }
         .onChange(of: cars.map(\.id)) { _, _ in
-            syncAppliedCarSelection()
-            normalizeFilterSelectionsForAppliedCar()
-        }
-        .onChange(of: appliedCarIDRaw) { _, _ in
-            normalizeFilterSelectionsForAppliedCar()
+            viewModel.syncAppliedCarSelection(cars: cars)
+            viewModel.normalizeFilterSelectionsForAppliedCar(cars: cars)
         }
     }
 }

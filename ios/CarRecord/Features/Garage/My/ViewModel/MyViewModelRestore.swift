@@ -1,9 +1,16 @@
 import Foundation
 import SwiftData
 
-extension MyView {
+extension MyViewModel {
     /// 应用恢复数据并返回统计结果：会在空库中重建保养项目、车辆与记录。
     func applyImportedPayload(_ payload: MyDataTransferPayload) throws -> MyDataTransferImportSummary {
+        guard let modelContext else {
+            throw NSError(
+                domain: "MyDataTransfer",
+                code: 1999,
+                userInfo: [NSLocalizedDescriptionKey: "恢复失败：上下文未初始化。"]
+            )
+        }
         AppLogger.info(
             "开始写入恢复数据",
             payload: "vehicles=\(payload.vehicles.count), modelProfiles=\(payload.modelProfiles.count)"

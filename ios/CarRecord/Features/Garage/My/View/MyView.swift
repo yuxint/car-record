@@ -5,32 +5,12 @@ import UniformTypeIdentifiers
 
 /// “个人中心”页：集中放置车辆管理、项目管理入口和数据重置入口。
 struct MyView: View {
-    @Environment(\.modelContext) var modelContext 
-    @Query(sort: \Car.purchaseDate, order: .reverse) var cars: [Car] 
-    @Query(sort: \MaintenanceRecord.date, order: .reverse) var serviceRecords: [MaintenanceRecord] 
+    @Environment(\.modelContext) var modelContext
+    @Query(sort: \Car.purchaseDate, order: .reverse) var cars: [Car]
+    @Query(sort: \MaintenanceRecord.date, order: .reverse) var serviceRecords: [MaintenanceRecord]
     @Query(sort: \MaintenanceItemOption.createdAt, order: .forward) var serviceItemOptions: [MaintenanceItemOption]
-    @AppStorage(AppliedCarContext.storageKey) var appliedCarIDRaw = ""
 
-    @State var activeCarForm: CarFormTarget?
-    @State var isResetAlertPresented = false
-    @State var isImportingMaintenanceData = false
-    @State var isExportingMaintenanceData = false
-    @State var exportDocument = MyDataTransferDocument(data: Data())
-    @State var exportFilename = "car-record-maintenance"
-    @State var transferResultMessage = ""
-    @State var isTransferResultAlertPresented = false
-    @State var isRestoreConfirmAlertPresented = false
-    @State var pendingDeleteCar: Car?
-    @State var operationErrorMessage = ""
-    @State var isOperationErrorAlertPresented = false
-    @AppStorage(AppDateContext.useManualNowStorageKey) var isManualNowEnabled = false
-    @AppStorage(AppDateContext.manualNowTimestampStorageKey) var manualNowTimestamp = 0.0
-    @AppStorage("app_debug_mode_enabled") var isDebugModeEnabled = false
-    @State var isManualNowPickerPresented = false
-    @State var versionTapCount = 0
-    @State var lastVersionTapAt: Date?
-    @State var debugModeStatusMessage = ""
-    @State var isDebugModeStatusAlertPresented = false
+    @StateObject private var viewModel = MyViewModel()
 
     var body: some View {
         List {
@@ -39,9 +19,9 @@ struct MyView: View {
                     Text("还没有车辆，点击下方“添加车辆”开始记录。")
                         .foregroundStyle(.secondary)
                 } else {
-                    let carAgeNow = isManualNowEnabled ? manualNowDate : Date()
+                    let carAgeNow = viewModel.carAgeReferenceDate
                     ForEach(cars) { car in
-                        let isApplied = isAppliedCar(car)
+                        let isApplied = viewModel.isAppliedCar(car)
                         VStack(alignment: .leading, spacing: 8) {
                             Text(CarDisplayFormatter.name(car))
                                 .font(.headline)
@@ -68,7 +48,7 @@ struct MyView: View {
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button {
-                                pendingDeleteCar = car
+                                viewModel.requestDeleteCar(car)
                             } label: {
                                 Label("删除", systemImage: "trash")
                             }
@@ -76,7 +56,7 @@ struct MyView: View {
 
                             if !isApplied {
                                 Button {
-                                    applyCar(car)
+                                    viewModel.applyCar(car)
                                 } label: {
                                     Label("应用", systemImage: "checkmark.circle")
                                 }
@@ -84,7 +64,7 @@ struct MyView: View {
                             }
 
                             Button {
-                                openEditCarForm(car)
+                                viewModel.openEditCarForm(car)
                             } label: {
                                 Label("编辑", systemImage: "pencil")
                             }
@@ -95,7 +75,7 @@ struct MyView: View {
                 }
 
                 Button {
-                    openAddCarForm()
+                    viewModel.openAddCarForm()
                 } label: {
                     Label("添加车辆", systemImage: "plus")
                 }
@@ -103,23 +83,19 @@ struct MyView: View {
 
             Section("数据管理") {
                 Button {
-                    startBackupData()
+                    viewModel.startBackupData()
                 } label: {
                     Label("备份数据", systemImage: "square.and.arrow.up")
                 }
 
                 Button {
-                    if hasAnyBusinessData {
-                        isRestoreConfirmAlertPresented = true
-                    } else {
-                        isImportingMaintenanceData = true
-                    }
+                    viewModel.requestRestoreData()
                 } label: {
                     Label("恢复数据", systemImage: "square.and.arrow.down")
                 }
 
                 Button(role: .destructive) {
-                    isResetAlertPresented = true
+                    viewModel.isResetAlertPresented = true
                 } label: {
                     Label("重置全部数据", systemImage: "trash")
                 }
@@ -129,7 +105,7 @@ struct MyView: View {
                     .foregroundStyle(.secondary)
             }
 
-            if isDebugModeEnabled {
+            if viewModel.isDebugModeEnabled {
                 Section("调试工具") {
                     NavigationLink {
                         AppLogConsoleView()
@@ -137,19 +113,16 @@ struct MyView: View {
                         Label("控制台日志", systemImage: "terminal")
                     }
 
-                    Toggle("自定义当前日期", isOn: $isManualNowEnabled)
-                        .onChange(of: isManualNowEnabled) { _, newValue in
-                            AppDateContext.setManualNowEnabled(newValue)
-                        }
+                    Toggle("自定义当前日期", isOn: $viewModel.isManualNowEnabled)
 
-                    if isManualNowEnabled {
+                    if viewModel.isManualNowEnabled {
                         Button {
-                            isManualNowPickerPresented = true
+                            viewModel.isManualNowPickerPresented = true
                         } label: {
                             HStack {
                                 Text("手动日期")
                                 Spacer()
-                                Text(AppDateContext.formatShortDate(manualNowDate))
+                                Text(AppDateContext.formatShortDate(viewModel.manualNowDate))
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -166,19 +139,19 @@ struct MyView: View {
                 HStack {
                     Text("版本号")
                     Spacer()
-                    Text(appVersionText)
+                    Text(viewModel.appVersionText)
                         .foregroundStyle(.secondary)
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    handleVersionTap()
+                    viewModel.handleVersionTap()
                 }
             }
         }
         .navigationTitle("个人中心")
-        .toolbar(activeCarForm == nil ? .visible : .hidden, for: .tabBar)
-        .animation(.none, value: activeCarForm == nil)
-        .navigationDestination(item: $activeCarForm) { target in
+        .toolbar(viewModel.activeCarForm == nil ? .visible : .hidden, for: .tabBar)
+        .animation(.none, value: viewModel.activeCarForm == nil)
+        .navigationDestination(item: $viewModel.activeCarForm) { target in
             switch target {
             case .add:
                 AddCarView()
@@ -186,162 +159,141 @@ struct MyView: View {
                 AddCarView(editingCar: car)
             }
         }
-        .sheet(isPresented: $isManualNowPickerPresented) {
+        .sheet(isPresented: $viewModel.isManualNowPickerPresented) {
             DayDatePickerSheetView(
                 title: "选择日期",
                 label: "手动日期",
-                currentDate: manualNowDate,
+                currentDate: viewModel.manualNowDate,
                 onApply: { newValue in
-                    AppDateContext.setManualNowDate(newValue)
-                    manualNowTimestamp = AppDateContext.calendar.startOfDay(for: newValue).timeIntervalSince1970
-                    isManualNowPickerPresented = false
+                    viewModel.applyManualNowDate(newValue)
                 },
-                onCancel: { isManualNowPickerPresented = false }
+                onCancel: { viewModel.isManualNowPickerPresented = false }
             )
         }
         .fileExporter(
-            isPresented: $isExportingMaintenanceData,
-            document: exportDocument,
+            isPresented: $viewModel.isExportingMaintenanceData,
+            document: viewModel.exportDocument,
             contentType: .json,
-            defaultFilename: exportFilename
+            defaultFilename: viewModel.exportFilename
         ) { result in
             switch result {
             case .success(let url):
-                presentTransferResult("备份成功：\(url.lastPathComponent)")
+                viewModel.presentTransferResult("备份成功：\(url.lastPathComponent)")
             case .failure(let error):
-                presentTransferResult("备份失败：\(error.localizedDescription)")
+                viewModel.presentTransferResult("备份失败：\(error.localizedDescription)")
             }
         }
         .fileImporter(
-            isPresented: $isImportingMaintenanceData,
+            isPresented: $viewModel.isImportingMaintenanceData,
             allowedContentTypes: [.json],
             allowsMultipleSelection: false
         ) { result in
             switch result {
             case .success(let urls):
                 guard let url = urls.first else {
-                    presentTransferResult("恢复失败：未选择文件。")
+                    viewModel.presentTransferResult("恢复失败：未选择文件。")
                     return
                 }
-                importMaintenanceData(from: url)
+                viewModel.importMaintenanceData(from: url)
             case .failure(let error):
-                presentTransferResult("恢复失败：\(error.localizedDescription)")
+                viewModel.presentTransferResult("恢复失败：\(error.localizedDescription)")
             }
         }
-        .alert(AppAlertText.resetDataConfirmTitle, isPresented: $isResetAlertPresented) {
+        .alert(AppAlertText.resetDataConfirmTitle, isPresented: $viewModel.isResetAlertPresented) {
             Button(AppPopupText.cancel, role: .cancel) {}
             Button(AppAlertText.confirmResetAction, role: .destructive) {
-                resetAllData()
+                viewModel.resetAllData()
             }
         } message: {
             Text(AppAlertText.resetDataMessage)
         }
-        .alert(AppAlertText.restoreDataConfirmTitle, isPresented: $isRestoreConfirmAlertPresented) {
+        .alert(AppAlertText.restoreDataConfirmTitle, isPresented: $viewModel.isRestoreConfirmAlertPresented) {
             Button(AppPopupText.cancel, role: .cancel) {}
             Button(AppAlertText.confirmRestoreAction, role: .destructive) {
-                isImportingMaintenanceData = true
+                viewModel.confirmRestoreData()
             }
         } message: {
             Text(AppAlertText.restoreDataMessage)
         }
         .alert(AppAlertText.deleteCarConfirmTitle, isPresented: Binding(
-            get: { pendingDeleteCar != nil },
+            get: { viewModel.pendingDeleteCar != nil },
             set: { newValue in
                 if !newValue {
-                    pendingDeleteCar = nil
+                    viewModel.pendingDeleteCar = nil
                 }
             }
         )) {
             Button(AppPopupText.cancel, role: .cancel) {
-                pendingDeleteCar = nil
+                viewModel.pendingDeleteCar = nil
             }
             Button(AppAlertText.confirmDeleteAction, role: .destructive) {
-                guard let car = pendingDeleteCar else { return }
-                pendingDeleteCar = nil
-                deleteCar(car)
+                viewModel.confirmDeleteCar()
             }
         } message: {
-            if let car = pendingDeleteCar {
+            if let car = viewModel.pendingDeleteCar {
                 Text(AppAlertText.deleteCarMessage(carName: CarDisplayFormatter.name(car)))
             } else {
                 Text(AppAlertText.deleteCarFallbackMessage)
             }
         }
-        .alert(AppAlertText.transferResultTitle, isPresented: $isTransferResultAlertPresented) {
+        .alert(AppAlertText.transferResultTitle, isPresented: $viewModel.isTransferResultAlertPresented) {
             Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
-            Text(transferResultMessage)
+            Text(viewModel.transferResultMessage)
         }
-        .alert(AppAlertText.operationFailedTitle, isPresented: $isOperationErrorAlertPresented) {
+        .alert(AppAlertText.operationFailedTitle, isPresented: $viewModel.isOperationErrorAlertPresented) {
             Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
-            Text(operationErrorMessage)
+            Text(viewModel.operationErrorMessage)
         }
-        .alert("调试模式状态", isPresented: $isDebugModeStatusAlertPresented) {
+        .alert("调试模式状态", isPresented: $viewModel.isDebugModeStatusAlertPresented) {
             Button(AppPopupText.acknowledge, role: .cancel) {}
         } message: {
-            Text(debugModeStatusMessage)
+            Text(viewModel.debugModeStatusMessage)
         }
         .onAppear {
-            syncAppliedCarSelection()
+            refreshViewModelContext()
         }
         .onChange(of: cars.map(\.id)) { _, _ in
-            syncAppliedCarSelection()
+            refreshViewModelContext()
+        }
+        .onChange(of: serviceRecords.map(\.id)) { _, _ in
+            refreshViewModelContext()
+        }
+        .onChange(of: serviceItemOptions.map(\.id)) { _, _ in
+            refreshViewModelContext()
         }
     }
 
-    var manualNowDate: Date {
-        guard manualNowTimestamp > 0 else {
-            return AppDateContext.calendar.startOfDay(for: Date())
-        }
-        let storedDate = Date(timeIntervalSince1970: manualNowTimestamp)
-        return AppDateContext.calendar.startOfDay(for: storedDate)
-    }
-
-    func handleVersionTap() {
-        let now = Date()
-        if let lastVersionTapAt, now.timeIntervalSince(lastVersionTapAt) > 1.2 {
-            versionTapCount = 0
-        }
-        versionTapCount += 1
-        lastVersionTapAt = now
-
-        if versionTapCount >= 5 {
-            versionTapCount = 0
-            isDebugModeEnabled.toggle()
-            if isDebugModeEnabled {
-                AppLogger.info("调试模式已开启")
-                debugModeStatusMessage = "调试模式已开启，现在可以使用“调试工具”中的时间临时设置和控制台日志。"
-            } else {
-                AppLogger.info("调试模式已关闭")
-                debugModeStatusMessage = "调试模式已关闭。"
-            }
-            isDebugModeStatusAlertPresented = true
-        }
+    private func refreshViewModelContext() {
+        viewModel.refreshContext(
+            modelContext: modelContext,
+            cars: cars,
+            serviceRecords: serviceRecords,
+            serviceItemOptions: serviceItemOptions
+        )
     }
 }
 
 struct AppLogConsoleView: View {
-    @State var logFilePath = ""
-    @State var logFileSize = 0
-    @State var logContent = ""
+    @StateObject private var viewModel = AppLogConsoleViewModel()
 
     var body: some View {
         List {
-            if logFilePath.isEmpty == false {
-                Text("日志文件：\(logFilePath)（\(formattedFileSize)）")
+            if viewModel.logFilePath.isEmpty == false {
+                Text("日志文件：\(viewModel.logFilePath)（\(viewModel.formattedFileSize)）")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
 
-            if logContent.isEmpty {
+            if viewModel.logContent.isEmpty {
                 Text("暂无日志输出。")
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(Array(parsedLines.enumerated()), id: \.offset) { _, line in
+                ForEach(Array(viewModel.parsedLines.enumerated()), id: \.offset) { _, line in
                     Text(line)
                         .font(.system(.footnote, design: .monospaced))
-                        .foregroundStyle(color(for: line))
+                        .foregroundStyle(viewModel.color(for: line))
                         .textSelection(.enabled)
                 }
             }
@@ -351,60 +303,21 @@ struct AppLogConsoleView: View {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button("清空") {
                     Task {
-                        await AppLogFileStore.shared.clear()
-                        await reloadLogFile()
+                        await viewModel.clearAndReload()
                     }
                 }
-                .disabled(logContent.isEmpty)
+                .disabled(viewModel.logContent.isEmpty)
             }
         }
         .task {
-            await reloadLogFile()
+            await viewModel.reloadLogFile()
         }
         .onReceive(
             Timer.publish(every: 1, on: .main, in: .common).autoconnect()
         ) { _ in
             Task {
-                await reloadLogFile()
+                await viewModel.reloadLogFile()
             }
         }
-    }
-
-    var parsedLines: [String] {
-        Array(
-            logContent
-                .split(separator: "\n", omittingEmptySubsequences: false)
-                .map(String.init)
-                .filter { $0.isEmpty == false }
-                .reversed()
-        )
-    }
-
-    var formattedFileSize: String {
-        ByteCountFormatter.string(fromByteCount: Int64(logFileSize), countStyle: .file)
-    }
-
-    func reloadLogFile() async {
-        let path = await AppLogFileStore.shared.filePath()
-        let content = await AppLogFileStore.shared.readAll()
-        let size = await AppLogFileStore.shared.currentFileSizeInBytes()
-        await MainActor.run {
-            logFilePath = path
-            logFileSize = size
-            logContent = content
-        }
-    }
-
-    func color(for line: String) -> Color {
-        if line.contains("[ERROR]") {
-            return .red
-        }
-        if line.contains("[WARN]") {
-            return .yellow
-        }
-        if line.contains("[INFO]") {
-            return .black
-        }
-        return .primary
     }
 }

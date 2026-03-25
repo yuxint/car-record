@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Foundation
 
 extension AddCarView {
     @ViewBuilder
@@ -68,11 +69,11 @@ extension AddCarView {
                 Toggle("按时间提醒", isOn: draft.remindByTime)
                 if draft.wrappedValue.remindByTime {
                     Stepper(
-                        value: viewModel.monthIntervalYearBinding(for: draft),
+                        value: monthIntervalYearBinding(for: draft),
                         in: 0.5...10,
                         step: 0.5
                     ) {
-                        Text("时间间隔：\(viewModel.yearIntervalText(from: draft.wrappedValue.monthInterval))年")
+                        Text("时间间隔：\(yearIntervalText(from: draft.wrappedValue.monthInterval))年")
                     }
                 }
             }
@@ -111,5 +112,22 @@ extension AddCarView {
         } message: {
             Text(validationMessage)
         }
+    }
+
+    private func monthIntervalYearBinding(for draft: Binding<MaintenanceItemDraft>) -> Binding<Double> {
+        Binding(
+            get: { max(0.5, Double(max(1, draft.wrappedValue.monthInterval)) / 12.0) },
+            set: { newValue in
+                draft.wrappedValue.monthInterval = max(1, Int((newValue * 12).rounded()))
+            }
+        )
+    }
+
+    private func yearIntervalText(from monthInterval: Int) -> String {
+        let years = Double(max(1, monthInterval)) / 12.0
+        if years.truncatingRemainder(dividingBy: 1) == 0 {
+            return "\(Int(years))"
+        }
+        return String(format: "%.1f", years)
     }
 }

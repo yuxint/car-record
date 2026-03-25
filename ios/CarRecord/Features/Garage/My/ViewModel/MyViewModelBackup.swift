@@ -1,8 +1,11 @@
 import SwiftUI
 import SwiftData
 
-extension MyView {
+extension MyViewModel {
     func startBackupData() {
+        let cars = dataSnapshot.cars
+        let serviceRecords = dataSnapshot.serviceRecords
+        let serviceItemOptions = dataSnapshot.serviceItemOptions
         AppLogger.info(
             "开始备份数据",
             payload: "cars=\(cars.count), records=\(serviceRecords.count), items=\(serviceItemOptions.count)"

@@ -1,8 +1,8 @@
-import SwiftUI
+import Foundation
 
 /// 保养提醒页计算逻辑：索引构建、提醒进度和文案生成。
-enum MaintenanceReminderUseCase {
-    /// 构建"车辆+项目 -> 最近一次保养记录"索引，避免重复扫描。
+enum MaintenanceReminderRules {
+    /// 构建"车辆与项目 -> 最近一次保养记录"索引，避免重复扫描。
     static func buildLatestLogIndex(record: MaintenanceRecord) -> [String: MaintenanceRecord] {
         guard let carID = record.car?.id else { return [:] }
 
@@ -15,12 +15,6 @@ enum MaintenanceReminderUseCase {
         }
 
         return index
-    }
-
-    /// 车辆首保索引：取该车最早一条保养记录，作为"首保已完成"后的统一兜底基准。
-    static func buildFirstMaintenanceLogIndex(record: MaintenanceRecord) -> [UUID: MaintenanceRecord] {
-        guard let carID = record.car?.id else { return [:] }
-        return [carID: record]
     }
 
     static func latestLogKey(carID: UUID, itemID: UUID) -> String {

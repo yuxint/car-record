@@ -15,8 +15,9 @@
 ## 修改约定
 
 - 优先保持现有架构，不要无必要引入网络层、状态管理框架或额外抽象层。
-- 目录组织遵循 `Feature + UseCase + State + View/Components`，页面文件只承载 UI 编排与事件转发。
+- 目录组织遵循 MVVM 架构，View 只管UI和动画，ViewModel 只管业务逻辑和状态，Model 只管数据结构。
 - 新增持久化字段或模型时，先检查 `ModelContainerProvider` 的 `Schema` 是否需要同步更新。
 - 涉及保存操作时，优先复用 `ModelContext.saveOrLog(_:)`，保持错误提示风格一致。
 - 涉及日期展示、金额展示、里程拆分时，优先复用 `ios/CarRecord/Core/Formatters.swift` 与 `ios/CarRecord/Core/AppDateContext.swift`。
 - UI 文案、注释与命名以中文语义为主，新增内容应与现有风格一致。
+

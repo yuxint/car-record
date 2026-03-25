@@ -1,14 +1,53 @@
+import Foundation
+import Combine
 import SwiftUI
 
-extension MaintenanceReminderView {
-    /// 当前已应用车辆的保养提醒分组。
-    var carSection: MaintenanceReminderCarSection? {
+@MainActor
+final class MaintenanceReminderViewModel: ObservableObject {
+    @Published private(set) var appliedCarIDRaw: String {
+        didSet {
+            UserDefaults.standard.set(appliedCarIDRaw, forKey: AppliedCarContext.storageKey)
+        }
+    }
+
+    init() {
+        appliedCarIDRaw = UserDefaults.standard.string(forKey: AppliedCarContext.storageKey) ?? ""
+    }
+}
+
+extension MaintenanceReminderViewModel {
+    func appliedCarID(cars: [Car]) -> UUID? {
+        AppliedCarContext.resolveAppliedCarID(rawID: appliedCarIDRaw, cars: cars)
+    }
+
+    func scopedCars(cars: [Car]) -> [Car] {
+        guard let appliedCarID = appliedCarID(cars: cars) else { return [] }
+        return cars.filter { $0.id == appliedCarID }
+    }
+
+    func scopedMaintenanceRecords(cars: [Car], serviceRecords: [MaintenanceRecord]) -> [MaintenanceRecord] {
+        guard let appliedCarID = appliedCarID(cars: cars) else { return [] }
+        return serviceRecords.filter { $0.car?.id == appliedCarID }
+    }
+
+    func syncAppliedCarSelection(cars: [Car]) {
+        appliedCarIDRaw = AppliedCarContext.normalizedRawID(rawID: appliedCarIDRaw, cars: cars)
+    }
+
+    func carSection(
+        cars: [Car],
+        serviceRecords: [MaintenanceRecord],
+        serviceItemOptions: [MaintenanceItemOption]
+    ) -> MaintenanceReminderCarSection? {
+        let scopedCars = scopedCars(cars: cars)
+        let scopedMaintenanceRecords = scopedMaintenanceRecords(cars: cars, serviceRecords: serviceRecords)
         guard let car = scopedCars.first, scopedMaintenanceRecords.min(by: { $0.date < $1.date }) != nil else {
             return nil
         }
-        let options = sortedMaintenanceItemOptions
+
+        let options = sortedMaintenanceItemOptions(cars: cars, serviceItemOptions: serviceItemOptions)
         let logIndex = scopedMaintenanceRecords.reduce(into: [String: MaintenanceRecord]()) { partialResult, record in
-            let index = MaintenanceReminderUseCase.buildLatestLogIndex(record: record)
+            let index = MaintenanceReminderRules.buildLatestLogIndex(record: record)
             for (key, value) in index {
                 if let existing = partialResult[key] {
                     if existing.date > value.date {
@@ -21,11 +60,11 @@ extension MaintenanceReminderView {
                 partialResult[key] = value
             }
         }
-        let now = AppDateContext.now()
 
+        let now = AppDateContext.now()
         let rows = options.map { option in
-            let key = MaintenanceReminderUseCase.latestLogKey(carID: car.id, itemID: option.id)
-            return MaintenanceReminderUseCase.buildReminderRow(
+            let key = MaintenanceReminderRules.latestLogKey(carID: car.id, itemID: option.id)
+            return MaintenanceReminderRules.buildReminderRow(
                 car: car,
                 option: option,
                 itemLatestLog: logIndex[key],
@@ -50,11 +89,10 @@ extension MaintenanceReminderView {
         )
     }
 
-    /// 默认项目优先，随后按创建时间排序，保持与"项目管理"页面一致。
-    var sortedMaintenanceItemOptions: [MaintenanceItemOption] {
-        let scopedCar = scopedCars.first
+    func sortedMaintenanceItemOptions(cars: [Car], serviceItemOptions: [MaintenanceItemOption]) -> [MaintenanceItemOption] {
+        let scopedCar = scopedCars(cars: cars).first
         let visibleOptions = CoreConfig.filterDisabledOptions(
-            CoreConfig.scopedOptions(serviceItemOptions, carID: appliedCarID),
+            CoreConfig.scopedOptions(serviceItemOptions, carID: appliedCarID(cars: cars)),
             disabledItemIDsRaw: scopedCar?.disabledItemIDsRaw ?? "",
             includeDisabled: false
         )
@@ -63,53 +101,5 @@ extension MaintenanceReminderView {
             brand: scopedCar?.brand,
             modelName: scopedCar?.modelName
         )
-    }
-
-    /// 当前已应用车辆：无有效已应用ID时自动回退到首辆车。
-    var appliedCarID: UUID? {
-        AppliedCarContext.resolveAppliedCarID(rawID: appliedCarIDRaw, cars: cars)
-    }
-
-    /// 保养提醒页只读取当前已应用车型。
-    var scopedCars: [Car] {
-        guard let appliedCarID else { return [] }
-        return cars.filter { $0.id == appliedCarID }
-    }
-
-    /// 保养提醒页记录也按当前已应用车型隔离。
-    var scopedMaintenanceRecords: [MaintenanceRecord] {
-        guard let appliedCarID else { return [] }
-        return serviceRecords.filter { $0.car?.id == appliedCarID }
-    }
-
-    /// 同步并修正"已应用车型"持久化值，避免删除车辆后引用失效。
-    func syncAppliedCarSelection() {
-        appliedCarIDRaw = AppliedCarContext.normalizedRawID(rawID: appliedCarIDRaw, cars: cars)
-    }
-
-    @ViewBuilder
-    func reminderRow(_ row: MaintenanceReminderRow) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
-                Text(row.itemName)
-                    .lineLimit(1)
-                Spacer()
-                Text(row.progressText)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(row.progressColorLevel.color)
-            }
-
-            LinearProgressBar(
-                value: row.displayProgress,
-                color: row.progressColorLevel.color
-            )
-
-            ForEach(Array(row.detailTexts.enumerated()), id: \.offset) { _, detailText in
-                Text(detailText)
-                    .font(.footnote)
-                    .foregroundStyle(row.progressColorLevel.secondaryColor)
-            }
-        }
-        .padding(.vertical, 4)
     }
 }

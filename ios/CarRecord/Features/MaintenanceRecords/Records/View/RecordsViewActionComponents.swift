@@ -1,8 +1,6 @@
 import SwiftUI
-import SwiftData
 
 extension RecordsView {
-    /// 日期维度的聚合卡片：单层展示，不使用展开折叠。
     @ViewBuilder
     func dateGroupRow(_ group: MaintenanceDateGroup) -> some View {
         let rawCarNames = group.records.compactMap(\.car).map(CarDisplayFormatter.name)
@@ -39,7 +37,7 @@ extension RecordsView {
                 .lineLimit(2)
             Text("总费用：\(CurrencyFormatter.value(group.totalCost))")
                 .foregroundStyle(.secondary)
-            if !note.isEmpty {
+            if note.isEmpty == false {
                 Text("备注：\(note)")
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -47,7 +45,7 @@ extension RecordsView {
 
             if group.records.count == 1, let singleRecord = group.records.first {
                 Button("编辑本次保养") {
-                    openEditRecord(singleRecord)
+                    viewModel.openEditRecord(singleRecord)
                 }
                 .font(.subheadline)
                 .buttonStyle(.borderless)
@@ -57,7 +55,6 @@ extension RecordsView {
         .padding(.vertical, 4)
     }
 
-    /// 保养项目维度的行视图，点击可编辑所属保养记录。
     @ViewBuilder
     func itemRow(_ row: MaintenanceItemRow) -> some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -69,7 +66,7 @@ extension RecordsView {
                 .foregroundStyle(.secondary)
 
             Button("编辑本次保养") {
-                openEditRecord(row.record, lockedItemID: row.itemID)
+                viewModel.openEditRecord(row.record, lockedItemID: row.itemID)
             }
             .font(.subheadline)
             .buttonStyle(.borderless)
@@ -77,64 +74,4 @@ extension RecordsView {
         }
         .padding(.vertical, 4)
     }
-
-    /// 统一打开编辑表单。
-    func openEditRecord(_ record: MaintenanceRecord, lockedItemID: UUID? = nil) {
-        editingTarget = MaintenanceRecordEditTarget(record: record, lockedItemID: lockedItemID)
-    }
-
-    /// 删除保养记录并立即保存，确保列表与本地数据一致。
-    func deleteRecords(_ records: [MaintenanceRecord]) {
-        let recordIDs = Set(records.map(\MaintenanceRecord.id))
-        for record in records {
-            modelContext.deleteWithAudit(record)
-        }
-        if let editingTarget, recordIDs.contains(editingTarget.record.id) {
-            self.editingTarget = nil
-        }
-        if let message = modelContext.saveOrLog("删除保养记录") {
-            saveErrorMessage = message
-            isSaveErrorAlertPresented = true
-        }
-    }
-
-    /// “按项目”删除：优先只移除当前项目；仅剩 1 个项目时删除整条记录。
-    func deleteItemRow(_ row: MaintenanceItemRow) {
-        let originalItemIDs = CoreConfig.parseItemIDs(row.record.itemIDsRaw)
-        guard !originalItemIDs.isEmpty else {
-            deleteRecords([row.record])
-            return
-        }
-
-        if originalItemIDs.count == 1 {
-            deleteRecords([row.record])
-            return
-        }
-
-        var updatedItemIDs = originalItemIDs
-        if let firstMatchIndex = updatedItemIDs.firstIndex(of: row.itemID) {
-            updatedItemIDs.remove(at: firstMatchIndex)
-        } else {
-            return
-        }
-
-        if updatedItemIDs.isEmpty {
-            deleteRecords([row.record])
-            return
-        }
-
-        let recordBefore = AppDatabaseSnapshot.maintenanceRecord(row.record)
-        row.record.itemIDsRaw = CoreConfig.joinItemIDs(updatedItemIDs)
-        CoreConfig.syncCycleAndRelations(for: row.record, in: modelContext)
-        AppDatabaseAuditLogger.logUpdate(
-            entity: "MaintenanceRecord",
-            before: recordBefore,
-            after: AppDatabaseSnapshot.maintenanceRecord(row.record)
-        )
-        if let message = modelContext.saveOrLog("删除项目维度保养记录") {
-            saveErrorMessage = message
-            isSaveErrorAlertPresented = true
-        }
-    }
-
 }
