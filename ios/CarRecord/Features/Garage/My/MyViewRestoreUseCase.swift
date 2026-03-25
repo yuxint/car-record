@@ -94,7 +94,9 @@ extension MyView {
             }
 
             var optionsByName: [String: MaintenanceItemOption] = [:]
+            var optionsByCatalogKey: [String: MaintenanceItemOption] = [:]
             var profileItemNames = Set<String>()
+            var profileItemKeys = Set<String>()
             for item in profile.serviceItems {
                 let normalizedName = item.name.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard normalizedName.isEmpty == false else {
@@ -112,6 +114,17 @@ extension MyView {
                     )
                 }
                 profileItemNames.insert(normalizedName)
+                let normalizedCatalogKey = (item.catalogKey ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                if normalizedCatalogKey.isEmpty == false {
+                    if profileItemKeys.contains(normalizedCatalogKey) {
+                        throw NSError(
+                            domain: "MyDataTransfer",
+                            code: 1012,
+                            userInfo: [NSLocalizedDescriptionKey: "恢复失败：车型“\(profile.brand) \(profile.modelName)”存在重复项目 key “\(normalizedCatalogKey)”。"]
+                        )
+                    }
+                    profileItemKeys.insert(normalizedCatalogKey)
+                }
 
                 let option = MaintenanceItemOption(
                     id: item.id,
@@ -129,6 +142,9 @@ extension MyView {
                 )
                 modelContext.insertWithAudit(option)
                 optionsByName[normalizedName] = option
+                if normalizedCatalogKey.isEmpty == false {
+                    optionsByCatalogKey[normalizedCatalogKey] = option
+                }
                 summary.insertedItems += 1
             }
 
@@ -154,7 +170,8 @@ extension MyView {
 
                 let itemIDs = try itemIDsForImport(
                     names: logPayload.itemNames,
-                    optionsByName: optionsByName
+                    optionsByName: optionsByName,
+                    optionsByCatalogKey: optionsByCatalogKey
                 )
                 let itemIDsRaw = CoreConfig.joinItemIDs(itemIDs)
                 let newLog = MaintenanceRecord(
@@ -176,22 +193,15 @@ extension MyView {
         return summary
     }
 
-    /// 将导入项目名称映射为项目 ID；名称不存在时直接报错。
+    /// 将导入项目映射为项目 ID：优先按 `catalogKey`，再按名称兼容旧备份。
     func itemIDsForImport(
         names: [String],
-        optionsByName: [String: MaintenanceItemOption]
+        optionsByName: [String: MaintenanceItemOption],
+        optionsByCatalogKey: [String: MaintenanceItemOption]
     ) throws -> [UUID] {
-        var seen = Set<String>()
         let normalizedNames = names
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { $0.isEmpty == false }
-            .filter { name in
-                if seen.contains(name) {
-                    return false
-                }
-                seen.insert(name)
-                return true
-            }
 
         guard normalizedNames.isEmpty == false else {
             throw NSError(
@@ -201,9 +211,17 @@ extension MyView {
             )
         }
 
-        return try normalizedNames.map { name in
-            if let existing = optionsByName[name] {
-                return existing.id
+        var seenItemIDs = Set<UUID>()
+        var itemIDs: [UUID] = []
+        for name in normalizedNames {
+            let matchedOption = optionsByCatalogKey[name] ?? optionsByName[name]
+            if let existing = matchedOption {
+                if seenItemIDs.contains(existing.id) {
+                    continue
+                }
+                seenItemIDs.insert(existing.id)
+                itemIDs.append(existing.id)
+                continue
             }
             throw NSError(
                 domain: "MaintenanceDataTransfer",
@@ -211,5 +229,6 @@ extension MyView {
                 userInfo: [NSLocalizedDescriptionKey: "恢复失败：项目“\(name)”未在车型配置中声明。"]
             )
         }
+        return itemIDs
     }
 }

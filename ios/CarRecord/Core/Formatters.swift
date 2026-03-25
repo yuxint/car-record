@@ -33,6 +33,44 @@ enum MileageSegmentFormatter {
     }
 }
 
+/// 提醒里程文案格式化：与保养提醒页保持一致，优先展示“万公里”。
+enum MileageDisplayFormatter {
+    static func reminderDistanceText(for value: Int) -> String {
+        let safeValue = max(0, value)
+        if safeValue >= 10_000 {
+            return formattedMileageByWanQian(safeValue)
+        }
+        return "\(safeValue)公里"
+    }
+
+    private static func formattedMileageByWanQian(_ value: Int) -> String {
+        let wan = value / 10_000
+        let remainder = value % 10_000
+        let qian = remainder / 1_000
+        let bai = (remainder % 1_000) / 100
+
+        if wan > 0 {
+            if qian > 0 || bai > 0 {
+                let decimalValue = Double(qian * 1_000 + bai * 100) / 10_000.0
+                let fullString = String(format: "%.1f", decimalValue)
+                let parts = fullString.split(separator: ".")
+                let decimalPart = parts.count > 1 ? String(parts[1]).replacingOccurrences(of: "^0+|0+$", with: "", options: .regularExpression) : ""
+                if decimalPart.isEmpty {
+                    return "\(wan)万公里"
+                }
+                return "\(wan).\(decimalPart)万公里"
+            }
+            return "\(wan)万公里"
+        }
+
+        if qian > 0 || bai > 0 {
+            return "\(value)公里"
+        }
+
+        return "0公里"
+    }
+}
+
 /// 车龄格式化：按年计算并保留 1 位小数，避免手动维护车龄字段。
 enum CarAgeFormatter {
     static func yearsText(from date: Date, now: Date = AppDateContext.now()) -> String {

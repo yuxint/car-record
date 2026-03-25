@@ -89,7 +89,7 @@ struct MaintenanceItemDraft: Identifiable, Equatable {
     static func reminderSummary(for draft: MaintenanceItemDraft) -> String {
         var parts: [String] = []
         if draft.remindByMileage {
-            parts.append("\(max(1, draft.mileageInterval)) km")
+            parts.append(MileageDisplayFormatter.reminderDistanceText(for: max(1, draft.mileageInterval)))
         }
         if draft.remindByTime {
             let years = Double(max(1, draft.monthInterval)) / 12.0

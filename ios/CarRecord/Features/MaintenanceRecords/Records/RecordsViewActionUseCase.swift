@@ -10,6 +10,7 @@ extension RecordsView {
             .sorted { lhs, rhs in
                 lhs.localizedStandardCompare(rhs) == .orderedAscending
             }
+        let note = group.records.first?.note.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let minMileage = group.records.map(\.mileage).min()
         let maxMileage = group.records.map(\.mileage).max()
 
@@ -38,6 +39,11 @@ extension RecordsView {
                 .lineLimit(2)
             Text("总费用：\(CurrencyFormatter.value(group.totalCost))")
                 .foregroundStyle(.secondary)
+            if !note.isEmpty {
+                Text("备注：\(note)")
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
 
             if group.records.count == 1, let singleRecord = group.records.first {
                 Button("编辑本次保养") {

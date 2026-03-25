@@ -34,7 +34,7 @@ extension MyView {
                 MyDataTransferLogPayload(
                     id: log.id,
                     date: exportDateString(log.date),
-                    itemNames: CoreConfig.itemNames(
+                    itemNames: CoreConfig.exportItemNames(
                         from: log.itemIDsRaw,
                         options: CoreConfig.scopedOptions(serviceItemOptions, carID: car.id)
                     ),

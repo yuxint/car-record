@@ -97,8 +97,8 @@ extension AddMaintenanceRecordView {
             applyIntervalConfirmationToOptions()
         }
 
-        /// 当保养日期是今天时，自动同步车辆当前里程。
-        if Calendar.current.isDate(maintenanceDate, inSameDayAs: AppDateContext.now()) {
+        /// 保存保养记录后，车辆当前里程与表单里程取较大值，避免里程回退。
+        if currentMileage > selectedCar.mileage {
             let carBefore = AppDatabaseSnapshot.car(selectedCar)
             selectedCar.mileage = currentMileage
             AppDatabaseAuditLogger.logUpdate(

@@ -49,13 +49,8 @@ enum ReminderStrategy {
     }
 
     private func mileageDistanceText(for value: Int) -> String {
-        if value >= 10_000 {
-            return formattedMileageByWanQian(value)
-        }
-        return "\(value)公里"
+        MileageDisplayFormatter.reminderDistanceText(for: value)
     }
-
-
 
     private func timeDistanceText(for days: Int) -> String {
         if days < 30 {
@@ -73,33 +68,6 @@ enum ReminderStrategy {
             return "\(years)年"
         }
         return "\(years)年\(months)个月"
-    }
-
-    private func formattedMileageByWanQian(_ value: Int) -> String {
-        let wan = value / 10_000
-        let remainder = value % 10_000
-        let qian = remainder / 1_000
-        let bai = (remainder % 1_000) / 100
-        
-        if wan > 0 {
-            if qian > 0 || bai > 0 {
-                let decimalValue = Double(qian * 1_000 + bai * 100) / 10_000.0
-                let fullString = String(format: "%.1f", decimalValue)
-                let parts = fullString.split(separator: ".")
-                let decimalPart = parts.count > 1 ? String(parts[1]).replacingOccurrences(of: "^0+|0+$", with: "", options: .regularExpression) : ""
-                if decimalPart.isEmpty {
-                    return "\(wan)万公里"
-                }
-                return "\(wan).\(decimalPart)万公里"
-            }
-            return "\(wan)万公里"
-        }
-        
-        if qian > 0 || bai > 0 {
-            return "\(value)公里"
-        }
-        
-        return "0公里"
     }
 }
 

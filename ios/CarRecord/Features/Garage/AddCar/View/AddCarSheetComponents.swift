@@ -59,9 +59,9 @@ extension AddCarView {
                     Stepper(
                         value: draft.mileageInterval,
                         in: 1000...100_000,
-                        step: 500
+                        step: 1000
                     ) {
-                        Text("里程间隔：\(draft.wrappedValue.mileageInterval) km")
+                        Text("里程间隔：\(MileageDisplayFormatter.reminderDistanceText(for: draft.wrappedValue.mileageInterval))")
                     }
                 }
 

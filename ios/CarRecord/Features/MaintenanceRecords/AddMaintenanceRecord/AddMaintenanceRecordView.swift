@@ -51,11 +51,6 @@ struct AddMaintenanceRecordView: View {
 
     var body: some View {
         addRecordForm
-            .safeAreaInset(edge: .bottom) {
-                Color.clear
-                    .frame(height: inputAvoidanceBottomInset)
-                    .allowsHitTesting(false)
-            }
             .navigationTitle(editingRecord == nil ? "新增保养" : "编辑保养")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -148,11 +143,6 @@ struct AddMaintenanceRecordView: View {
             }
     }
 
-    /// 输入“总费用/备注”时给表单底部增加占位，避免键盘遮住当前输入行。
-    private var inputAvoidanceBottomInset: CGFloat {
-        isAnyInputActive ? 120 : 0
-    }
-
     private var addRecordForm: some View {
         Form {
             Section("车辆信息") {
@@ -238,11 +228,16 @@ struct AddMaintenanceRecordView: View {
                         focusedField = .cost
                     }
 
-                    TextField("备注（选填）", text: $note)
-                        .focused($focusedField, equals: .note)
-                        .submitLabel(.done)
-                        .onSubmit {
-                            closeInputEditors()
+                    HStack {
+                        Text("备注（选填）")
+                        Spacer()
+                        TextField("请输入", text: $note)
+                            .multilineTextAlignment(.trailing)
+                            .focused($focusedField, equals: .note)
+                            .submitLabel(.done)
+                            .onSubmit {
+                                closeInputEditors()
+                            }
                     }
                 }
             }

@@ -34,6 +34,13 @@ enum CoreConfig {
     static let airFilterKey = "air_filter"
     static let transmissionOilKey = "transmission_oil"
     static let brakeFluidKey = "brake_fluid"
+    static let sparkPlugKey = "spark_plug"
+    static let driveBeltKey = "drive_belt"
+    static let valveClearanceKey = "valve_clearance"
+    static let brakeKey = "brake"
+    static let antifreezeKey = "antifreeze"
+    static let gasFilterKey = "gas_filter"
+    static let tireRotationKey = "tire_rotation"
     static var warningRangeStartPercent: Int { civic2022WarningStartPercent }
     static var warningRangeEndExclusivePercent: Int { civic2022DangerStartPercent }
     static var dangerStartPercent: Int { civic2022DangerStartPercent }

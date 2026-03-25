@@ -9,7 +9,7 @@ extension CoreConfig {
     static let civic2022DefaultItemDefinitions: [DefaultItemDefinition] = [
         DefaultItemDefinition(
             key: fuelCleanerKey,
-            defaultName: "汽油发动机清洁剂",
+            defaultName: "汽油发动机清洁剂（燃油宝）",
             mileageInterval: 5000,
             monthInterval: nil,
             remindByMileage: true,
@@ -19,7 +19,7 @@ extension CoreConfig {
         ),
         DefaultItemDefinition(
             key: engineOilKey,
-            defaultName: "机油",
+            defaultName: "机油、机滤",
             mileageInterval: 5000,
             monthInterval: 6,
             remindByMileage: true,
@@ -50,20 +50,90 @@ extension CoreConfig {
         DefaultItemDefinition(
             key: transmissionOilKey,
             defaultName: "变速箱油",
-            mileageInterval: nil,
+            mileageInterval: 40_000,
             monthInterval: 24,
-            remindByMileage: false,
+            remindByMileage: true,
             remindByTime: true,
             warningStartPercent: civic2022WarningStartPercent,
             dangerStartPercent: civic2022DangerStartPercent
         ),
         DefaultItemDefinition(
             key: brakeFluidKey,
-            defaultName: "刹车油",
+            defaultName: "制动液（刹车油）",
             mileageInterval: nil,
             monthInterval: 36,
             remindByMileage: false,
             remindByTime: true,
+            warningStartPercent: civic2022WarningStartPercent,
+            dangerStartPercent: civic2022DangerStartPercent
+        ),
+        DefaultItemDefinition(
+            key: sparkPlugKey,
+            defaultName: "火花塞",
+            mileageInterval: 100_000,
+            monthInterval: nil,
+            remindByMileage: true,
+            remindByTime: false,
+            warningStartPercent: civic2022WarningStartPercent,
+            dangerStartPercent: civic2022DangerStartPercent
+        ),
+        DefaultItemDefinition(
+            key: driveBeltKey,
+            defaultName: "检查传动皮带",
+            mileageInterval: 40_000,
+            monthInterval: 24,
+            remindByMileage: true,
+            remindByTime: true,
+            warningStartPercent: civic2022WarningStartPercent,
+            dangerStartPercent: civic2022DangerStartPercent
+        ),
+        DefaultItemDefinition(
+            key: valveClearanceKey,
+            defaultName: "检查气门间隙",
+            mileageInterval: 120_000,
+            monthInterval: nil,
+            remindByMileage: true,
+            remindByTime: false,
+            warningStartPercent: civic2022WarningStartPercent,
+            dangerStartPercent: civic2022DangerStartPercent
+        ),
+        DefaultItemDefinition(
+            key: brakeKey,
+            defaultName: "检查制动器（刹车）",
+            mileageInterval: 120_000,
+            monthInterval: nil,
+            remindByMileage: true,
+            remindByTime: false,
+            warningStartPercent: civic2022WarningStartPercent,
+            dangerStartPercent: civic2022DangerStartPercent
+        ),
+        DefaultItemDefinition(
+            key: antifreezeKey,
+            defaultName: "冷却液（防冻液）",
+            mileageInterval: 200_000,
+            monthInterval: 120,
+            remindByMileage: true,
+            remindByTime: true,
+            warningStartPercent: civic2022WarningStartPercent,
+            dangerStartPercent: civic2022DangerStartPercent
+        ),
+        DefaultItemDefinition(
+            key: gasFilterKey,
+            defaultName: "汽油滤芯",
+            mileageInterval: 140_000,
+            monthInterval: nil,
+            remindByMileage: true,
+            remindByTime: false,
+            warningStartPercent: civic2022WarningStartPercent,
+            dangerStartPercent: civic2022DangerStartPercent
+        ),
+        DefaultItemDefinition(
+            key: tireRotationKey,
+            defaultName: "轮胎换位",
+            mileageInterval: 10_000,
+            monthInterval: nil,
+            remindByMileage: true,
+            remindByTime: false,
             warningStartPercent: civic2022WarningStartPercent,
             dangerStartPercent: civic2022DangerStartPercent
         ),

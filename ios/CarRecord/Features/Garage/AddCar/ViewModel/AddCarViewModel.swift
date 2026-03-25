@@ -187,6 +187,12 @@ final class AddCarViewModel: ObservableObject {
         } else {
             disabledItemIDs = []
         }
+        let existingDefaultKeys = Set(
+            maintenanceItemOptions.compactMap { option -> String? in
+                guard option.isDefault, let key = option.catalogKey else { return nil }
+                return key
+            }
+        )
         let existingByID = Dictionary(uniqueKeysWithValues: existingItemDrafts.map { ($0.id, $0) })
         let options = CoreConfig.sortedOptions(
             maintenanceItemOptions,
@@ -224,8 +230,38 @@ final class AddCarViewModel: ObservableObject {
                 dangerStartPercent: option.dangerStartPercent
             )
         }
-        let enabledDrafts = drafts.filter(\.isEnabled)
-        let disabledDrafts = drafts.filter { $0.isEnabled == false }
+        let missingDefaultDrafts = definitions
+            .filter { existingDefaultKeys.contains($0.key) == false }
+            .map { definition in
+                let draft = MaintenanceItemDraft.defaultDraft(from: definition)
+                return MaintenanceItemDraft(
+                    id: draft.id,
+                    name: draft.name,
+                    isDefault: draft.isDefault,
+                    catalogKey: draft.catalogKey,
+                    isEnabled: false,
+                    remindByMileage: draft.remindByMileage,
+                    mileageInterval: draft.mileageInterval,
+                    remindByTime: draft.remindByTime,
+                    monthInterval: draft.monthInterval,
+                    warningStartPercent: draft.warningStartPercent,
+                    dangerStartPercent: draft.dangerStartPercent
+                )
+            }
+        let orderByKey = currentModelConfig.defaultOrderByKey
+        let mergedDrafts = (drafts + missingDefaultDrafts)
+            .enumerated()
+            .sorted { lhs, rhs in
+                let lhsOrder = orderByKey[lhs.element.catalogKey ?? ""] ?? Int.max
+                let rhsOrder = orderByKey[rhs.element.catalogKey ?? ""] ?? Int.max
+                if lhsOrder != rhsOrder {
+                    return lhsOrder < rhsOrder
+                }
+                return lhs.offset < rhs.offset
+            }
+            .map(\.element)
+        let enabledDrafts = mergedDrafts.filter(\.isEnabled)
+        let disabledDrafts = mergedDrafts.filter { $0.isEnabled == false }
         existingItemDrafts = enabledDrafts + disabledDrafts
     }
 
